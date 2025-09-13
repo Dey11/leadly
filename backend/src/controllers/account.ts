@@ -49,8 +49,10 @@ export async function patchAccount(req: Request, res: Response) {
     }
 
     const payload = patchAccountSchema.safeParse(req.body);
-    if (!payload) {
-      return res.status(400).json({ error: "Invalid request body" });
+    if (!payload.success) {
+      return res.status(400).json({
+        error: "Invalid request body",
+      });
     }
 
     const updateUser = await db.user.update({
