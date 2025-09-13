@@ -1,9 +1,7 @@
 import cors from "cors";
 import { env } from "./env";
 import express from "express";
-import { auth } from "./lib/auth";
 import userRouter from "./routes/user";
-import { toNodeHandler } from "better-auth/node";
 
 const PORT = env.PORT || 3000;
 
@@ -16,9 +14,6 @@ app.use(
     credentials: true,
   })
 );
-
-app.all("/api/auth/*splat", toNodeHandler(auth));
-
 app.use(express.json());
 
 app.get("/", (req, res) => {
