@@ -1,32 +1,7 @@
 import fetch from "node-fetch";
+import { cleanText } from "../lib/utils.js";
 
 async function scrapeReddit(subreddit: string, postsCount: number = 100) {
-
-function cleanText(text: string): string {
-  if (!text) return "";
-
-  return text
-    // decode HTML entities
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    // remove Markdown links [text](url)
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    // remove inline code/backticks
-    .replace(/`+/g, "")
-    // remove bold/italics markers (*, **, _, __)
-    .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, "$1")
-    // remove blockquotes ">"
-    .replace(/^>+/gm, "")
-    // remove extra newlines/whitespace
-    .replace(/\n+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-
   try {
     const postsUrl = `https://www.reddit.com/r/${subreddit}/new.json?limit=${postsCount}`;
     const postsRes = await fetch(postsUrl);
@@ -37,11 +12,10 @@ function cleanText(text: string): string {
 
     const results = [];
 
-    // recursive extraction
     const extractComments = (children: any[]): any[] => {
       if (!children) return [];
       return children
-        .filter((c) => c.kind === "t1") // only real comments
+        .filter((c) => c.kind === "t1")
         .map((c) => {
           const nested =
             c.data.replies && c.data.replies.data
@@ -85,9 +59,3 @@ function cleanText(text: string): string {
     return { error: err instanceof Error ? err.message : err };
   }
 }
-
-// // Example usage
-// (async () => {
-//   const data = await scrapeReddit("Piracy", 100);
-//   console.log(JSON.stringify(data, null, 2));
-// })();
