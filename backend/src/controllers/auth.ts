@@ -82,7 +82,7 @@ export async function register(req: Request, res: Response) {
         path: "/",
       })
       .status(201)
-      .json({ message: "User created successfully", payload: user });
+      .json({ message: "User created successfully" });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
@@ -125,7 +125,7 @@ export async function login(req: Request, res: Response) {
         path: "/",
       })
       .status(200)
-      .json({ message: "Login successful", payload: session });
+      .json({ message: "Login successful" });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
