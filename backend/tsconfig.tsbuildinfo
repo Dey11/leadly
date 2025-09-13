@@ -1,1 +1,0 @@
-{"root":["./src/env.ts","./src/index.ts","./src/controllers/user.ts","./src/lib/db.ts","./src/lib/utils.ts","./src/repositories/user.ts","./src/routes/user.ts","./src/services/nitterscrape.ts","./src/services/redditscrape.ts","./src/types/nitter.ts","./src/types/reddit.ts","./src/types/schema.ts"],"version":"5.8.3"}
