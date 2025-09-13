@@ -1,9 +1,6 @@
 import { chromium, Browser, Page } from "playwright";
-import type {
-  nitterTweet,
-  nitterScrapeInput,
-  nitterScrapeOutput,
-} from "../types/nitter";
+import type { nitterTweet, nitterScrapeInput } from "../types/nitter";
+import { env } from "../env";
 
 export async function scrapeNitter(
   input: nitterScrapeInput
@@ -18,7 +15,7 @@ export async function scrapeNitter(
 
   const formattedQuery = encodeURIComponent(query);
 
-  const url = `http://localhost:8080/search?f=tweets&q=${formattedQuery}&since=${sinceDateStr}&until=${untilDate}`;
+  const url = `${env.NITTER_URL}/search?f=tweets&q=${formattedQuery}&since=${sinceDateStr}&until=${untilDate}`;
 
   let browser: Browser | null = null;
   let page: Page | null = null;
@@ -44,7 +41,7 @@ export async function scrapeNitter(
         timeout: 15000,
       });
     } catch (waitError) {
-      // no-op
+      console.error("Error waiting for selector:", waitError);
     }
     const noResults = await page.$(".no-results");
     if (noResults) {
@@ -101,6 +98,3 @@ export async function scrapeNitter(
     }
   }
 }
-
-const result = await scrapeNitter({ query: "elon musk", daysAgo: 7 });
-console.log(result);
