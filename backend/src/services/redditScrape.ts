@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+import axios from "axios";
 import { cleanText } from "../lib/utils.js";
 import type {
   redditComment,
@@ -13,10 +13,10 @@ export async function scrapeReddit(
   const { subreddit, postsCount = 50 } = input;
   try {
     const postsUrl = `https://www.reddit.com/r/${subreddit}/new.json?limit=${postsCount}`;
-    const postsRes = await fetch(postsUrl);
-    if (!postsRes.ok)
+    const postsRes = await axios.get(postsUrl);
+    if (postsRes.status !== 200)
       throw new Error(`Failed to fetch posts: ${postsRes.status}`);
-    const postsJson: any = await postsRes.json();
+    const postsJson: any = await postsRes.data;
     const posts = postsJson.data.children.map((c: any) => c.data);
 
     const results: redditPost[] = [];
@@ -43,12 +43,12 @@ export async function scrapeReddit(
     for (const post of posts) {
       try {
         const commentsUrl = `https://www.reddit.com/r/${subreddit}/comments/${post.id}.json`;
-        const commentsRes = await fetch(commentsUrl);
-        if (!commentsRes.ok)
+        const commentsRes = await axios.get(commentsUrl);
+        if (commentsRes.status !== 200)
           throw new Error(
             `Failed to fetch comments for post ${post.id}: ${commentsRes.status}`
           );
-        const commentsJson: any = await commentsRes.json();
+        const commentsJson: any = await commentsRes.data;
         const comments = extractComments(commentsJson[1].data.children);
 
         const redditPostVar: redditPost = {
