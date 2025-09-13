@@ -1,12 +1,15 @@
+import { z } from "zod";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-export const env = {
-  PORT: process.env.PORT,
-  DATABASE_URL: process.env.DATABASE_URL,
-  FRONTEND_URL: process.env.FRONTEND_URL,
-  NITTER_URL: process.env.NITTER_URL,
-  SESSION_SECRET: process.env.SESSION_SECRET,
-  NODE_ENV: process.env.NODE_ENV || "development",
-};
+const envSchema = z.object({
+  PORT: z.string().default("3000"),
+  DATABASE_URL: z.string(),
+  FRONTEND_URL: z.string(),
+  NITTER_URL: z.string(),
+  SESSION_SECRET: z.string(),
+  REDIS_URL: z.string().default("redis://localhost:6380"),
+});
+
+export const env = envSchema.parse(process.env);
