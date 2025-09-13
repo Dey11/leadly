@@ -86,8 +86,8 @@ function cleanText(text: string): string {
   }
 }
 
-// Example usage
-(async () => {
-  const data = await scrapeReddit("Piracy", 100);
-  console.log(JSON.stringify(data, null, 2));
-})();
+// // Example usage
+// (async () => {
+//   const data = await scrapeReddit("Piracy", 100);
+//   console.log(JSON.stringify(data, null, 2));
+// })();
