@@ -39,12 +39,27 @@ export const getMonitors = async (req: Request, res: Response) => {
 export const updateMonitor = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { platform, target, leadDescription, scrapeIntervalMinutes, status } =
-      req.body;
+    const {
+      url,
+      interval,
+      platform,
+      target,
+      leadDescription,
+      scrapeIntervalMinutes,
+      status,
+    } = req.body;
 
-    const monitor = await db.monitor.update({
+    const monitor = await db.monitor.findUnique({ where: { id } });
+
+    if (!monitor) return res.status(404).json({ error: "Monitor not found" });
+    if (monitor.userId !== req.userId)
+      return res.status(403).json({ error: "Not authorized" });
+
+    const updatedMonitor = await db.monitor.update({
       where: { id },
       data: {
+        url,
+        interval,
         platform,
         target,
         leadDescription,
@@ -53,9 +68,8 @@ export const updateMonitor = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(monitor);
+    res.json(updatedMonitor);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Failed to update monitor" });
   }
 };
@@ -64,13 +78,16 @@ export const deleteMonitor = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    await db.monitor.delete({
-      where: { id },
-    });
+    const monitor = await db.monitor.findUnique({ where: { id } });
+
+    if (!monitor) return res.status(404).json({ error: "Monitor not found" });
+    if (monitor.userId !== req.userId)
+      return res.status(403).json({ error: "Not authorized" });
+
+    await db.monitor.delete({ where: { id } });
 
     res.json({ success: true });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Failed to delete monitor" });
   }
 };
