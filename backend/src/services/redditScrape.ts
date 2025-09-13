@@ -1,7 +1,16 @@
 import fetch from "node-fetch";
 import { cleanText } from "../lib/utils.js";
+import type {
+  redditComment,
+  redditScrapeOutput,
+  redditPost,
+} from "../types/reddit.js";
+import type { redditScrapeInput } from "../types/reddit.js";
 
-async function scrapeReddit(subreddit: string, postsCount: number = 100) {
+export async function scrapeReddit(
+  input: redditScrapeInput
+): Promise<redditScrapeOutput> {
+  const { subreddit, postsCount = 50 } = input;
   try {
     const postsUrl = `https://www.reddit.com/r/${subreddit}/new.json?limit=${postsCount}`;
     const postsRes = await fetch(postsUrl);
@@ -10,9 +19,9 @@ async function scrapeReddit(subreddit: string, postsCount: number = 100) {
     const postsJson: any = await postsRes.json();
     const posts = postsJson.data.children.map((c: any) => c.data);
 
-    const results = [];
+    const results: redditPost[] = [];
 
-    const extractComments = (children: any[]): any[] => {
+    const extractComments = (children: any[]): redditComment[] => {
       if (!children) return [];
       return children
         .filter((c) => c.kind === "t1")
@@ -42,13 +51,15 @@ async function scrapeReddit(subreddit: string, postsCount: number = 100) {
         const commentsJson: any = await commentsRes.json();
         const comments = extractComments(commentsJson[1].data.children);
 
-        results.push({
+        const redditPostVar: redditPost = {
           post: cleanText(post.selftext),
           postId: post.id,
           posterId: post.author,
           urlToPost: `https://reddit.com${post.permalink}`,
           comments,
-        });
+        };
+
+        results.push(redditPostVar);
       } catch (err) {
         console.error(err);
       }
@@ -56,6 +67,7 @@ async function scrapeReddit(subreddit: string, postsCount: number = 100) {
 
     return { posts: results };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : err };
+    console.error(err);
+    return { posts: [] };
   }
 }
