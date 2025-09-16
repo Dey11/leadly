@@ -17,9 +17,8 @@ async function getReadOnlyToken(): Promise<string> {
     return redditToken;
   }
 
-  const clientId = process.env.REDDIT_CLIENT_ID || "Jqzj4lodq8xviMNGFgk7aw";
-  const clientSecret =
-    process.env.REDDIT_CLIENT_SECRET || "NJd7Vm7-WY-gwGkxIxdP5EPORC43MQ";
+  const clientId = process.env.REDDIT_CLIENT_ID || "";
+  const clientSecret = process.env.REDDIT_CLIENT_SECRET || "";
 
   const resp = await axios.post(
     "https://www.reddit.com/api/v1/access_token",
@@ -47,7 +46,7 @@ async function fetchWithRetry(
       return await axios.get(url, { headers, timeout });
     } catch (err: any) {
       if (err.code === "ETIMEDOUT" && i < retries - 1) {
-        console.warn(`⏳ Timeout, retrying... (${i + 1}/${retries})`);
+        console.warn(`Timeout, retrying... (${i + 1}/${retries})`);
         await delay(2000);
         continue;
       }
@@ -124,7 +123,7 @@ export async function scrapeReddit(
 
         results.push(redditPostVar);
       } catch (err) {
-        console.error(`⚠️ Error fetching comments for ${post.id}:`, err);
+        console.error(`Error fetching comments for ${post.id}:`, err);
       }
     }
 
@@ -134,32 +133,6 @@ export async function scrapeReddit(
     return { posts: [] };
   }
 }
-
-const subarray = [
-  "RealEstate",
-  "RealEstateInvesting",
-  "RealEstateTechnology",
-  "RealEstateAdvice",
-  "Dubai",
-  "DubaiPetrolHeads",
-  "DubaiCentral",
-  "dubairealestate",
-  "dubairealestatehelp",
-  "Dubai_Real_Estate",
-  "PropertyManagement",
-  "realestateinvesting",
-  "RealEstateReinvestment",
-];
-
-async function main() {
-  for (const subreddit of subarray) {
-    const res = await scrapeReddit({ subreddit, postsCount: 100 });
-    console.dir(res, { depth: null });
-    await delay(2000);
-  }
-}
-
-main();
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
