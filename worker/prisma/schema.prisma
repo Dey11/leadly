@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Platform {
+  REDDIT
+  TWITTER
+}
+
+enum LeadType {
+  WARM
+  COLD
+  NEUTRAL
+}
+
+enum MonitorStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum ScrapeJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum LeadStatus {
+  NEW
+  VIEWED
+  CONTACTED
+  ARCHIVED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  INCOMPLETE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  credits      Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  subscription Subscription?
+
+  monitors Monitor[]
+
+  name          String
+  emailVerified Boolean   @default(false)
+  image         String?
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  subscriptionCustomerId String? @unique
+  subscriptionId         String? @unique
+  subscriptionPriceId    String?
+
+  status           SubscriptionStatus
+  currentPeriodEnd DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+model Monitor {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  platform Platform
+
+  target                String
+  leadDescription       String @db.Text
+  scrapeIntervalMinutes Int
+
+  status MonitorStatus @default(ACTIVE)
+
+  lastScrapedAt DateTime?
+  nextScrapeAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  scrapeJobs ScrapeJob[]
+
+  @@index([userId])
+  @@index([nextScrapeAt, status])
+  @@map("monitors")
+}
+
+model ScrapeJob {
+  id        String  @id @default(cuid())
+  monitorId String
+  monitor   Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  status          ScrapeJobStatus @default(PENDING)
+  creditsConsumed Int             @default(0)
+  errorMessage    String?         @db.Text
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  leads Lead[]
+
+  @@index([monitorId])
+  @@map("scrape_jobs")
+}
+
+model Lead {
+  id          String    @id @default(cuid())
+  scrapeJobId String
+  scrapeJob   ScrapeJob @relation(fields: [scrapeJobId], references: [id], onDelete: Cascade)
+
+  platform  Platform
+  leadType  LeadType
+  content   String   @db.Text
+  url       String   @unique
+  author    String?
+  reasoning String?  @db.Text
+
+  status LeadStatus @default(NEW)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([scrapeJobId])
+  @@map("leads")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
