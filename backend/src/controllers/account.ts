@@ -90,9 +90,12 @@ export async function deleteAccount(req: Request, res: Response) {
     if (!findExistingUser) {
       return res.status(400).json({ error: "User does not exist" });
     }
-    await db.user.delete({
+    await db.user.update({
       where: {
         id: userId,
+      },
+      data: {
+        isDeleted: true,
       },
     });
     res.status(200).json({

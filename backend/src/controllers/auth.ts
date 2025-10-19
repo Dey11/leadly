@@ -57,6 +57,10 @@ export async function register(req: Request, res: Response) {
       },
     });
 
+    if (findExistingUser?.isDeleted) {
+      return res.status(400).json({ error: "User is deleted" });
+    }
+
     if (findExistingUser) {
       return res.status(400).json({ error: "User already exists" });
     }
@@ -103,6 +107,9 @@ export async function login(req: Request, res: Response) {
 
     if (!userInDb) {
       return res.status(400).json({ error: "User not found" });
+    }
+    if (userInDb?.isDeleted) {
+      return res.status(400).json({ error: "User is deleted" });
     }
 
     const isPasswordValid = await bcrypt.compare(
