@@ -1,8 +1,3 @@
-export type redditScrapeInput = {
-  subreddit: string;
-  postsCount: number;
-};
-
 export type redditComment = {
   commenterId: string;
   commentText: string;
@@ -17,8 +12,4 @@ export type redditPost = {
   posterId: string;
   urlToPost: string;
   comments: redditComment[];
-};
-
-export type redditScrapeOutput = {
-  posts: redditPost[];
 };
