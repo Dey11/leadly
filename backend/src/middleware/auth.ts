@@ -15,9 +15,30 @@ export async function authMiddleware(
     where: {
       token: sessionToken,
     },
+    include: {
+      user: true,
+    },
   });
   if (!session) {
     return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  if (session.user.isDeleted) {
+    await db.session.delete({
+      where: {
+        token: sessionToken,
+      },
+    });
+    res
+      .cookie("session_token", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 0,
+        path: "/",
+      })
+      .status(401)
+      .json({ error: "User is deleted" });
   }
 
   if (session.expiresAt < new Date()) {

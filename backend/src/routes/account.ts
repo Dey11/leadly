@@ -5,13 +5,14 @@ import {
   deleteAccount,
   getAccountSessions,
 } from "../controllers/account";
+import { authMiddleware } from "../middleware/auth";
 
 export const accountRouter = Router();
 
-accountRouter.get("/account", getAccount);
+accountRouter.get("/account", authMiddleware, getAccount);
 
-accountRouter.patch("/account", patchAccount);
+accountRouter.patch("/account", authMiddleware, patchAccount);
 
-accountRouter.delete("/account", deleteAccount);
+accountRouter.delete("/account", authMiddleware, deleteAccount);
 
-accountRouter.get("/account/sessions", getAccountSessions);
+accountRouter.get("/account/sessions", authMiddleware, getAccountSessions);

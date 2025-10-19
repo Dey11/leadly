@@ -1,17 +1,22 @@
 import { Request, Response } from "express";
 import db from "../lib/db";
+import {
+  createMonitorSchema,
+  monitorIdParamSchema,
+  updateMonitorSchema,
+} from "../types/monitor";
 
 export const createMonitor = async (req: Request, res: Response) => {
   try {
-    const { platform, target, leadDescription, scrapeIntervalMinutes } =
-      req.body;
+    const payload = createMonitorSchema.safeParse(req.body);
+
+    if (!payload.success) {
+      return res.status(400).json({ error: "Invalid request body" });
+    }
 
     const monitor = await db.monitor.create({
       data: {
-        platform,
-        target,
-        leadDescription,
-        scrapeIntervalMinutes,
+        ...payload.data,
         userId: req.userId!,
       },
     });
@@ -38,16 +43,17 @@ export const getMonitors = async (req: Request, res: Response) => {
 
 export const updateMonitor = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const {
-      url,
-      interval,
-      platform,
-      target,
-      leadDescription,
-      scrapeIntervalMinutes,
-      status,
-    } = req.body;
+    const idResult = monitorIdParamSchema.safeParse(req.params);
+    if (!idResult.success) {
+      return res.status(400).json({ error: "Invalid monitor id" });
+    }
+
+    const payload = updateMonitorSchema.safeParse(req.body);
+    if (!payload.success) {
+      return res.status(400).json({ error: "Invalid request body" });
+    }
+
+    const { id } = idResult.data;
 
     const monitor = await db.monitor.findUnique({ where: { id } });
 
@@ -58,13 +64,7 @@ export const updateMonitor = async (req: Request, res: Response) => {
     const updatedMonitor = await db.monitor.update({
       where: { id },
       data: {
-        url,
-        interval,
-        platform,
-        target,
-        leadDescription,
-        scrapeIntervalMinutes,
-        status,
+        ...payload.data,
       },
     });
 
@@ -76,7 +76,12 @@ export const updateMonitor = async (req: Request, res: Response) => {
 
 export const deleteMonitor = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const idResult = monitorIdParamSchema.safeParse(req.params);
+    if (!idResult.success) {
+      return res.status(400).json({ error: "Invalid monitor id" });
+    }
+
+    const { id } = idResult.data;
 
     const monitor = await db.monitor.findUnique({ where: { id } });
 

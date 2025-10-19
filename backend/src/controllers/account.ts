@@ -133,7 +133,6 @@ export async function getAccountSessions(req: Request, res: Response) {
         ipAddress: session.ipAddress,
         userAgent: session.userAgent,
         expiresAt: session.expiresAt,
-        // isCurrent: session.isCurrent,
       })),
     });
   } catch (error) {
