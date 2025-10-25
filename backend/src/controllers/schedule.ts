@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import db from "../lib/db";
-import { scheduleSchema, updateScheduleSchema } from "../types/schedule";
+import { updateScheduleSchema } from "../types/schedule";
 import { DEFAULT_HOURS_MAP, TIER_LIMITS } from "../lib/constants";
 
 export const getSchedule = async (req: Request, res: Response) => {

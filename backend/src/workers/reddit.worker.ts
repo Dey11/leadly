@@ -10,6 +10,7 @@ const connection = new Redis(env.REDIS_URL, {
 const worker = new Worker(
   "scrapeJobs",
   async (job) => {
+    console.log("Processing job:", job.data);
     await processScrapeJob(job);
   },
   { connection }

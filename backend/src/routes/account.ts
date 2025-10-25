@@ -9,10 +9,10 @@ import { authMiddleware } from "../middleware/auth";
 
 export const accountRouter = Router();
 
-accountRouter.get("/account", authMiddleware, getAccount);
+accountRouter.get("/", authMiddleware, getAccount);
 
-accountRouter.patch("/account", authMiddleware, patchAccount);
+accountRouter.patch("/", authMiddleware, patchAccount);
 
-accountRouter.delete("/account", authMiddleware, deleteAccount);
+accountRouter.delete("/", authMiddleware, deleteAccount);
 
-accountRouter.get("/account/sessions", authMiddleware, getAccountSessions);
+accountRouter.get("/sessions", authMiddleware, getAccountSessions);

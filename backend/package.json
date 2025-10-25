@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon --exec \"ts-node\" src/index.ts",
+    "worker": "ts-node src/workers/reddit.worker.ts",
+    "worker:dev": "nodemon --exec \"ts-node\" src/workers/reddit.worker.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
@@ -23,6 +25,7 @@
     "axios": "^1.12.1",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.58.5",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
@@ -34,6 +37,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/he": "^1.2.3",

@@ -5,3 +5,4 @@ worker/node_modules
 worker/dist
 worker/.env
 worker/src/generated/*
+.pnpm-store

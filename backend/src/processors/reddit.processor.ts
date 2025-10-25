@@ -1,8 +1,8 @@
 import db from "../lib/db";
 import { Reddit } from "../services/reddit";
-import { LeadData, processLeads } from "./ai.processor";
+import { processLeads } from "./ai.processor";
 import type { Job } from "bullmq";
-import type { LeadStatus, User } from "@prisma/client";
+import type { LeadStatus } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { env } from "../env";
 import { MAX_SCRAPE_POSTS_LIMIT } from "../lib/constants";

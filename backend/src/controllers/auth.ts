@@ -4,6 +4,7 @@ import db from "../lib/db";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { env } from "../env";
+import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
 
 function generateSecureSessionToken(): string {
   const randomBytes = crypto.randomBytes(32).toString("hex");
@@ -76,6 +77,15 @@ export async function register(req: Request, res: Response) {
     });
 
     const session = await createUserSession(user.id);
+
+    await db.subscription.create({
+      data: {
+        userId: user.id,
+        status: SubscriptionStatus.ACTIVE,
+        tier: SubscriptionTier.FREE,
+        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      },
+    });
 
     res
       .cookie("session_token", session.token, {

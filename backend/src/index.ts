@@ -2,12 +2,15 @@ import cors from "cors";
 import { env } from "./env";
 import express from "express";
 import cron from "node-cron";
+import cookieParser from "cookie-parser";
 import { runScheduler } from "./services/scheduler";
 import { authRouter } from "./routes/auth";
 import monitorRouter from "./routes/monitor";
 import serviceRouter from "./routes/service";
 import scheduleRouter from "./routes/schedule";
 import { accountRouter } from "./routes/account";
+import leadRouter from "./routes/lead";
+import scrapeJobsRouter from "./routes/scrape-jobs";
 
 const PORT = env.PORT;
 
@@ -21,6 +24,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Hello World");
@@ -30,13 +34,15 @@ const apiRouter = express.Router();
 
 app.use("/api/v1", apiRouter);
 
-apiRouter.use(authRouter);
+apiRouter.use("/auth", authRouter);
 apiRouter.use("/monitors", monitorRouter);
 apiRouter.use("/services", serviceRouter);
 apiRouter.use("/schedule", scheduleRouter);
 apiRouter.use("/account", accountRouter);
+apiRouter.use("/leads", leadRouter);
+apiRouter.use("/monitors", scrapeJobsRouter);
 
-const scheduledTask = cron.schedule("0 * * * *", runScheduler); // every hour
+const scheduledTask = cron.schedule("*/20 * * * *", runScheduler); // every 5 minutes
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
