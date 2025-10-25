@@ -1,15 +1,17 @@
-export type redditComment = {
+export type RedditComment = {
   commenterId: string;
   commentText: string;
   commenterName: string;
   urlToComment: string;
-  children: redditComment[];
+  children: RedditComment[];
 };
 
-export type redditPost = {
+export type RedditPost = {
+  subreddit: string;
+  title: string;
   post: string;
   postId: string;
   posterId: string;
   urlToPost: string;
-  comments: redditComment[];
+  comments: RedditComment[];
 };

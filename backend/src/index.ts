@@ -28,28 +28,27 @@ app.use("/api/v1", apiRouter);
 
 apiRouter.use(authRouter);
 
+const scheduledTask = cron.schedule("*/30 * * * *", runScheduler); // every 30 minutes
+
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  const scheduledTask = cron.schedule('* * * * *', runScheduler);
-  console.log('Scheduler started.');
+  console.log("Scheduler started.");
 });
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received, stopping scheduler...');
-  const scheduledTask = cron.schedule('* * * * *', runScheduler);
+const stopServer = () => {
   scheduledTask.stop();
   server.close(() => {
-    console.log('Server closed.');
+    console.log("Server closed.");
     process.exit(0);
   });
+};
+
+process.on("SIGINT", () => {
+  console.log("SIGINT received, stopping scheduler...");
+  stopServer();
 });
 
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, stopping scheduler...');
-  const scheduledTask = cron.schedule('* * * * *', runScheduler);
-  scheduledTask.stop();
-  server.close(() => {
-    console.log('Server closed.');
-    process.exit(0);
-  });
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received, stopping scheduler...");
+  stopServer();
 });

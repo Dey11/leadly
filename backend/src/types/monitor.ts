@@ -3,8 +3,13 @@ import { z } from "zod/v4";
 
 const monitorBaseSchema = z
   .object({
-    platform: z.nativeEnum(Platform),
-    target: z.string().min(1),
+    platform: z.enum(Platform),
+    targets: z.array(
+      z.object({
+        subreddit: z.string().min(1),
+        cursor: z.string().nullable(),
+      })
+    ),
     leadDescription: z.string().min(1),
     scrapeIntervalMinutes: z.number().int().positive(),
   })
@@ -15,7 +20,7 @@ export const createMonitorSchema = monitorBaseSchema;
 export const updateMonitorSchema = monitorBaseSchema
   .partial()
   .extend({
-    status: z.nativeEnum(MonitorStatus).optional(),
+    status: z.enum(MonitorStatus).optional(),
   })
   .strict()
   .refine(

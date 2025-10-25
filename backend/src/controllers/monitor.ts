@@ -14,6 +14,8 @@ export const createMonitor = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid request body" });
     }
 
+    // todo: validate scrape interval as per subscription & platform
+
     const monitor = await db.monitor.create({
       data: {
         ...payload.data,

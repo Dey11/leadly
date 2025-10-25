@@ -9,7 +9,7 @@ datasource db {
 
 enum Platform {
   REDDIT
-  TWITTER
+  // TWITTER
 }
 
 enum LeadType {
@@ -93,7 +93,7 @@ model Monitor {
 
   platform Platform
 
-  target                String
+  targets               Json // array of objects: Array<{ subreddit: string; cursor: string | null }>
   leadDescription       String @db.Text
   scrapeIntervalMinutes Int
 
@@ -120,6 +120,7 @@ model ScrapeJob {
   status          ScrapeJobStatus @default(PENDING)
   creditsConsumed Int             @default(0)
   errorMessage    String?         @db.Text
+  metadata        Json? // to store the reddit cursor
 
   startedAt   DateTime?
   completedAt DateTime?

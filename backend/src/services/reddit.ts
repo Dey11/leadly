@@ -1,7 +1,7 @@
 import axios from "axios";
 import { env } from "../env";
 import { cleanText, delay, fetchWithRetry } from "../lib/utils";
-import { redditComment, redditPost } from "../types/reddit";
+import { RedditComment, RedditPost } from "../types/reddit";
 
 export class Reddit {
   private clientId: string;
@@ -38,10 +38,16 @@ export class Reddit {
     return this.token;
   }
 
-  async fetchPosts(subreddit: string, limit: number = 10) {
+  async fetchPosts(
+    subreddit: string,
+    limit: number = 10,
+    after: string | null = null
+  ) {
     const token = await this.getToken();
-    const url = `${this.baseUrl}/r/${subreddit}/top?limit=${limit}`;
-    const results: redditPost[] = [];
+    const url = `${this.baseUrl}/r/${subreddit}/new?limit=${limit}${
+      after ? `&before=${after}` : ""
+    }`;
+    const results: RedditPost[] = [];
 
     const response = await fetchWithRetry(url, {
       headers: {
@@ -56,7 +62,7 @@ export class Reddit {
     }
 
     const posts = response.data.data.children.map((child: any) => child.data);
-    const extractComments = (children: any[]): redditComment[] => {
+    const extractComments = function (children: any[]): RedditComment[] {
       if (!children) return [];
       return children
         .filter((c) => c.kind === "t1")
@@ -95,7 +101,9 @@ export class Reddit {
         const commentsJson: any = commentsRes.data;
         const comments = extractComments(commentsJson[1].data.children);
 
-        const redditPostVar: redditPost = {
+        const redditPostVar: RedditPost = {
+          subreddit: subreddit,
+          title: cleanText(post.title),
           post: cleanText(post.selftext),
           postId: post.id,
           posterId: post.author,
@@ -112,3 +120,17 @@ export class Reddit {
     return results;
   }
 }
+
+// test code
+// const main = async () => {
+//   const redditClient = new Reddit(
+//     env.REDDIT_CLIENT_ID,
+//     env.REDDIT_CLIENT_SECRET
+//   );
+//   // const posts = await redditClient.fetchPosts("javascript", 10);
+//   const posts = await redditClient.fetchPosts("javascript", 10, "t3_1oe2yy8");
+//   console.log(posts);
+//   // console.log(posts[0].comments);
+// };
+
+// main();
