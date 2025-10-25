@@ -4,6 +4,9 @@ import express from "express";
 import cron from "node-cron";
 import { runScheduler } from "./services/scheduler";
 import { authRouter } from "./routes/auth";
+import monitorRouter from "./routes/monitor";
+import serviceRouter from "./routes/service";
+import scheduleRouter from "./routes/schedule";
 
 const PORT = env.PORT;
 
@@ -12,7 +15,7 @@ const app = express();
 app.use(
   cors({
     origin: env.FRONTEND_URL,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   })
 );
@@ -27,8 +30,11 @@ const apiRouter = express.Router();
 app.use("/api/v1", apiRouter);
 
 apiRouter.use(authRouter);
+apiRouter.use("/monitors", monitorRouter);
+apiRouter.use("/services", serviceRouter);
+apiRouter.use("/schedule", scheduleRouter);
 
-const scheduledTask = cron.schedule("*/30 * * * *", runScheduler); // every 30 minutes
+const scheduledTask = cron.schedule("0 * * * *", runScheduler); // every hour
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

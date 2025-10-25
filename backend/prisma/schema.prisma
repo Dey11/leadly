@@ -45,19 +45,26 @@ enum SubscriptionStatus {
   INCOMPLETE
 }
 
+enum SubscriptionTier {
+  FREE
+  PLUS
+  PRO
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   passwordHash String
-  credits      Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   restricted   Boolean  @default(false)
   isDeleted    Boolean  @default(false)
 
   subscription Subscription?
+  schedule     UserSchedule?
 
   monitors Monitor[]
+  services Service[]
 
   name          String
   emailVerified Boolean   @default(false)
@@ -78,6 +85,7 @@ model Subscription {
   subscriptionPriceId    String?
 
   status           SubscriptionStatus
+  tier             SubscriptionTier   @default(FREE)
   currentPeriodEnd DateTime
 
   createdAt DateTime @default(now())
@@ -86,21 +94,52 @@ model Subscription {
   @@map("subscriptions")
 }
 
-model Monitor {
+model Service {
   id     String @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  platform Platform
+  name            String
+  leadDescription String        @db.Text
+  platform        Platform
+  status          MonitorStatus @default(ACTIVE)
 
-  targets               Json // array of objects: Array<{ subreddit: string; cursor: string | null }>
-  leadDescription       String @db.Text
-  scrapeIntervalMinutes Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  monitors Monitor[]
+
+  @@index([userId])
+  @@map("services")
+}
+
+model UserSchedule {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  scheduledHours Int[] // Array of hours 0-23
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_schedules")
+}
+
+model Monitor {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  platform Platform
+  target   String // Single subreddit name
+  cursor   String? // Last scraped post ID for pagination
 
   status MonitorStatus @default(ACTIVE)
 
   lastScrapedAt DateTime?
-  nextScrapeAt  DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -108,7 +147,7 @@ model Monitor {
   scrapeJobs ScrapeJob[]
 
   @@index([userId])
-  @@index([nextScrapeAt, status])
+  @@index([serviceId])
   @@map("monitors")
 }
 
@@ -117,10 +156,12 @@ model ScrapeJob {
   monitorId String
   monitor   Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 
-  status          ScrapeJobStatus @default(PENDING)
-  creditsConsumed Int             @default(0)
-  errorMessage    String?         @db.Text
-  metadata        Json? // to store the reddit cursor
+  status       ScrapeJobStatus @default(PENDING)
+  errorMessage String?         @db.Text
+  metadata     Json? // to store the reddit cursor
+  warmLeads    Int             @default(0)
+  coldLeads    Int             @default(0)
+  neutralLeads Int             @default(0)
 
   startedAt   DateTime?
   completedAt DateTime?

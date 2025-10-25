@@ -5,12 +5,7 @@ import type { Job } from "bullmq";
 import type { LeadStatus, User } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { env } from "../env";
-import { CREDITS_COST } from "../lib/constants";
-
-interface Target {
-  subreddit: string;
-  cursor: string | null;
-}
+import { MAX_SCRAPE_POSTS_LIMIT } from "../lib/constants";
 
 export async function processScrapeJob(job: Job) {
   console.log("Processing job with data:", job.data);
@@ -22,11 +17,11 @@ export async function processScrapeJob(job: Job) {
   const [scrapeJob, monitor] = await Promise.all([
     db.scrapeJob.findUnique({
       where: { id: job.data.jobId },
-      include: { monitor: true },
+      include: { monitor: { include: { service: true } } },
     }),
     db.monitor.findUnique({
       where: { id: job.data.monitorId },
-      include: { user: true },
+      include: { user: true, service: true },
     }),
   ]);
 
@@ -36,11 +31,8 @@ export async function processScrapeJob(job: Job) {
     throw new Error("ScrapeJob or Monitor not found");
   }
 
-  // todo: find a better way to handle this
-  const user = monitor.user as User;
-  if (user.credits <= 0) {
-    throw new Error("User has insufficient credits");
-  }
+  // Get user for validation
+  const user = monitor.user;
 
   try {
     const redditClient = new Reddit(
@@ -55,34 +47,24 @@ export async function processScrapeJob(job: Job) {
       },
     });
 
-    const targets = monitor?.targets as unknown as Target[];
-    const allCursors: { [key: string]: string } = {};
-    const allLeads: LeadData[] = [];
-
-    for (const target of targets) {
-      const posts = await redditClient.fetchPosts(
-        target.subreddit.replace("r/", ""),
-        50,
-        target.cursor
-      );
-      allCursors[target.subreddit] = posts[posts.length - 1].postId;
-
-      const leads = await processLeads(posts, monitor.leadDescription);
-      allLeads.push(...leads);
-    }
-
-    const warmLeads = allLeads.filter((lead) => lead.leadType === "WARM");
-    const coldLeads = allLeads.filter((lead) => lead.leadType === "COLD");
-    const neutralLeads = allLeads.filter((lead) => lead.leadType === "NEUTRAL");
-    const creditsConsumed = Math.max(
-      warmLeads.length * CREDITS_COST.WARM,
-      coldLeads.length * CREDITS_COST.COLD,
-      neutralLeads.length * CREDITS_COST.NEUTRAL
+    // Process single target (subreddit)
+    const target = monitor.target.replace("r/", "");
+    const posts = await redditClient.fetchPosts(
+      target,
+      MAX_SCRAPE_POSTS_LIMIT,
+      monitor.cursor
     );
+
+    const leads = await processLeads(posts, monitor.service.leadDescription);
+    const lastPostId = posts[posts.length - 1]?.postId;
+
+    const warmLeads = leads.filter((lead) => lead.leadType === "WARM");
+    const coldLeads = leads.filter((lead) => lead.leadType === "COLD");
+    const neutralLeads = leads.filter((lead) => lead.leadType === "NEUTRAL");
 
     await db.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.lead.createMany({
-        data: allLeads.map((lead) => ({
+        data: leads.map((lead) => ({
           scrapeJobId: job.data.jobId,
           platform: lead.platform,
           leadType: lead.leadType,
@@ -99,15 +81,19 @@ export async function processScrapeJob(job: Job) {
         where: { id: job.data.jobId },
         data: {
           status: "COMPLETED",
-          creditsConsumed,
           completedAt: new Date(),
+          warmLeads: warmLeads.length,
+          coldLeads: coldLeads.length,
+          neutralLeads: neutralLeads.length,
         },
       });
 
-      await tx.user.update({
-        where: { id: user.id },
+      // Update monitor cursor with last scraped post ID
+      await tx.monitor.update({
+        where: { id: job.data.monitorId },
         data: {
-          credits: Math.max(0, user.credits - creditsConsumed),
+          cursor: lastPostId,
+          lastScrapedAt: new Date(),
         },
       });
     });
@@ -125,7 +111,5 @@ export async function processScrapeJob(job: Job) {
     } catch (updateError) {
       console.error("Failed to update scrapeJob status:", updateError);
     }
-
-    throw error;
   }
 }

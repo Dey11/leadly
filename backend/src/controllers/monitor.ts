@@ -5,6 +5,7 @@ import {
   monitorIdParamSchema,
   updateMonitorSchema,
 } from "../types/monitor";
+import { TIER_LIMITS } from "../lib/constants";
 
 export const createMonitor = async (req: Request, res: Response) => {
   try {
@@ -14,7 +15,37 @@ export const createMonitor = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid request body" });
     }
 
-    // todo: validate scrape interval as per subscription & platform
+    const user = await db.user.findUnique({
+      where: { id: req.userId! },
+      include: { subscription: true },
+    });
+
+    if (!user?.subscription) {
+      return res.status(400).json({ error: "User has no active subscription" });
+    }
+
+    const tier = user.subscription.tier;
+    const tierLimits = TIER_LIMITS[tier];
+
+    const currentMonitorCount = await db.monitor.count({
+      where: { userId: req.userId! },
+    });
+
+    if (currentMonitorCount >= tierLimits.monitors) {
+      return res.status(400).json({
+        error: `Monitor limit reached. Your ${tier} plan allows ${tierLimits.monitors} monitors.`,
+      });
+    }
+
+    const service = await db.service.findUnique({
+      where: { id: payload.data.serviceId },
+    });
+
+    if (!service || service.userId !== req.userId!) {
+      return res
+        .status(400)
+        .json({ error: "Service not found or not owned by user" });
+    }
 
     const monitor = await db.monitor.create({
       data: {
@@ -34,6 +65,13 @@ export const getMonitors = async (req: Request, res: Response) => {
   try {
     const monitors = await db.monitor.findMany({
       where: { userId: req.userId },
+      include: {
+        service: true,
+        scrapeJobs: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        },
+      },
     });
 
     res.json(monitors);

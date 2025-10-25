@@ -4,6 +4,7 @@ import { RedditPost } from "../types/reddit";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { leadGenerationPrompt } from "../lib/prompts";
+import { MIN_RELEVANCE_SCORE } from "../lib/constants";
 
 export interface LeadData {
   platform: "REDDIT";
@@ -53,14 +54,15 @@ export async function processLeads(
     });
 
     for (const lead of leadsArray) {
-      leads.push({
-        platform: "REDDIT",
-        leadType: lead.leadType,
-        content: lead.title,
-        url: lead.url,
-        author: lead.author,
-        reasoning: lead.reasoning,
-      });
+      lead.relevanceScore >= MIN_RELEVANCE_SCORE &&
+        leads.push({
+          platform: "REDDIT",
+          leadType: lead.leadType,
+          content: lead.title,
+          url: lead.url,
+          author: lead.author,
+          reasoning: lead.reasoning,
+        });
     }
   }
 
