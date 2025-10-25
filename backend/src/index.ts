@@ -7,6 +7,7 @@ import { authRouter } from "./routes/auth";
 import monitorRouter from "./routes/monitor";
 import serviceRouter from "./routes/service";
 import scheduleRouter from "./routes/schedule";
+import { accountRouter } from "./routes/account";
 
 const PORT = env.PORT;
 
@@ -33,6 +34,7 @@ apiRouter.use(authRouter);
 apiRouter.use("/monitors", monitorRouter);
 apiRouter.use("/services", serviceRouter);
 apiRouter.use("/schedule", scheduleRouter);
+apiRouter.use("/account", accountRouter);
 
 const scheduledTask = cron.schedule("0 * * * *", runScheduler); // every hour
 

@@ -22,7 +22,6 @@ export async function getAccount(req: Request, res: Response) {
         email: findExistingUser?.email,
         emailVerified: findExistingUser?.emailVerified,
         image: findExistingUser?.image,
-        credits: findExistingUser?.credits,
         createdAt: findExistingUser?.createdAt,
       },
     };

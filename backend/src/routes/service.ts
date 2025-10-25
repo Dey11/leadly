@@ -11,5 +11,3 @@ router.patch("/:id", authMiddleware, serviceController.updateService);
 router.delete("/:id", authMiddleware, serviceController.deleteService);
 
 export default router;
-
-

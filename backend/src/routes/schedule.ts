@@ -9,5 +9,3 @@ router.patch("/", authMiddleware, scheduleController.updateSchedule);
 router.get("/limits", authMiddleware, scheduleController.getTierLimits);
 
 export default router;
-
-
