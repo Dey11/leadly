@@ -1,0 +1,134 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --font-geist-sans: "Inter", "Segoe UI", system-ui, -apple-system,
+    BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --font-geist-mono: "JetBrains Mono", "SFMono-Regular", "Menlo", monospace;
+  --wine: #773344;
+  --pale-dogwood: #e3b5a4;
+  --linen: #f5e9e2;
+  --licorice: #0b0014;
+  --indian-red: #d44d5c;
+  --background: var(--linen);
+  --foreground: var(--licorice);
+  --card: #fff8f3;
+  --card-foreground: var(--licorice);
+  --popover: #fffdfb;
+  --popover-foreground: var(--licorice);
+  --primary: var(--wine);
+  --primary-foreground: var(--linen);
+  --secondary: var(--pale-dogwood);
+  --secondary-foreground: var(--licorice);
+  --muted: #f0d7cc;
+  --muted-foreground: #5c3241;
+  --accent: var(--indian-red);
+  --accent-foreground: #fff3f5;
+  --destructive: #bb2f42;
+  --border: #e8cec0;
+  --input: #f1dbd0;
+  --ring: rgba(119, 51, 68, 0.35);
+  --chart-1: #773344;
+  --chart-2: #d44d5c;
+  --chart-3: #e3b5a4;
+  --chart-4: #f5e9e2;
+  --chart-5: #0b0014;
+  --sidebar: #fff5f0;
+  --sidebar-foreground: var(--licorice);
+  --sidebar-primary: var(--wine);
+  --sidebar-primary-foreground: var(--linen);
+  --sidebar-accent: #f0d7cc;
+  --sidebar-accent-foreground: var(--licorice);
+  --sidebar-border: rgba(119, 51, 68, 0.1);
+  --sidebar-ring: rgba(119, 51, 68, 0.25);
+}
+
+.dark {
+  --background: var(--licorice);
+  --foreground: var(--linen);
+  --card: #1a071f;
+  --card-foreground: var(--linen);
+  --popover: #1e0a24;
+  --popover-foreground: var(--linen);
+  --primary: var(--indian-red);
+  --primary-foreground: #fff5f6;
+  --secondary: #9c4c5d;
+  --secondary-foreground: var(--linen);
+  --muted: #2d102b;
+  --muted-foreground: #f0d7cc;
+  --accent: #b33e4f;
+  --accent-foreground: var(--linen);
+  --destructive: #ff6a7f;
+  --border: rgba(245, 233, 226, 0.1);
+  --input: rgba(245, 233, 226, 0.08);
+  --ring: rgba(228, 151, 153, 0.35);
+  --chart-1: #d44d5c;
+  --chart-2: #773344;
+  --chart-3: #e3b5a4;
+  --chart-4: #f5e9e2;
+  --chart-5: #ff7b8a;
+  --sidebar: #15000f;
+  --sidebar-foreground: var(--linen);
+  --sidebar-primary: var(--indian-red);
+  --sidebar-primary-foreground: var(--linen);
+  --sidebar-accent: #2d102b;
+  --sidebar-accent-foreground: var(--linen);
+  --sidebar-border: rgba(245, 233, 226, 0.12);
+  --sidebar-ring: rgba(228, 151, 153, 0.35);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+body {
+  font-feature-settings: "kern", "liga", "clig", "calt";
+}
