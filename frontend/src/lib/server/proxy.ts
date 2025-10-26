@@ -25,7 +25,7 @@ function extractErrorMessage(payload: unknown, fallback: string) {
 
 export async function forwardBackendJson(
   path: string,
-  init: BackendRequestInit & { successStatus?: number } = {}
+  init: BackendRequestInit & { successStatus?: number } = {},
 ) {
   try {
     const response = await backendFetch(path, init);
@@ -38,15 +38,14 @@ export async function forwardBackendJson(
     if (error instanceof BackendError) {
       const message = extractErrorMessage(
         error.payload,
-        error.message || "Request failed"
+        error.message || "Request failed",
       );
       return NextResponse.json({ error: message }, { status: error.status });
     }
 
     return NextResponse.json(
       { error: "Unexpected error while communicating with the backend." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

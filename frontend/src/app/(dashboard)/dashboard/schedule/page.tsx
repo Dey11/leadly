@@ -1,33 +1,37 @@
-import { ScheduleForm } from "@/components/schedule/schedule-form"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { getSchedule, getScheduleLimits } from "@/lib/backend-queries"
-import { formatHourList } from "@/lib/format"
+import { DashboardPageHeader } from "@/components/dashboard/page-header";
+import { ScheduleForm } from "@/components/schedule/schedule-form";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { getSchedule, getScheduleLimits } from "@/lib/backend-queries";
+import { formatHourList } from "@/lib/format";
 
 export const metadata = {
   title: "Schedule · Leadly",
-}
+};
 
 export default async function SchedulePage() {
   const [schedule, limits] = await Promise.all([
     getSchedule(),
     getScheduleLimits(),
-  ])
+  ]);
 
-  const scheduledHours = schedule?.scheduledHours ?? []
+  const scheduledHours = schedule?.scheduledHours ?? [];
   const tierLabel = limits
     ? limits.tier.toLowerCase().replace(/^\w/, (char) => char.toUpperCase())
-    : "Free"
+    : "Free";
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-semibold text-foreground">Scrape schedule</h1>
-        <p className="text-sm text-muted-foreground">
-          Control when Leadly scrapes each monitor. We respect plan limits, so you
-          can scale confidently as you grow.
-        </p>
-      </header>
+    <div className="flex flex-col gap-8">
+      <DashboardPageHeader
+        title="Scrape schedule"
+        description="Control when Leadly scrapes each monitor. Leadly respects plan limits so you stay compliant while covering the hours that matter."
+      />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <section className="space-y-4">
@@ -37,10 +41,12 @@ export default async function SchedulePage() {
           />
         </section>
         <aside className="space-y-4">
-          <Card className="bg-background/80">
+          <Card className="border-border/60 bg-background/85">
             <CardHeader>
               <CardTitle>Plan limits</CardTitle>
-              <CardDescription>Your workspace is on the {tierLabel} tier.</CardDescription>
+              <CardDescription>
+                Your workspace is on the {tierLabel} tier.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <div className="flex items-center justify-between">
@@ -62,7 +68,7 @@ export default async function SchedulePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-background/80">
+          <Card className="border-border/60 bg-background/85">
             <CardHeader>
               <CardTitle>Current schedule</CardTitle>
               <CardDescription>
@@ -72,8 +78,12 @@ export default async function SchedulePage() {
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               {scheduledHours.length > 0 ? (
                 <>
-                  <Badge variant="outline">{scheduledHours.length} windows</Badge>
-                  <p className="leading-relaxed">{formatHourList(scheduledHours)}</p>
+                  <Badge variant="outline">
+                    {scheduledHours.length} {scheduledHours.length === 1 ? "window" : "windows"}
+                  </Badge>
+                  <p className="leading-relaxed">
+                    {formatHourList(scheduledHours)}
+                  </p>
                 </>
               ) : (
                 <p>No schedule yet. Select at least one hour to begin scraping.</p>
@@ -83,5 +93,5 @@ export default async function SchedulePage() {
         </aside>
       </div>
     </div>
-  )
+  );
 }

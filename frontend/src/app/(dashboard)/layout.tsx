@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { DashboardNav } from "@/components/dashboard/nav";
-import type { DashboardNavItem } from "@/components/dashboard/nav";
+
+import {
+  DashboardNav,
+  DashboardNavSelect,
+  type DashboardNavItem,
+} from "@/components/dashboard/nav";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -50,9 +55,9 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 pb-12 pt-8 md:px-8">
-        <header className="flex flex-col gap-4 rounded-3xl border border-border/60 bg-card/80 p-6 shadow-sm md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
+      <header className="border-b border-border/40 bg-card/80">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-6 md:flex-row md:items-center md:justify-between md:px-8">
+          <div className="flex items-center gap-3">
             <Link
               href="/dashboard"
               className="inline-flex items-center gap-2 text-lg font-semibold text-foreground"
@@ -62,14 +67,13 @@ export default async function DashboardLayout({
               </span>
               Leadly dashboard
             </Link>
-            <p className="text-sm text-muted-foreground">
-              Stay in sync with your community monitors and act on the
-              conversations that matter.
-            </p>
+            <Badge variant="outline" className="border-primary/30 text-primary">
+              {tierLabel} tier
+            </Badge>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="text-right text-xs text-muted-foreground">
-              <p className="font-semibold text-foreground">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <div className="text-right">
+              <p className="text-sm font-semibold text-foreground">
                 {account.name ?? "Leadly user"}
               </p>
               <p>{account.email}</p>
@@ -78,51 +82,63 @@ export default async function DashboardLayout({
               Sign out
             </LogoutButton>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <aside className="hidden lg:flex lg:flex-col lg:gap-6">
-            <Card className="bg-background/80">
-              <CardHeader>
-                <CardTitle className="text-base">Navigation</CardTitle>
-                <CardDescription>Jump to a workspace view.</CardDescription>
+      <div className="mx-auto flex w-full max-w-6xl gap-8 px-5 py-8 md:px-8">
+        <aside className="hidden w-[260px] shrink-0 lg:flex lg:flex-col lg:gap-6">
+          <Card className="border-border/60 bg-background/85">
+            <CardHeader>
+              <CardTitle className="text-base">Workspace</CardTitle>
+              <CardDescription>
+                Navigate across Leadly views.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="gap-2">
+              <DashboardNav items={navItems} />
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60 bg-background/85">
+            <CardHeader>
+              <CardTitle className="text-base">Current plan</CardTitle>
+              <CardDescription>
+                Track your limits while upgrades roll out.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>{limitsDescription}</p>
+              <p className="text-xs">
+                Billing unlocks soon—existing workspaces keep launch pricing.
+              </p>
+            </CardContent>
+          </Card>
+        </aside>
+
+        <div className="flex w-full flex-col gap-6">
+          <div className="grid gap-4 lg:hidden">
+            <Card className="border-border/60 bg-background/85">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Navigate</CardTitle>
+                <CardDescription>Select a dashboard view.</CardDescription>
               </CardHeader>
-              <CardContent className="gap-2">
-                <DashboardNav items={navItems} />
+              <CardContent>
+                <DashboardNavSelect items={navItems} />
               </CardContent>
             </Card>
-
-            <Card className="bg-background/80">
-              <CardHeader>
+            <Card className="border-border/60 bg-background/85">
+              <CardHeader className="pb-3">
                 <CardTitle className="text-base">Current plan</CardTitle>
-                <CardDescription>
-                  You are on the {tierLabel} tier.
-                </CardDescription>
               </CardHeader>
-              <CardContent className="gap-2 text-sm text-muted-foreground">
+              <CardContent className="space-y-2 text-sm text-muted-foreground">
                 <p>{limitsDescription}</p>
                 <p className="text-xs">
-                  Payments go live soon. We will notify you inside the app when
-                  upgrades are available.
+                  Billing unlocks soon—existing workspaces keep launch pricing.
                 </p>
               </CardContent>
             </Card>
-          </aside>
-
-          <div className="flex flex-col gap-6">
-            <div className="lg:hidden">
-              <Card className="bg-background/80">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Workspace</CardTitle>
-                  <CardDescription>Navigate across views.</CardDescription>
-                </CardHeader>
-                <CardContent className="gap-2">
-                  <DashboardNav orientation="horizontal" items={navItems} />
-                </CardContent>
-              </Card>
-            </div>
-            <main className="flex flex-col gap-6">{children}</main>
           </div>
+          <main className="flex flex-col gap-8 pb-12">{children}</main>
         </div>
       </div>
     </div>

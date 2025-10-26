@@ -1,3 +1,4 @@
+import { DashboardPageHeader } from "@/components/dashboard/page-header";
 import { CreateServiceForm } from "@/components/services/create-service-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,22 +29,22 @@ export default async function ServicesPage() {
   const services = await getServices();
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <section className="space-y-4">
-          <h1 className="text-2xl font-semibold text-foreground">Services</h1>
-          <p className="text-sm text-muted-foreground">
-            Services define the outcomes you want from each monitor. Describe
-            your ICP, lead qualifications, and targeting so Leadly can generate
-            high-signal insights for your team.
-          </p>
+    <div className="flex flex-col gap-8">
+      <DashboardPageHeader
+        title="Services"
+        description="Services outline who you help and how to qualify intent. They power monitor targeting, lead scoring, and exports."
+      />
+
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <section className="space-y-6">
           <div className="grid gap-6">
             {services.length === 0 ? (
-              <Card className="bg-background/80">
+              <Card className="border-border/60 bg-background/85">
                 <CardHeader>
                   <CardTitle>Get started with your first service</CardTitle>
                   <CardDescription>
-                    Services connect your product with the conversations you care about.
+                    Services connect your product with the conversations you care
+                    about. Define your ICP to tailor Leadly’s intent scoring.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -52,26 +53,27 @@ export default async function ServicesPage() {
                 const monitorCount = service.monitors.length;
                 const status = statusMap[service.status] ?? statusMap.ACTIVE;
                 return (
-                  <Card key={service.id} className="bg-background/80">
+                  <Card
+                    key={service.id}
+                    className="border-border/60 bg-background/85"
+                  >
                     <CardHeader>
                       <div className="flex flex-wrap items-center gap-3">
-                        <CardTitle className="text-lg">
-                          {service.name}
-                        </CardTitle>
+                        <CardTitle className="text-lg">{service.name}</CardTitle>
                         <Badge variant={status.variant}>{status.label}</Badge>
                       </div>
                       <CardDescription className="leading-relaxed">
                         {service.leadDescription}
                       </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4 text-sm text-muted-foreground">
-                      <div className="grid gap-2 rounded-2xl bg-secondary/30 p-4 text-muted-foreground">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold text-foreground">
-                            Platform
-                          </span>
-                          <span>{service.platform}</span>
-                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4 text-sm text-muted-foreground">
+                        <div className="grid gap-2 rounded-2xl bg-secondary/30 p-4 text-muted-foreground">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-foreground">
+                              Platform
+                            </span>
+                            <span>{service.platform}</span>
+                          </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-semibold text-foreground">
                             Monitors
@@ -126,17 +128,17 @@ export default async function ServicesPage() {
                         </p>
                       )}
                     </CardContent>
-                    <CardFooter className="flex flex-wrap items-center gap-3">
-                      <Button variant="outline" asChild size="sm">
-                        <a href="/dashboard/monitors">Add monitor</a>
-                      </Button>
-                      <div className="ml-auto">
-                        <DeleteServiceButton serviceId={service.id} />
-                      </div>
-                    </CardFooter>
-                  </Card>
-                );
-              })
+                      <CardFooter className="flex flex-wrap items-center gap-3">
+                        <Button variant="outline" asChild size="sm">
+                          <a href="/dashboard/monitors">Add monitor</a>
+                        </Button>
+                        <div className="ml-auto">
+                          <DeleteServiceButton serviceId={service.id} />
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  );
+                })
             )}
           </div>
         </section>

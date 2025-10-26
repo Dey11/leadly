@@ -3,11 +3,17 @@ import {
   ArrowRight,
   BarChart3,
   BellRing,
+  CheckCircle2,
   Compass,
+  FileText,
+  LineChart,
+  Mail,
   Sparkles,
+  Target,
   Users,
 } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,54 +29,158 @@ const palette = {
   dogwood: "var(--pale-dogwood)",
   linen: "var(--linen)",
   licorice: "var(--licorice)",
-  red: "var(--indian-red)",
 };
+
+const navLinks = [
+  { href: "#features", label: "Features" },
+  { href: "#workflow", label: "How it works" },
+  { href: "#use-cases", label: "Use cases" },
+  { href: "#pricing", label: "Pricing" },
+  { href: "#faq", label: "FAQ" },
+];
+
+const heroStats = [
+  { label: "Avg. weekly qualified leads", value: "28" },
+  { label: "Lift in positive replies", value: "3.2×" },
+  { label: "Hours saved per rep", value: "6.5" },
+];
+
+const proofPoints = [
+  {
+    icon: Target,
+    title: "Monitors tailored to your ICP",
+    body: "Point Leadly at the exact subreddits and topics your buyers trust so you only see high-intent conversations.",
+  },
+  {
+    icon: LineChart,
+    title: "Clear scoring & trendlines",
+    body: "Heat scores, momentum, and post history reveal which threads to jump in on first.",
+  },
+  {
+    icon: Mail,
+    title: "Outreach ready drafts",
+    body: "AI summaries and suggested openers help your reps reply with context while competitors are still scrolling.",
+  },
+];
 
 const features = [
   {
-    title: "Intent signals, delivered daily",
+    title: "Intent signals without the busywork",
     description:
-      "Leadly monitors the subreddits and communities that mirror your ICP. You see posts the moment prospects ask for help.",
+      "Leadly scans Reddit and niche communities continuously, classifies buying signals, and keeps noise out of your queue.",
     icon: BellRing,
   },
   {
-    title: "Context your reps can act on",
+    title: "AI context that lands",
     description:
-      "Every lead arrives with AI-powered summaries, buyer sentiment, and suggested openers to personalize outreach instantly.",
+      "Each lead arrives with a crisp summary, tone analysis, and recommended outreach angle so your team can personalize fast.",
     icon: Sparkles,
   },
   {
-    title: "Pipeline you can forecast",
+    title: "Workflow-aware cadences",
     description:
-      "Heat scores and engagement metrics stack neatly so you can prioritize warm leads, hand off cold ones, and hit quota faster.",
+      "Scheduling guardrails ensure you stay within plan limits while covering the hours that matter most to your buyers.",
     icon: BarChart3,
   },
 ];
 
-const steps = [
+const workflowSteps = [
   {
     title: "Describe your offer",
-    body: "Create a service in Leadly so the AI understands who you help and how to qualify real interest.",
+    body: "Create a service explaining who you help, what pain you solve, and how to recognize real buying signals.",
   },
   {
-    title: "Launch monitors",
-    body: "Pick subreddits or keywords, set your cadence, and stay within plan limits with tier-aware guidance.",
+    title: "Launch precision monitors",
+    body: "Pick subreddits or keywords, apply filters, and let Leadly watch every new thread for qualified intent.",
   },
   {
-    title: "Work the inbox",
-    body: "Review prioritized leads, sync notes with RevOps, and reply while conversations are still fresh.",
+    title: "Work the warm inbox",
+    body: "Review prioritized leads, export for outreach, and track follow-up status from the same workspace.",
+  },
+];
+
+const useCases = [
+  {
+    title: "Founders & solo GTM teams",
+    description:
+      "Validate messaging, find early adopters, and keep a steady flow of conversations without hiring a full SDR team.",
+    takeaways: ["Daily digests", "Clear next steps", "CSV handoffs"],
+  },
+  {
+    title: "SDR & sales pods",
+    description:
+      "Fill call blocks with warm community conversations and log outcomes where managers can coach.",
+    takeaways: ["Lead scoring", "Status tracking", "Shared notes"],
+  },
+  {
+    title: "Growth & marketing",
+    description:
+      "Spot recurring pain points, capture voice-of-customer insights, and fuel content or nurture workflows.",
+    takeaways: ["Topic tagging", "Export snippets", "Campaign inspiration"],
+  },
+];
+
+const pricingTiers = [
+  {
+    name: "Free",
+    price: "$0",
+    cadence: "forever",
+    description:
+      "Prove out Leadly with a generous free tier built for scrappy teams.",
+    highlights: [
+      "3 monitors across your key communities",
+      "1 scheduled scrape per day",
+      "AI summaries & heat scoring",
+      "Email alerts (coming soon)",
+    ],
+    cta: { label: "Start for free", href: "/register" },
+    note: "No credit card required.",
+  },
+  {
+    name: "Plus",
+    price: "$9",
+    cadence: "/month",
+    description:
+      "Scale outreach with richer cadences and collaborative workflows.",
+    highlights: [
+      "6 monitors & layered keyword filters",
+      "Up to 6 scrapes per day",
+      "CSV & Sheets exports",
+      "Early access to email alerts",
+    ],
+    cta: { label: "Join waitlist", href: "/register" },
+    badge: "Most popular",
+    promo: "First month $4.50",
+    comingSoon: true,
+  },
+  {
+    name: "Pro",
+    price: "$24",
+    cadence: "/month",
+    description:
+      "For teams that need round-the-clock coverage and deeper insights.",
+    highlights: [
+      "20 monitors with advanced filters",
+      "24 scrape windows every day",
+      "Unlimited historical exports",
+      "Priority support & playbooks",
+    ],
+    cta: { label: "Talk to us", href: "mailto:hello@leadly.live" },
+    badge: "Scale teams",
+    promo: "First month $12",
+    comingSoon: true,
   },
 ];
 
 const testimonials = [
   {
     quote:
-      "We booked 12 qualified demos in our first week. Leadly surfaces buying intent long before prospects talk to vendors.",
+      "We booked 12 qualified demos in week one. Leadly surfaces buying intent long before prospects enter vendor funnels.",
     author: "Priya Sharma · Head of Growth, CalyxAI",
   },
   {
     quote:
-      "Outbound finally feels strategic. Our SDRs start every morning with a pipeline of warm, context-rich leads.",
+      "Outbound finally feels strategic. Our SDRs start every morning with context-rich threads and a plan to engage.",
     author: "Marcus Allen · Founder, OpsForge",
   },
 ];
@@ -79,57 +189,71 @@ const faqs = [
   {
     question: "Which platforms does Leadly monitor today?",
     answer:
-      "Reddit coverage is live and optimized for B2B conversations. Twitter/X, Slack communities, and niche forums are in active development.",
+      "Reddit coverage is live and tuned for B2B conversations. Additional communities are on the roadmap and roll out as we validate quality.",
   },
   {
-    question: "How are leads scored?",
+    question: "How fresh are the leads?",
     answer:
-      "We combine engagement signals, conversation metadata, and your service description to classify leads as warm, neutral, or cold.",
+      "Leadly runs scrapes on the cadence you configure. Free includes one scrape per day, while paid tiers raise the frequency up to 24 windows.",
   },
   {
-    question: "Do I need engineering resources to deploy Leadly?",
+    question: "Do I need engineering support?",
     answer:
-      "No. GTM teams can launch services and monitors in minutes. API access and playbooks unlock on paid tiers once billing goes live.",
+      "No engineering lift required. Describe your ICP, add monitors, and Leadly handles the rest. Exports keep RevOps and CRM workflows happy.",
+  },
+  {
+    question: "When do paid plans launch?",
+    answer:
+      "Billing is opening soon. Lock in launch pricing now and enjoy the free tier until paid upgrades are available.",
   },
 ];
 
-const stats = [
-  { label: "Lift in reply rate", value: "3.2×" },
-  { label: "Hours saved per rep", value: "6.5" },
-  { label: "Avg. weekly qualified leads", value: "28" },
+const seoTopics = [
+  {
+    title: "Why community-led prospecting works",
+    body: "Prospects ask for help in public long before they fill out a demo form. Leadly captures those moments and gives you the context to respond with value.",
+  },
+  {
+    title: "Signal over noise",
+    body: "Keyword alerts alone miss nuance. Leadly scores sentiment, intent, and engagement so your team focuses only on conversations that drive revenue.",
+  },
+  {
+    title: "Built for repeatable GTM",
+    body: "Create a feedback loop between marketing, sales, and product by exporting insights, tagging themes, and turning community data into a growth engine.",
+  },
 ];
 
 function HeroLeadPreview() {
   const sampleLeads = [
     {
       channel: "r/SaaS",
-      summary: "Looking for workflow automation tool for CS team",
+      summary: "Considering community intelligence tools for CS workflows.",
       score: "Warm",
       time: "12m ago",
     },
     {
       channel: "r/Entrepreneur",
-      summary: "Need recommendation: B2B email enrichment under $300/mo",
+      summary: "Need a lightweight way to monitor Reddit for B2B leads.",
       score: "Neutral",
       time: "35m ago",
     },
     {
       channel: "r/Sales",
-      summary: "Hiring SDR; want plug-and-play community insights",
+      summary: "Looking for buyer intent alerts that SDRs can action quickly.",
       score: "Warm",
       time: "1h ago",
     },
   ];
 
   return (
-    <div className="relative max-w-lg rounded-3xl border border-border/40 bg-card/80 p-6 shadow-xl shadow-[rgba(12,0,20,0.12)] backdrop-blur">
+    <div className="relative max-w-lg rounded-3xl border border-border/40 bg-card/85 p-6 shadow-xl shadow-[rgba(12,0,20,0.12)] backdrop-blur">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
             Live pipeline
           </p>
           <p className="text-sm text-muted-foreground">
-            Updated each time your monitors scrape
+            Updated whenever your monitors scrape.
           </p>
         </div>
         <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
@@ -156,7 +280,7 @@ function HeroLeadPreview() {
                   "inline-flex items-center rounded-full px-2.5 py-1 font-semibold",
                   lead.score === "Warm"
                     ? "bg-primary/15 text-primary"
-                    : "bg-secondary/40 text-foreground"
+                    : "bg-secondary/40 text-foreground",
                 )}
               >
                 {lead.score} intent
@@ -178,17 +302,26 @@ function GradientBackground() {
       aria-hidden
       className="absolute inset-0 -z-10 overflow-hidden"
       style={{
-        background: `radial-gradient(120% 120% at 0% 0%, ${palette.dogwood} 0%, ${palette.linen} 45%, rgba(255,255,255,0) 70%), radial-gradient(90% 90% at 100% 0%, rgba(212,77,92,0.25) 0%, rgba(255,255,255,0) 55%)`,
+        background: `radial-gradient(120% 120% at 0% 0%, ${palette.dogwood} 0%, ${palette.linen} 45%, rgba(255,255,255,0) 70%), radial-gradient(90% 90% at 100% 0%, rgba(212,77,92,0.22) 0%, rgba(255,255,255,0) 55%)`,
       }}
     />
   );
 }
 
+function PricingFeature({ feature }: { feature: string }) {
+  return (
+    <li className="flex items-start gap-2 text-sm text-muted-foreground">
+      <CheckCircle2 className="mt-[2px] size-4 text-primary" aria-hidden />
+      <span>{feature}</span>
+    </li>
+  );
+}
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="relative z-50 border-b border-border/40 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 md:px-8">
+    <div className="relative min-h-screen bg-background text-foreground">
+      <div className="absolute inset-x-0 top-0 z-40">
+        <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-5 text-sm md:px-8">
           <Link
             href="/"
             className="flex items-center gap-2 text-lg font-semibold text-foreground"
@@ -198,19 +331,16 @@ export default function HomePage() {
             </span>
             Leadly
           </Link>
-          <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-            <a className="transition hover:text-foreground" href="#features">
-              Features
-            </a>
-            <a className="transition hover:text-foreground" href="#process">
-              Workflow
-            </a>
-            <a className="transition hover:text-foreground" href="#pricing">
-              Pricing
-            </a>
-            <a className="transition hover:text-foreground" href="#faq">
-              FAQ
-            </a>
+          <nav className="hidden items-center gap-8 font-medium text-muted-foreground md:flex">
+            {navLinks.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="transition hover:text-foreground"
+              >
+                {item.label}
+              </a>
+            ))}
           </nav>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild className="text-sm">
@@ -223,41 +353,44 @@ export default function HomePage() {
               </Link>
             </Button>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
 
       <main>
-        <section className="relative isolate overflow-hidden">
+        <section className="relative isolate overflow-hidden pt-28">
           <GradientBackground />
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-5 py-20 md:grid md:grid-cols-[1.1fr_0.9fr] md:items-center md:px-8 md:py-28">
-            <div className="space-y-8 text-left">
-              <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(119,51,68,0.12)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-                Community intelligence
-              </span>
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 pb-20 md:grid md:grid-cols-[1.05fr_0.95fr] md:items-center md:px-8 md:pb-28">
+            <div className="space-y-8">
+              <Badge className="bg-primary/10 text-primary">
+                Community intent, captured
+              </Badge>
               <div className="space-y-4">
                 <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
-                  Turn Reddit and niche communities into a predictable deal
-                  source.
+                  Turn Reddit signals into pipeline before competitors notice.
                 </h1>
-                <p className="text-lg text-muted-foreground">
-                  Leadly watches the conversations your prospects trust,
-                  qualifies intent with AI, and delivers ready-to-act leads to
-                  your team before competitors even notice.
+                <p className="text-lg text-muted-foreground md:text-xl">
+                  Leadly finds the conversations that match your ICP, scores intent,
+                  and hands your team ready-to-engage threads with AI-crafted context.
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <Button size="lg" asChild className="sm:w-auto">
-                  <Link href="/register">Launch a free workspace</Link>
+                  <Link href="/register">Create your free account</Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild className="sm:w-auto">
-                  <Link href="#features">See how Leadly works</Link>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  asChild
+                  className="sm:w-auto"
+                >
+                  <Link href="#workflow">See the workflow</Link>
                 </Button>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
-                {stats.map((stat) => (
+                {heroStats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="rounded-2xl border border-border/40 bg-card/80 p-4 text-left"
+                    className="rounded-2xl border border-border/50 bg-card/80 p-4"
                   >
                     <p className="text-2xl font-semibold text-foreground">
                       {stat.value}
@@ -269,46 +402,70 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-            <div className="flex items-center justify-center md:justify-end">
+            <div className="flex justify-center md:justify-end">
               <HeroLeadPreview />
             </div>
           </div>
         </section>
 
-        <section className="border-y border-border/40 bg-card/70 py-16">
-          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-6 px-5 md:px-8">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <section className="border-y border-border/40 bg-card/70 py-12">
+          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-6 px-5 text-sm text-muted-foreground md:px-8">
+            <div className="flex items-center gap-2 font-medium text-foreground/80">
               <Users className="size-4" aria-hidden />
-              Trusted by GTM teams shipping community-led growth
+              Trusted by go-to-market teams testing community-led growth
             </div>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-4">
               <span>Arcadia Labs</span>
               <span>Northwind Ops</span>
               <span>SignalStack</span>
               <span>Brightline AI</span>
+              <span>Parallel Route</span>
             </div>
           </div>
         </section>
 
         <section
           id="features"
-          className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 py-20 md:px-8"
+          className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-20 md:px-8"
         >
-          <div className="max-w-3xl space-y-4">
-            <h2 className="text-3xl font-semibold md:text-4xl">
-              Everything you need to convert community chatter into pipeline.
-            </h2>
-            <p className="text-base text-muted-foreground md:text-lg">
-              Leadly combines monitoring, scoring, and workflow automation so
-              outbound never misses a moment of intent.
-            </p>
+          <div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr] md:items-center">
+            <div className="max-w-2xl space-y-4">
+              <Badge variant="outline" className="border-primary/30 text-primary">
+                Why teams choose Leadly
+              </Badge>
+              <h2 className="text-3xl font-semibold md:text-4xl">
+                From messy threads to qualified conversations in minutes.
+              </h2>
+              <p className="text-base text-muted-foreground md:text-lg">
+                Leadly combines intent detection, scoring, and outreach context so
+                your buyers get relevant help fast—and your reps spend their energy
+                on deals that close.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2">
+              {proofPoints.map((point) => (
+                <Card key={point.title} className="border-border/50 bg-background/85">
+                  <CardHeader className="space-y-3">
+                    <span className="inline-flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                      <point.icon className="size-5" aria-hidden />
+                    </span>
+                    <CardTitle className="text-lg">{point.title}</CardTitle>
+                    <CardDescription>{point.body}</CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
           </div>
+
           <div className="grid gap-6 md:grid-cols-3">
             {features.map((feature) => (
-              <Card key={feature.title} className="border-border/70 bg-background/80">
+              <Card
+                key={feature.title}
+                className="border-border/70 bg-background/80 transition hover:-translate-y-1 hover:shadow-lg"
+              >
                 <CardHeader className="gap-4">
-                  <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-[rgba(119,51,68,0.12)] text-primary">
-                    <feature.icon className="size-6" aria-hidden="true" />
+                  <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <feature.icon className="size-6" aria-hidden />
                   </span>
                   <CardTitle>{feature.title}</CardTitle>
                   <CardDescription>{feature.description}</CardDescription>
@@ -319,38 +476,45 @@ export default function HomePage() {
         </section>
 
         <section
-          id="process"
+          id="workflow"
           className="border-y border-border/40 bg-card/70 py-20"
         >
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 md:px-8">
-            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl space-y-3">
+                <Badge variant="outline" className="border-primary/30 text-primary">
+                  How it works
+                </Badge>
                 <h2 className="text-3xl font-semibold md:text-4xl">
-                  A clean path from signal to outreach.
+                  A clear path from signal to outreach.
                 </h2>
                 <p className="text-base text-muted-foreground md:text-lg">
-                  Leadly plugs into your team in three steps. No engineering
-                  tickets, no brittle scripts.
+                  Launch a monitor in minutes, qualify intent automatically, and
+                  keep the entire team aligned on follow-up.
                 </p>
               </div>
-              <div className="flex items-center gap-2 rounded-full bg-background/80 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+              <div className="flex items-center gap-2 rounded-full bg-background/85 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
                 <Compass className="size-3.5" aria-hidden />
                 Workflow
               </div>
             </div>
             <div className="grid gap-6 md:grid-cols-3">
-              {steps.map((step, index) => (
+              {workflowSteps.map((step, index) => (
                 <Card
                   key={step.title}
-                  className="relative overflow-hidden border-border/60 bg-background/80"
+                  className="relative overflow-hidden border-border/60 bg-background/85"
                 >
-                  <span className="absolute -left-12 top-8 text-[5rem] font-bold text-[rgba(212,77,92,0.08)]">
+                  <span className="absolute -left-12 top-9 text-[5rem] font-bold text-[rgba(212,77,92,0.08)]">
                     {index + 1}
                   </span>
-                  <CardHeader className="relative space-y-2">
+                  <CardHeader className="relative space-y-3">
                     <CardTitle>{step.title}</CardTitle>
                     <CardDescription>{step.body}</CardDescription>
                   </CardHeader>
+                  <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <FileText className="size-4 text-primary" aria-hidden />
+                    <span>Works on desktop and mobile.</span>
+                  </CardContent>
                 </Card>
               ))}
             </div>
@@ -358,87 +522,129 @@ export default function HomePage() {
         </section>
 
         <section
-          id="pricing"
+          id="use-cases"
           className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 py-20 md:px-8"
         >
-          <div className="max-w-3xl space-y-3">
+          <div className="max-w-3xl space-y-4">
+            <Badge variant="outline" className="border-primary/20 text-primary">
+              Built for your GTM motion
+            </Badge>
             <h2 className="text-3xl font-semibold md:text-4xl">
-              Start on the Free tier. Upgrade when billing opens.
+              Leadly fits the way your team sells.
             </h2>
             <p className="text-base text-muted-foreground md:text-lg">
-              Every workspace begins on Free—perfect for validating Leadly with
-              one service. Plus and Pro unlock more cadence control once payment
-              goes live.
+              From proving product-market fit to scaling outbound, Leadly keeps every
+              stakeholder informed with the same source of truth.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="border-primary/40 bg-background/85 shadow-lg shadow-primary/15">
-              <CardHeader>
-                <CardTitle>Free</CardTitle>
-                <CardDescription>
-                  Ship your first monitor and prove value with daily scrapes.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <p className="text-3xl font-semibold text-foreground">
-                  $0 <span className="text-base font-medium">/ forever</span>
-                </p>
-                <ul className="space-y-2">
-                  <li>· 1 service, 3 monitors</li>
-                  <li>· 1 scheduled scrape per day</li>
-                  <li>· AI summaries & heat scores</li>
-                  <li>· Email alerts coming soon</li>
-                </ul>
-              </CardContent>
-            </Card>
-            <Card className="border-border/70 bg-background/70">
-              <CardHeader>
-                <CardTitle>
-                  Plus{" "}
-                  <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                    Coming soon
-                  </span>
-                </CardTitle>
-                <CardDescription>
-                  Perfect for GTM teams scaling outbound with richer cadences.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <p className="text-3xl font-semibold text-foreground">
-                  $129 <span className="text-base font-medium">/ month</span>
-                </p>
-                <ul className="space-y-2">
-                  <li>· 3 services, 6 monitors</li>
-                  <li>· Up to 6 scrapes each day</li>
-                  <li>· CRM and Slack sync</li>
-                  <li>· Collaborative notes</li>
-                </ul>
-              </CardContent>
-            </Card>
-            <Card className="border-border/70 bg-background/70">
-              <CardHeader>
-                <CardTitle>
-                  Pro{" "}
-                  <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                    Coming soon
-                  </span>
-                </CardTitle>
-                <CardDescription>
-                  For revenue teams that need full coverage and automation.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <p className="text-3xl font-semibold text-foreground">
-                  $329 <span className="text-base font-medium">/ month</span>
-                </p>
-                <ul className="space-y-2">
-                  <li>· Unlimited services, 24 monitors</li>
-                  <li>· 24 scrape windows per day</li>
-                  <li>· Webhooks & custom alerts</li>
-                  <li>· Dedicated success partner</li>
-                </ul>
-              </CardContent>
-            </Card>
+            {useCases.map((useCase) => (
+              <Card key={useCase.title} className="border-border/60 bg-background/85">
+                <CardHeader className="space-y-3">
+                  <CardTitle className="text-lg">{useCase.title}</CardTitle>
+                  <CardDescription>{useCase.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {useCase.takeaways.map((item) => (
+                    <div
+                      key={item}
+                      className="flex items-center gap-2 text-sm text-muted-foreground"
+                    >
+                      <CheckCircle2 className="size-4 text-primary" aria-hidden />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        <section className="border-y border-border/40 bg-card/70 py-20">
+          <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 md:grid-cols-3 md:px-8">
+            {seoTopics.map((topic) => (
+              <Card key={topic.title} className="border-border/60 bg-background/85">
+                <CardHeader className="space-y-3">
+                  <CardTitle className="text-lg">{topic.title}</CardTitle>
+                  <CardDescription>{topic.body}</CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        <section
+          id="pricing"
+          className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-20 md:px-8"
+        >
+          <div className="max-w-3xl space-y-4">
+            <Badge variant="outline" className="border-primary/30 text-primary">
+              Pricing that lets you prove value
+            </Badge>
+            <h2 className="text-3xl font-semibold md:text-4xl">
+              Generous free tier today. Affordable upgrades when billing opens.
+            </h2>
+            <p className="text-base text-muted-foreground md:text-lg">
+              Start on Free to validate the workflow. When paid plans launch, early
+              users lock in half-off pricing for the first month.
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {pricingTiers.map((tier) => (
+              <Card
+                key={tier.name}
+                className={cn(
+                  "relative flex h-full flex-col justify-between border-border/60 bg-background/85 p-6",
+                  tier.name === "Free"
+                    ? "border-primary/40 shadow-lg shadow-primary/20"
+                    : "",
+                )}
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                    {tier.badge ? (
+                      <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                        {tier.badge}
+                      </span>
+                    ) : null}
+                  </div>
+                  <CardDescription>{tier.description}</CardDescription>
+                  <div className="space-y-1">
+                    <p className="text-3xl font-semibold text-foreground">
+                      {tier.price}
+                      <span className="text-base font-medium">
+                        {" "}
+                        {tier.cadence}
+                      </span>
+                    </p>
+                    {tier.promo ? (
+                      <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                        {tier.promo}
+                      </p>
+                    ) : null}
+                    {tier.comingSoon ? (
+                      <p className="text-xs text-muted-foreground">
+                        Paid upgrades open soon. Reserve your spot.
+                      </p>
+                    ) : null}
+                  </div>
+                  <ul className="space-y-2">
+                    {tier.highlights.map((feature) => (
+                      <PricingFeature key={feature} feature={feature} />
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-6 space-y-2">
+                  <Button asChild className="w-full">
+                    <Link href={tier.cta.href}>{tier.cta.label}</Link>
+                  </Button>
+                  {tier.note ? (
+                    <p className="text-xs text-muted-foreground">{tier.note}</p>
+                  ) : null}
+                </div>
+              </Card>
+            ))}
           </div>
         </section>
 
@@ -447,7 +653,7 @@ export default function HomePage() {
             {testimonials.map((testimonial) => (
               <Card
                 key={testimonial.author}
-                className="border-border/70 bg-background/80"
+                className="border-border/70 bg-background/85"
               >
                 <CardContent className="space-y-4 p-6">
                   <p className="text-base leading-relaxed text-foreground/90">
@@ -467,23 +673,26 @@ export default function HomePage() {
           className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-5 py-20 md:px-8"
         >
           <div className="space-y-3 text-center">
+            <Badge variant="outline" className="border-primary/30 text-primary">
+              FAQ
+            </Badge>
             <h2 className="text-3xl font-semibold md:text-4xl">
-              Frequently asked questions
+              Answers for teams evaluating Leadly
             </h2>
             <p className="text-base text-muted-foreground md:text-lg">
-              Everything you need to know about deploying Leadly for your team.
+              Still curious? We&apos;re a quick email away at hello@leadly.live.
             </p>
           </div>
           <dl className="space-y-4">
             {faqs.map((faq) => (
               <div
                 key={faq.question}
-                className="rounded-2xl border border-border/60 bg-background/80 p-6"
+                className="rounded-2xl border border-border/60 bg-background/85 p-6 text-left"
               >
                 <dt className="text-lg font-semibold text-foreground">
                   {faq.question}
                 </dt>
-                <dd className="mt-2 text-sm text-muted-foreground">
+                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   {faq.answer}
                 </dd>
               </div>
@@ -492,22 +701,27 @@ export default function HomePage() {
         </section>
 
         <section className="mx-auto w-full max-w-4xl px-5 pb-24 md:px-8">
-          <div className="flex flex-col items-center gap-6 rounded-3xl border border-border/50 bg-background/85 px-8 py-12 text-center shadow-xl shadow-[rgba(119,51,68,0.12)]">
+          <div className="flex flex-col items-center gap-6 rounded-3xl border border-border/60 bg-background/90 px-8 py-12 text-center shadow-xl shadow-[rgba(119,51,68,0.12)]">
             <span className="text-xs font-semibold uppercase tracking-[0.35em] text-primary">
               Ready when you are
             </span>
             <h2 className="text-3xl font-semibold md:text-4xl">
-              Turn community intent into pipeline within a single sprint.
+              Turn community intent into pipeline this week.
             </h2>
             <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-              Create a free workspace now. We&apos;ll notify you as soon as
-              billing goes live so you can unlock more monitors and automations.
+              Create a free workspace today. We&apos;ll alert you the moment paid
+              upgrades launch so you can unlock more monitors and cadences.
             </p>
             <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/register">Create your free account</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto"
+              >
                 <Link href="/login">I already have access</Link>
               </Button>
             </div>
@@ -548,4 +762,3 @@ export default function HomePage() {
     </div>
   );
 }
-

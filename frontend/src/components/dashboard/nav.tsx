@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarClock,
   LayoutDashboard,
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Select } from "@/components/ui/select";
 
 const iconComponents = {
   overview: LayoutDashboard,
@@ -89,5 +90,51 @@ export function DashboardNav({
         );
       })}
     </nav>
+  );
+}
+
+type DashboardNavSelectProps = {
+  items: DashboardNavItem[];
+  placeholder?: string;
+  onNavigate?: () => void;
+};
+
+export function DashboardNavSelect({
+  items,
+  placeholder = "Navigate",
+  onNavigate,
+}: DashboardNavSelectProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const activeItem =
+    items.find((item) => pathname === item.href) ??
+    items.find(
+      (item) => item.href !== "/dashboard" && pathname.startsWith(item.href),
+    ) ??
+    items[0];
+
+  return (
+    <Select
+      value={activeItem?.href ?? ""}
+      onChange={(event) => {
+        const value = event.target.value;
+        if (value && value !== pathname) {
+          router.push(value);
+        }
+        onNavigate?.();
+      }}
+    >
+      {!activeItem ? (
+        <option value="" disabled>
+          {placeholder}
+        </option>
+      ) : null}
+      {items.map((item) => (
+        <option key={item.href} value={item.href}>
+          {item.label}
+        </option>
+      ))}
+    </Select>
   );
 }
