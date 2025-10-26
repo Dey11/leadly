@@ -15,17 +15,18 @@ export interface LeadData {
   reasoning: string;
 }
 
-const model = google("gemini-2.5-flash-lite");
+const model = google("gemini-2.5-flash");
 
 export async function processLeads(
   posts: RedditPost[],
   leadDescription: string
 ): Promise<LeadData[]> {
   const leads: LeadData[] = [];
-
   for (const post of posts) {
     const { object: leadsArray } = await generateObject({
       model,
+      temperature: 0.15,
+      topP: 0.9,
       schema: z.array(
         z.object({
           title: z
@@ -40,7 +41,9 @@ export async function processLeads(
             .string()
             .describe("explain briefly why this matches the lead description"),
           id: z.string().describe("Post ID of the post/comment"),
-          url: z.string().describe("URL to the post/comment"),
+          url: z
+            .string()
+            .describe("URL to the post/comment. urlToPost/urlToComment"),
           author: z.string().describe("Author name/ID if available"),
           subreddit: z.string().describe("Subreddit name"),
           relevanceScore: z

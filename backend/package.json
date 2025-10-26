@@ -7,7 +7,7 @@
     "start": "node dist/index.js",
     "dev": "nodemon --exec \"ts-node\" src/index.ts",
     "worker": "ts-node src/workers/reddit.worker.ts",
-    "worker:dev": "nodemon --exec \"ts-node\" src/workers/reddit.worker.ts",
+    "worker:dev": "ts-node src/workers/reddit.worker.ts > output.log 2>&1",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",

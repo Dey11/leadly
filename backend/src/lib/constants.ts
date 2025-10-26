@@ -1,4 +1,4 @@
-export const MIN_RELEVANCE_SCORE = 0.65;
+export const MIN_RELEVANCE_SCORE = 0.75;
 export const MAX_SCRAPE_POSTS_LIMIT = 50;
 
 export const DEFAULT_HOURS_MAP = {

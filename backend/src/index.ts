@@ -42,7 +42,7 @@ apiRouter.use("/account", accountRouter);
 apiRouter.use("/leads", leadRouter);
 apiRouter.use("/monitors", scrapeJobsRouter);
 
-const scheduledTask = cron.schedule("0 */5 * * *", runScheduler); // every 5 hours
+const scheduledTask = cron.schedule("*/30 * * * *", runScheduler); // every 30 minutes
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

@@ -45,7 +45,7 @@ export class Reddit {
   ) {
     const token = await this.getToken();
     const url = `${this.baseUrl}/r/${subreddit}/new?limit=${limit}${
-      after ? `&before=${after}` : ""
+      after ? `&before=t3_${after}` : ""
     }`;
     const results: RedditPost[] = [];
 
@@ -128,7 +128,7 @@ export class Reddit {
 //     env.REDDIT_CLIENT_SECRET
 //   );
 //   // const posts = await redditClient.fetchPosts("javascript", 10);
-//   const posts = await redditClient.fetchPosts("javascript", 10, "t3_1oe2yy8");
+//   const posts = await redditClient.fetchPosts("WebDeveloperJobs", 5, "1ogckxk");
 //   console.log(posts);
 //   // console.log(posts[0].comments);
 // };

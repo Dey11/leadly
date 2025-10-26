@@ -1,8 +1,5 @@
 backend/dist
 backend/node_modules
 backend/*.env
-worker/node_modules
-worker/dist
-worker/.env
-worker/src/generated/*
+backend/output.log
 .pnpm-store

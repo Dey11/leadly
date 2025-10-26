@@ -31,9 +31,6 @@ export async function processScrapeJob(job: Job) {
     throw new Error("ScrapeJob or Monitor not found");
   }
 
-  // Get user for validation
-  const user = monitor.user;
-
   try {
     const redditClient = new Reddit(
       env.REDDIT_CLIENT_ID,
@@ -56,7 +53,7 @@ export async function processScrapeJob(job: Job) {
     );
 
     const leads = await processLeads(posts, monitor.service.leadDescription);
-    const lastPostId = posts[posts.length - 1]?.postId;
+    const lastPostId = posts[0]?.postId;
 
     const warmLeads = leads.filter((lead) => lead.leadType === "WARM");
     const coldLeads = leads.filter((lead) => lead.leadType === "COLD");
