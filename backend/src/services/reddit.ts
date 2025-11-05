@@ -38,6 +38,27 @@ export class Reddit {
     return this.token;
   }
 
+  async validateSubreddit(subreddit: string): Promise<boolean> {
+    const token = await this.getToken();
+    
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/api/search_reddit_names?query=${subreddit}&exact=true`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "User-Agent": `leadly by u/${env.REDDIT_USERNAME}`,
+          },
+          timeout: this.timeout,
+        }
+      );
+      
+      return response.data.names && response.data.names.length > 0;
+    } catch {
+      return false;
+    }
+  }
+
   async fetchPosts(
     subreddit: string,
     limit: number = 10,

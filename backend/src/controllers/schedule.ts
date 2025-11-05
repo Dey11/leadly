@@ -5,20 +5,14 @@ import { DEFAULT_HOURS_MAP, TIER_LIMITS } from "../lib/constants";
 
 export const getSchedule = async (req: Request, res: Response) => {
   try {
-    console.log("Getting schedule", req.userId);
-    const schedule = await db.userSchedule.findUnique({
+    const schedule = await db.userSchedule.upsert({
       where: { userId: req.userId! },
+      update: {},
+      create: {
+        userId: req.userId!,
+        scheduledHours: [12],
+      },
     });
-
-    if (!schedule) {
-      const defaultSchedule = await db.userSchedule.create({
-        data: {
-          userId: req.userId!,
-          scheduledHours: [12],
-        },
-      });
-      return res.json(defaultSchedule);
-    }
 
     res.json(schedule);
   } catch (err) {

@@ -6,6 +6,8 @@ import {
   updateMonitorSchema,
 } from "../types/monitor";
 import { TIER_LIMITS } from "../lib/constants";
+import { Reddit } from "../services/reddit";
+import { env } from "../env";
 
 export const createMonitor = async (req: Request, res: Response) => {
   try {
@@ -45,6 +47,15 @@ export const createMonitor = async (req: Request, res: Response) => {
       return res
         .status(400)
         .json({ error: "ICP not found or not owned by user" });
+    }
+
+    if (payload.data.platform === "REDDIT") {
+      const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
+      const isValid = await reddit.validateSubreddit(payload.data.target);
+      
+      if (!isValid) {
+        return res.status(400).json({ error: "Invalid subreddit" });
+      }
     }
 
     const monitor = await db.monitor.create({
@@ -110,6 +121,15 @@ export const updateMonitor = async (req: Request, res: Response) => {
         return res.status(400).json({
           error: "ICP not found or not owned by the current user.",
         });
+      }
+    }
+
+    if (payload.data.target && payload.data.platform === "REDDIT") {
+      const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
+      const isValid = await reddit.validateSubreddit(payload.data.target);
+      
+      if (!isValid) {
+        return res.status(400).json({ error: "Invalid subreddit" });
       }
     }
 

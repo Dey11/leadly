@@ -1,10 +1,10 @@
-- [] validate the subreddits being entered by the user
-- [] add pwd validation checks
-- [] need to check if user is deleted or not before processing any request -> most of it is done i think
-- [] check what happens when an invalid subreddit is entered -> need to validate all subs input
-- [] have to add paginations to everything to prevent misuse
-- [] look into scheduling unique constraint failed error - possibly cuz multiple reqs are hitting at the same time. upon first login, the schedule api gets hit twice i think and the frontend throws an error due to db constraint violation. need to fix this if it still occurs. reloading fixes it.
-- [] look into timezone offset issues and think of normalizing the time to UTC
+- [x] validate the subreddits being entered by the user
+- [] add pwd validation checks (he told me to ignore it)
+- [x] need to check if user is deleted or not before processing any request -> most of it is done i think
+- [x] check what happens when an invalid subreddit is entered -> need to validate all subs input
+- [] have to add paginations to everything to prevent misuse (you know reddit api better, you do this dey)
+- [x] look into scheduling unique constraint failed error - possibly cuz multiple reqs are hitting at the same time. upon first login, the schedule api gets hit twice i think and the frontend throws an error due to db constraint violation. need to fix this if it still occurs. reloading fixes it.
+- [x] look into timezone offset issues and think of normalizing the time to UTC
 - [] think about rotating the reddit credentials using a rotation strategy - future implementation
 - [] maybe post levels of filtering. aggressive, moderate, mild. aggressive can bring out false positives but thats okay. mild will be more accurate but will miss some leads. moderate will be a balance between the two. -> ignore for now
 

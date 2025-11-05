@@ -3,8 +3,8 @@ import db from "../lib/db";
 
 export async function runScheduler() {
   console.log("Running scheduler");
-  const currentHour = new Date().getHours();
-  console.log("Current hour:", currentHour);
+  const currentHour = new Date().getUTCHours();
+  console.log("Current UTC hour:", currentHour);
 
   // Find all users who have the current hour in their schedule
   const usersWithScheduledHour = await db.userSchedule.findMany({
@@ -35,8 +35,7 @@ export async function runScheduler() {
   for (const userSchedule of usersWithScheduledHour) {
     const { user } = userSchedule;
 
-    // Skip if user has no active subscription
-    if (!user.subscription) {
+    if (user.isDeleted || !user.subscription) {
       continue;
     }
 

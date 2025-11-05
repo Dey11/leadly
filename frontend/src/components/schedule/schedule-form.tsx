@@ -18,9 +18,14 @@ export function ScheduleForm({
   scheduledHours,
   maxSelectable,
 }: ScheduleFormProps) {
-  const [selected, setSelected] = useState<Set<number>>(
-    () => new Set(scheduledHours)
-  );
+  const [selected, setSelected] = useState<Set<number>>(() => {
+    const timezoneOffset = new Date().getTimezoneOffset() / 60;
+    const localHours = scheduledHours.map(h => {
+      const local = h - timezoneOffset;
+      return local < 0 ? local + 24 : local >= 24 ? local - 24 : local;
+    });
+    return new Set(localHours);
+  });
   const [limitReached, setLimitReached] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -30,8 +35,14 @@ export function ScheduleForm({
       if (selected.size === 0) {
         throw new Error("Select at least one hour.");
       }
+      const localHours = Array.from(selected.values());
+      const timezoneOffset = new Date().getTimezoneOffset() / 60;
+      const utcHours = localHours.map(h => {
+        const utc = h + timezoneOffset;
+        return utc < 0 ? utc + 24 : utc >= 24 ? utc - 24 : utc;
+      });
       return clientApi.updateSchedule({
-        scheduledHours: Array.from(selected.values()).sort((a, b) => a - b),
+        scheduledHours: utcHours.sort((a, b) => a - b),
       });
     },
     onSuccess: () => {
@@ -79,7 +90,7 @@ export function ScheduleForm({
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Select up to {maxSelectable} unique hours in your local timezone. Leadly
-          will scrape your monitors shortly after these windows.
+          will scrape your monitors at these times.
         </p>
 
         <form onSubmit={handleSubmit} className="grid gap-4">
