@@ -19,7 +19,7 @@ export function DashboardPageHeader({
         align === "center"
           ? "items-center text-center"
           : "items-start text-left"
-      } sm:flex-row sm:items-end sm:justify-between sm:text-left`}
+      } sm:flex-row sm:items-start sm:justify-between sm:text-left`}
     >
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold text-foreground sm:text-3xl">

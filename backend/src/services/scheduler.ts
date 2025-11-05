@@ -22,7 +22,7 @@ export async function runScheduler() {
               status: "ACTIVE",
             },
             include: {
-              service: true,
+              icp: true,
             },
           },
         },

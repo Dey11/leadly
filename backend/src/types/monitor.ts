@@ -3,7 +3,7 @@ import { z } from "zod/v4";
 
 const monitorBaseSchema = z
   .object({
-    serviceId: z.string().cuid(),
+    icpId: z.string().cuid(),
     platform: z.enum(Platform),
     target: z.string().min(1),
     cursor: z.string().nullable().optional(),

@@ -86,15 +86,38 @@ export const clientApi = {
     request<{ message?: string }>(`${apiBaseUrl}/auth/logout`, {
       method: "POST",
     }),
-  createService: (body: {
+  createIcp: (body: {
     name: string;
-    leadDescription: string;
+    summary: string;
+    targetPersona: string;
+    pains: string;
+    valueProposition: string;
+    qualifyingSignals: string;
+    disqualifyingSignals: string;
     platform: string;
-  }) => request(`${apiBaseUrl}/services`, { method: "POST", body }),
-  deleteService: (serviceId: string) =>
-    request(`${apiBaseUrl}/services/${serviceId}`, { method: "DELETE" }),
+  }) => request(`${apiBaseUrl}/icps`, { method: "POST", body }),
+  updateIcp: (
+    icpId: string,
+    body: Partial<{
+      name: string;
+      summary: string;
+      targetPersona: string;
+      pains: string;
+      valueProposition: string;
+      qualifyingSignals: string;
+      disqualifyingSignals: string;
+      platform: string;
+      status: string;
+    }>,
+  ) =>
+    request(`${apiBaseUrl}/icps/${icpId}`, {
+      method: "PATCH",
+      body,
+    }),
+  deleteIcp: (icpId: string) =>
+    request(`${apiBaseUrl}/icps/${icpId}`, { method: "DELETE" }),
   createMonitor: (body: {
-    serviceId: string;
+    icpId: string;
     target: string;
     platform: string;
     cursor?: string | null;
@@ -104,16 +127,26 @@ export const clientApi = {
       method: "PUT",
       body: { status },
     }),
+  updateMonitor: (
+    monitorId: string,
+    body: Partial<{
+      target: string;
+      status: string;
+      cursor: string | null;
+      icpId: string;
+      platform: string;
+    }>,
+  ) =>
+    request(`${apiBaseUrl}/monitors/${monitorId}`, {
+      method: "PUT",
+      body,
+    }),
   deleteMonitor: (monitorId: string) =>
     request(`${apiBaseUrl}/monitors/${monitorId}`, { method: "DELETE" }),
   updateSchedule: (body: { scheduledHours: number[] }) =>
     request(`${apiBaseUrl}/schedule`, { method: "PATCH", body }),
-  updateAccount: (body: {
-    name?: string;
-    email?: string;
-    image?: string;
-    password?: string;
-  }) => request(`${apiBaseUrl}/account`, { method: "PATCH", body }),
+  updateAccount: (body: { name: string }) =>
+    request(`${apiBaseUrl}/account`, { method: "PATCH", body }),
   deleteAccount: () => request(`${apiBaseUrl}/account`, { method: "DELETE" }),
   listLeads: async (params: {
     monitorId?: string;

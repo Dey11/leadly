@@ -16,7 +16,7 @@ import { Select } from "@/components/ui/select";
 
 const iconComponents = {
   overview: LayoutDashboard,
-  services: Layers,
+  icps: Layers,
   monitors: Radar,
   leads: Sparkles,
   schedule: CalendarClock,
@@ -36,12 +36,16 @@ type DashboardNavProps = {
   items: DashboardNavItem[];
   orientation?: "vertical" | "horizontal";
   onNavigate?: () => void;
+  variant?: "sidebar" | "toolbar";
+  className?: string;
 };
 
 export function DashboardNav({
   items,
   orientation = "vertical",
   onNavigate,
+  variant = "sidebar",
+  className,
 }: DashboardNavProps) {
   const pathname = usePathname();
 
@@ -51,7 +55,8 @@ export function DashboardNav({
         "flex gap-1",
         orientation === "vertical"
           ? "flex-col"
-          : "flex-row overflow-x-auto pb-2"
+          : "flex-row overflow-x-auto pb-2",
+        className,
       )}
     >
       {items.map((item) => {
@@ -66,17 +71,32 @@ export function DashboardNav({
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "group flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium transition-colors",
-              "hover:bg-primary/10 hover:text-primary",
+              "group relative flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium transition-all",
+              variant === "sidebar"
+                ? "hover:bg-primary/10 hover:text-primary"
+                : "hover:bg-primary/15 hover:text-primary",
               isActive
-                ? "bg-primary/15 text-primary shadow-sm"
-                : "text-muted-foreground"
+                ? variant === "sidebar"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "bg-primary/10 text-primary shadow-sm"
+                : "text-muted-foreground",
             )}
           >
+            {variant === "sidebar" ? (
+              <span
+                className={cn(
+                  "absolute left-2 top-1/2 hidden h-7 w-1.5 -translate-y-1/2 rounded-full bg-primary/70 transition-opacity lg:block",
+                  isActive ? "opacity-100" : "opacity-0",
+                )}
+                aria-hidden
+              />
+            ) : null}
             <Icon
               className={cn(
                 "size-4 transition-transform",
-                isActive ? "text-primary" : "text-muted-foreground"
+                isActive
+                  ? "text-primary"
+                  : "text-muted-foreground group-hover:text-primary",
               )}
               aria-hidden="true"
             />

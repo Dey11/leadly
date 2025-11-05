@@ -10,8 +10,8 @@ export default async function LeadsPage() {
 
   const monitorOptions = monitors.map((monitor) => ({
     id: monitor.id,
-    label: monitor.service
-      ? `${monitor.service.name} · ${monitor.target}`
+    label: monitor.icp
+      ? `${monitor.icp.name} · ${monitor.target}`
       : monitor.target,
   }));
 

@@ -1,3 +1,5 @@
+import { SubscriptionTier } from "@prisma/client";
+
 export const MIN_RELEVANCE_SCORE = 0.75;
 export const MAX_SCRAPE_POSTS_LIMIT = 50;
 
@@ -10,8 +12,15 @@ export const DEFAULT_HOURS_MAP = {
   ],
 } as const;
 
-export const TIER_LIMITS = {
+export const TIER_LIMITS: Record<
+  SubscriptionTier,
+  { monitors: number; scrapesPerDay: number; selectableHours: number }
+> = {
   FREE: { monitors: 3, scrapesPerDay: 1, selectableHours: 1 },
   PLUS: { monitors: 6, scrapesPerDay: 6, selectableHours: 6 },
   PRO: { monitors: 24, scrapesPerDay: 24, selectableHours: 24 },
 } as const;
+
+export const MODEL = "gemini-2.5-flash-lite";
+
+export const CRON_INTERVAL = "*/30 * * * *";

@@ -111,6 +111,17 @@ export const getLead = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "Not authorized" });
     }
 
+    let status = lead.status;
+
+    if (status === "NEW") {
+      const updated = await db.lead.update({
+        where: { id },
+        data: { status: "VIEWED" },
+        select: { status: true },
+      });
+      status = updated.status;
+    }
+
     const leadData = {
       id: lead.id,
       platform: lead.platform,
@@ -118,7 +129,7 @@ export const getLead = async (req: Request, res: Response) => {
       content: lead.content,
       url: lead.url,
       author: lead.author,
-      status: lead.status,
+      status,
       reasoning: lead.reasoning,
       createdAt: lead.createdAt,
     };

@@ -37,14 +37,14 @@ export const createMonitor = async (req: Request, res: Response) => {
       });
     }
 
-    const service = await db.service.findUnique({
-      where: { id: payload.data.serviceId },
+    const icp = await db.icp.findUnique({
+      where: { id: payload.data.icpId },
     });
 
-    if (!service || service.userId !== req.userId!) {
+    if (!icp || icp.userId !== req.userId!) {
       return res
         .status(400)
-        .json({ error: "Service not found or not owned by user" });
+        .json({ error: "ICP not found or not owned by user" });
     }
 
     const monitor = await db.monitor.create({
@@ -66,7 +66,7 @@ export const getMonitors = async (req: Request, res: Response) => {
     const monitors = await db.monitor.findMany({
       where: { userId: req.userId },
       include: {
-        service: true,
+        icp: true,
         scrapeJobs: {
           orderBy: { createdAt: "desc" },
           take: 10,
@@ -100,6 +100,18 @@ export const updateMonitor = async (req: Request, res: Response) => {
     if (!monitor) return res.status(404).json({ error: "Monitor not found" });
     if (monitor.userId !== req.userId)
       return res.status(403).json({ error: "Not authorized" });
+
+    if (payload.data.icpId) {
+      const icp = await db.icp.findUnique({
+        where: { id: payload.data.icpId },
+        select: { id: true, userId: true },
+      });
+      if (!icp || icp.userId !== req.userId) {
+        return res.status(400).json({
+          error: "ICP not found or not owned by the current user.",
+        });
+      }
+    }
 
     const updatedMonitor = await db.monitor.update({
       where: { id },

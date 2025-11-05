@@ -17,11 +17,11 @@ export async function processScrapeJob(job: Job) {
   const [scrapeJob, monitor] = await Promise.all([
     db.scrapeJob.findUnique({
       where: { id: job.data.jobId },
-      include: { monitor: { include: { service: true } } },
+      include: { monitor: { include: { icp: true } } },
     }),
     db.monitor.findUnique({
       where: { id: job.data.monitorId },
-      include: { user: true, service: true },
+      include: { user: true, icp: true },
     }),
   ]);
 
@@ -52,7 +52,19 @@ export async function processScrapeJob(job: Job) {
       monitor.cursor
     );
 
-    const leads = await processLeads(posts, monitor.service.leadDescription);
+    if (!monitor.icp) {
+      throw new Error("Monitor is missing associated ICP");
+    }
+
+    const leads = await processLeads(posts, {
+      name: monitor.icp.name,
+      summary: monitor.icp.summary,
+      targetPersona: monitor.icp.targetPersona,
+      pains: monitor.icp.pains,
+      valueProposition: monitor.icp.valueProposition,
+      qualifyingSignals: monitor.icp.qualifyingSignals,
+      disqualifyingSignals: monitor.icp.disqualifyingSignals,
+    });
     const lastPostId = posts[0]?.postId;
 
     const warmLeads = leads.filter((lead) => lead.leadType === "WARM");

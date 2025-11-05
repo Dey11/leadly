@@ -5,6 +5,7 @@ import { DEFAULT_HOURS_MAP, TIER_LIMITS } from "../lib/constants";
 
 export const getSchedule = async (req: Request, res: Response) => {
   try {
+    console.log("Getting schedule", req.userId);
     const schedule = await db.userSchedule.findUnique({
       where: { userId: req.userId! },
     });

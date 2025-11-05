@@ -6,11 +6,12 @@ import cookieParser from "cookie-parser";
 import { runScheduler } from "./services/scheduler";
 import { authRouter } from "./routes/auth";
 import monitorRouter from "./routes/monitor";
-import serviceRouter from "./routes/service";
+import icpRouter from "./routes/icp";
 import scheduleRouter from "./routes/schedule";
 import { accountRouter } from "./routes/account";
 import leadRouter from "./routes/lead";
 import scrapeJobsRouter from "./routes/scrape-jobs";
+import { CRON_INTERVAL } from "./lib/constants";
 
 const PORT = env.PORT;
 
@@ -36,13 +37,13 @@ app.use("/api/v1", apiRouter);
 
 apiRouter.use("/auth", authRouter);
 apiRouter.use("/monitors", monitorRouter);
-apiRouter.use("/services", serviceRouter);
+apiRouter.use("/icps", icpRouter);
 apiRouter.use("/schedule", scheduleRouter);
 apiRouter.use("/account", accountRouter);
 apiRouter.use("/leads", leadRouter);
 apiRouter.use("/monitors", scrapeJobsRouter);
 
-const scheduledTask = cron.schedule("*/30 * * * *", runScheduler); // every 30 minutes
+const scheduledTask = cron.schedule(CRON_INTERVAL, runScheduler);
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

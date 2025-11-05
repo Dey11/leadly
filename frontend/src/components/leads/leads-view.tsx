@@ -1,11 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { X } from "lucide-react";
 
 import { clientApi } from "@/lib/client/api";
 import { formatDateTime, formatRelative } from "@/lib/format";
@@ -18,8 +15,18 @@ import type {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const leadStatusOptions: { label: string; value: LeadStatus }[] = [
   { label: "New", value: "NEW" },
@@ -70,10 +77,16 @@ export function LeadsView({ monitors }: LeadsViewProps) {
     search: "",
   });
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [updatingLeadId, setUpdatingLeadId] = useState<string | null>(null);
   const [deletingLeadId, setDeletingLeadId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const leadsQueryKey = useMemo(
     () => [
@@ -148,7 +161,10 @@ export function LeadsView({ monitors }: LeadsViewProps) {
       setErrorMessage(null);
       if (selectedLeadId === leadId) {
         setSelectedLeadId(null);
+        setIsDetailOpen(false);
       }
+      setDeleteTarget(null);
+      setIsConfirmOpen(false);
     },
     onError: (error: unknown) => {
       setErrorMessage(
@@ -165,14 +181,15 @@ export function LeadsView({ monitors }: LeadsViewProps) {
     updateLeadMutation.mutate({ leadId, status });
   };
 
-  const handleDeleteLead = (leadId: string) => {
-    const confirmed = window.confirm(
-      "Delete this lead? This action cannot be undone.",
-    );
-    if (!confirmed) return;
+  const handleDeleteLead = (lead: { id: string; label: string }) => {
+    setDeleteTarget(lead);
+    setIsConfirmOpen(true);
+  };
 
-    setDeletingLeadId(leadId);
-    deleteLeadMutation.mutate(leadId);
+  const confirmDeleteLead = () => {
+    if (!deleteTarget) return;
+    setDeletingLeadId(deleteTarget.id);
+    deleteLeadMutation.mutate(deleteTarget.id);
   };
 
   const resetFeedback = () => {
@@ -189,27 +206,26 @@ export function LeadsView({ monitors }: LeadsViewProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="rounded-3xl border border-border/60 bg-card/80 p-6 shadow-sm">
+      <section className="border-border/60 bg-card/80 rounded-3xl border p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">Leads</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-foreground text-2xl font-semibold">Leads</h1>
+            <p className="text-muted-foreground text-sm">
               Review, qualify, and manage outreach on every opportunity Leadly
               uncovers.
             </p>
           </div>
-          <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:text-right">
+          <div className="text-muted-foreground flex flex-col gap-2 text-sm sm:text-right">
             <span>Total leads: {pagination?.total ?? "–"}</span>
             <span>
-              Showing {(leadsQuery.data?.data.length ?? 0)} of {filters.limit}
-              
-              per page
+              Showing {leadsQuery.data?.data.length ?? 0} of {filters.limit} per
+              page
             </span>
           </div>
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-4">
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               Monitor
             </label>
             <Select
@@ -232,7 +248,7 @@ export function LeadsView({ monitors }: LeadsViewProps) {
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               Lead type
             </label>
             <Select
@@ -253,7 +269,7 @@ export function LeadsView({ monitors }: LeadsViewProps) {
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               Status
             </label>
             <Select
@@ -276,7 +292,7 @@ export function LeadsView({ monitors }: LeadsViewProps) {
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               Search content
             </label>
             <Input
@@ -315,12 +331,12 @@ export function LeadsView({ monitors }: LeadsViewProps) {
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
-                className="h-32 animate-pulse rounded-2xl bg-muted/70"
+                className="bg-muted/70 h-32 animate-pulse rounded-2xl"
               />
             ))}
           </div>
         ) : leads.length === 0 ? (
-          <div className="rounded-2xl border border-border/60 bg-card/80 p-10 text-center text-sm text-muted-foreground">
+          <div className="border-border/60 bg-card/80 text-muted-foreground rounded-2xl border p-10 text-center text-sm">
             No leads match your filters yet. Adjust the filters or check back
             after the next scrape.
           </div>
@@ -330,7 +346,10 @@ export function LeadsView({ monitors }: LeadsViewProps) {
               <LeadCard
                 key={lead.id}
                 lead={lead}
-                onViewDetail={() => setSelectedLeadId(lead.id)}
+                onViewDetail={() => {
+                  setSelectedLeadId(lead.id);
+                  setIsDetailOpen(true);
+                }}
                 onStatusChange={handleStatusChange}
                 onDelete={handleDeleteLead}
                 updating={updatingLeadId === lead.id}
@@ -341,7 +360,7 @@ export function LeadsView({ monitors }: LeadsViewProps) {
         )}
       </section>
 
-      <section className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/80 px-4 py-3 text-sm text-muted-foreground md:flex-row">
+      <section className="border-border/60 bg-card/80 text-muted-foreground flex flex-col items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-sm md:flex-row">
         <div>
           Page {filters.page} of {totalPages}
         </div>
@@ -371,13 +390,40 @@ export function LeadsView({ monitors }: LeadsViewProps) {
         </div>
       </section>
 
-      <LeadDetailModal
+      <LeadDetailDialog
         leadId={selectedLeadId}
-        onClose={() => setSelectedLeadId(null)}
+        open={isDetailOpen && !!selectedLeadId}
+        onOpenChange={(next) => {
+          setIsDetailOpen(next);
+          if (!next) {
+            setSelectedLeadId(null);
+          }
+        }}
         onStatusChange={handleStatusChange}
         onDelete={handleDeleteLead}
         updatingLeadId={updatingLeadId}
         deletingLeadId={deletingLeadId}
+      />
+
+      <ConfirmDialog
+        open={isConfirmOpen}
+        onOpenChange={(next) => {
+          setIsConfirmOpen(next);
+          if (!next) {
+            setDeleteTarget(null);
+            setDeletingLeadId(null);
+          }
+        }}
+        title="Delete this lead?"
+        description={
+          deleteTarget
+            ? `This will remove "${deleteTarget.label}" from your workspace.`
+            : "This will remove the lead from your workspace."
+        }
+        confirmLabel="Delete"
+        tone="destructive"
+        loading={!!deleteTarget && deletingLeadId === deleteTarget.id}
+        onConfirm={confirmDeleteLead}
       />
     </div>
   );
@@ -387,7 +433,7 @@ type LeadCardProps = {
   lead: LeadSummary;
   onViewDetail: () => void;
   onStatusChange: (leadId: string, status: LeadStatus) => void;
-  onDelete: (leadId: string) => void;
+  onDelete: (lead: { id: string; label: string }) => void;
   updating: boolean;
   deleting: boolean;
 };
@@ -401,17 +447,19 @@ function LeadCard({
   deleting,
 }: LeadCardProps) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/80 p-5 shadow-sm transition hover:border-primary/40">
+    <div className="border-border/60 bg-card/80 hover:border-primary/40 rounded-2xl border p-5 shadow-sm transition">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Badge className={leadTypeStyles[lead.leadType]}>{lead.leadType}</Badge>
+          <Badge className={leadTypeStyles[lead.leadType]}>
+            {lead.leadType}
+          </Badge>
           <Badge className={leadStatusStyles[lead.status]}>{lead.status}</Badge>
         </div>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           {formatRelative(lead.createdAt)}
         </span>
       </div>
-      <p className="mt-3 text-sm leading-relaxed text-foreground">
+      <p className="text-foreground mt-3 text-sm leading-relaxed">
         {lead.content}
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
@@ -435,8 +483,8 @@ function LeadCard({
         <Button
           variant="ghost"
           size="sm"
-          className="text-destructive hover:text-destructive"
-          onClick={() => onDelete(lead.id)}
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => onDelete({ id: lead.id, label: lead.content })}
           disabled={deleting}
         >
           Delete
@@ -446,121 +494,169 @@ function LeadCard({
   );
 }
 
-type LeadDetailModalProps = {
+type LeadDetailDialogProps = {
   leadId: string | null;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onStatusChange: (leadId: string, status: LeadStatus) => void;
-  onDelete: (leadId: string) => void;
+  onDelete: (lead: { id: string; label: string }) => void;
   updatingLeadId: string | null;
   deletingLeadId: string | null;
 };
 
-function LeadDetailModal({
+function LeadDetailDialog({
   leadId,
-  onClose,
+  open,
+  onOpenChange,
   onStatusChange,
   onDelete,
   updatingLeadId,
   deletingLeadId,
-}: LeadDetailModalProps) {
+}: LeadDetailDialogProps) {
   const leadQuery = useQuery({
     queryKey: ["lead", leadId],
     queryFn: () => clientApi.getLead(leadId as string),
-    enabled: !!leadId,
+    enabled: open && !!leadId,
   });
 
-  if (!leadId) {
-    return null;
-  }
+  const hasMarkedViewed = useRef(false);
 
-  const isLoading = leadQuery.isLoading || !leadQuery.data;
-  const lead = leadQuery.data as LeadDetail | undefined;
+  useEffect(() => {
+    if (!open) {
+      hasMarkedViewed.current = false;
+    }
+  }, [open, leadId]);
+
+  const lead = open ? (leadQuery.data as LeadDetail | undefined) : undefined;
+  const isLoading = open && (leadQuery.isLoading || !leadQuery.data);
+
+  useEffect(() => {
+    if (!open) return;
+    if (!lead || lead.status !== "NEW" || hasMarkedViewed.current) {
+      return;
+    }
+
+    hasMarkedViewed.current = true;
+    onStatusChange(lead.id, "VIEWED");
+  }, [lead, onStatusChange, open]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
-      <div className="relative w-full max-w-3xl rounded-3xl border border-border/70 bg-background p-6 shadow-2xl">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-6 top-6 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          Close
-        </button>
-        {isLoading || !lead ? (
-          <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-            Loading lead details...
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Badge className={leadTypeStyles[lead.leadType]}>
-                  {lead.leadType}
-                </Badge>
-                <Badge className={leadStatusStyles[lead.status]}>
-                  {lead.status}
-                </Badge>
-              </div>
-              <div className="flex flex-col items-end text-xs text-muted-foreground">
-                <span>{formatDateTime(lead.createdAt)}</span>
-                {lead.author && <span>Posted by {lead.author}</span>}
-              </div>
-            </div>
-
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden p-0">
+        <DialogHeader className="border-0 px-6 py-5">
+          <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-foreground">Lead content</h3>
-              <p className="rounded-2xl border border-border/60 bg-card/80 p-4 text-sm leading-relaxed text-foreground">
-                {lead.content}
-              </p>
+              <DialogTitle className="text-xl font-semibold">
+                Lead detail
+              </DialogTitle>
+              {lead ? (
+                <DialogDescription className="flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:gap-2">
+                  <span>Captured {formatDateTime(lead.createdAt)}</span>
+                  {lead.author ? <span>· Posted by {lead.author}</span> : null}
+                </DialogDescription>
+              ) : (
+                <DialogDescription>Loading lead details...</DialogDescription>
+              )}
             </div>
-
-            {lead.reasoning && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-foreground">Why this matters</h4>
-                <p className="rounded-2xl border border-border/40 bg-secondary/40 p-4 text-sm leading-relaxed text-muted-foreground">
-                  {lead.reasoning}
-                </p>
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center gap-3 text-sm">
-              <Select
-                value={lead.status}
-                className="max-w-[200px]"
-                onChange={(event) =>
-                  onStatusChange(lead.id, event.target.value as LeadStatus)
-                }
-                disabled={updatingLeadId === lead.id}
-              >
-                {leadStatusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Select>
+            <DialogClose asChild>
               <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="flex-1 sm:flex-none"
-              >
-                <a href={lead.url} target="_blank" rel="noopener noreferrer">
-                  Open source
-                </a>
-              </Button>
-              <Button
+                type="button"
                 variant="ghost"
-                size="sm"
-                className="text-destructive hover:text-destructive"
-                onClick={() => onDelete(lead.id)}
-                disabled={deletingLeadId === lead.id}
+                size="icon-sm"
+                className="text-muted-foreground hover:text-foreground"
               >
-                Delete lead
+                <span className="sr-only">Close</span>
+                <X className="size-4" aria-hidden />
               </Button>
-            </div>
+            </DialogClose>
           </div>
-        )}
-      </div>
-    </div>
+          {lead ? (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Badge className={leadTypeStyles[lead.leadType]}>
+                {lead.leadType}
+              </Badge>
+              <Badge className={leadStatusStyles[lead.status]}>
+                {lead.status}
+              </Badge>
+            </div>
+          ) : null}
+        </DialogHeader>
+
+        <div className="flex-1 space-y-6 overflow-y-auto px-6 pb-6">
+          {isLoading ? (
+            <div className="text-muted-foreground flex h-64 items-center justify-center text-sm">
+              Loading lead details...
+            </div>
+          ) : lead ? (
+            <>
+              <section className="space-y-2">
+                <h3 className="text-foreground text-lg font-semibold">
+                  Lead content
+                </h3>
+                <p className="border-border/60 bg-card/80 text-foreground rounded-2xl border p-4 text-sm leading-relaxed">
+                  {lead.content}
+                </p>
+              </section>
+
+              {lead.reasoning ? (
+                <section className="space-y-2">
+                  <h4 className="text-foreground text-sm font-semibold">
+                    Why this matters
+                  </h4>
+                  <p className="border-border/40 bg-secondary/40 text-muted-foreground rounded-2xl border p-4 text-sm leading-relaxed">
+                    {lead.reasoning}
+                  </p>
+                </section>
+              ) : null}
+            </>
+          ) : (
+            <div className="text-muted-foreground flex h-64 items-center justify-center text-sm">
+              Unable to load lead details.
+            </div>
+          )}
+        </div>
+
+        {lead ? (
+          <DialogFooter className="bg-card/90">
+            <Select
+              value={lead.status}
+              className="max-w-[200px]"
+              onChange={(event) =>
+                onStatusChange(lead.id, event.target.value as LeadStatus)
+              }
+              disabled={updatingLeadId === lead.id}
+            >
+              {leadStatusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="flex-1 sm:flex-none"
+            >
+              <a href={lead.url} target="_blank" rel="noopener noreferrer">
+                Open source
+              </a>
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() =>
+                onDelete({ id: lead.id, label: lead.content })
+              }
+              disabled={deletingLeadId === lead.id}
+            >
+              {deletingLeadId === lead.id ? "Deleting..." : "Delete lead"}
+            </Button>
+          </DialogFooter>
+        ) : null}
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -25,11 +25,16 @@ export interface AccountResponse {
   };
 }
 
-export interface Service {
+export interface Icp {
   id: string;
   userId: string;
   name: string;
-  leadDescription: string;
+  summary: string;
+  targetPersona: string;
+  pains: string;
+  valueProposition: string;
+  qualifyingSignals: string;
+  disqualifyingSignals: string;
   platform: Platform;
   status: MonitorStatus;
   createdAt: string;
@@ -40,7 +45,7 @@ export interface Service {
 export interface Monitor {
   id: string;
   userId: string;
-  serviceId: string;
+  icpId: string;
   platform: Platform;
   target: string;
   cursor: string | null;
@@ -48,7 +53,7 @@ export interface Monitor {
   lastScrapedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  service?: Service;
+  icp?: Icp;
   scrapeJobs: ScrapeJob[];
 }
 

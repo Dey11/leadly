@@ -47,7 +47,6 @@ export default async function AccountPage() {
           <AccountForm
             defaultName={account.name}
             defaultEmail={account.email}
-            defaultImage={account.image}
           />
 
           <Card className="border-border/60 bg-background/85">
@@ -104,7 +103,7 @@ export default async function AccountPage() {
             <CardHeader>
               <CardTitle>Danger zone</CardTitle>
               <CardDescription>
-                Removing your account deletes services, monitors, and history.
+                Removing your account deletes ICPs, monitors, and history.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">

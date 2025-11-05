@@ -54,12 +54,16 @@ export async function patchAccount(req: Request, res: Response) {
       });
     }
 
-    const updateUser = await db.user.update({
+    if (payload.data.name === findExistingUser.name) {
+      return res.status(400).json({ error: "Name is unchanged." });
+    }
+
+    const updatedUser = await db.user.update({
       where: {
         id: userId,
       },
       data: {
-        ...payload.data,
+        name: payload.data.name,
       },
     });
 
@@ -67,9 +71,8 @@ export async function patchAccount(req: Request, res: Response) {
       message: "Account updated successfully.",
       payload: {
         id: userId,
-        name: payload.data?.name,
-        email: payload.data?.email,
-        image: payload.data?.image,
+        name: updatedUser.name,
+        email: updatedUser.email,
       },
     });
   } catch (error) {

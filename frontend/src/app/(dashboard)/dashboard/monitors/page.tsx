@@ -4,8 +4,9 @@ import {
   ToggleMonitorStatusButton,
 } from "@/components/monitors/monitor-actions";
 import { CreateMonitorForm } from "@/components/monitors/create-monitor-form";
+import { EditMonitorDialog } from "@/components/monitors/edit-monitor-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { MonitorIcpDialog } from "@/components/monitors/monitor-icp-dialog";
 import {
   Card,
   CardContent,
@@ -14,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getServices } from "@/lib/backend-queries";
+import { getIcps } from "@/lib/backend-queries";
 import { formatDateTime, formatRelative } from "@/lib/format";
 
 const statusMap: Record<string, { label: string; variant: "default" | "outline" | "success" | "warning" }> =
@@ -29,12 +30,26 @@ export const metadata = {
 };
 
 export default async function MonitorsPage() {
-  const services = await getServices();
-  const monitorList = services.flatMap((service) =>
-    service.monitors.map((monitor) => ({
+  const icps = await getIcps();
+  const icpOptions = icps.map((icp) => ({
+    id: icp.id,
+    name: icp.name,
+    platform: icp.platform,
+    summary: icp.summary,
+    targetPersona: icp.targetPersona,
+    pains: icp.pains,
+    valueProposition: icp.valueProposition,
+    qualifyingSignals: icp.qualifyingSignals,
+    disqualifyingSignals: icp.disqualifyingSignals,
+  }));
+  const icpLookup = Object.fromEntries(
+    icpOptions.map((icp) => [icp.id, icp]),
+  ) as Record<string, (typeof icpOptions)[number]>;
+  const monitorList = icps.flatMap((icp) =>
+    icp.monitors.map((monitor) => ({
       ...monitor,
-      serviceName: service.name,
-      serviceId: service.id,
+      icpName: icp.name,
+      icpDetails: icpLookup[icp.id],
     })),
   );
 
@@ -82,7 +97,7 @@ export default async function MonitorsPage() {
                         <Badge variant={status.variant}>{status.label}</Badge>
                       </div>
                       <CardDescription className="flex flex-wrap items-center gap-4 text-xs">
-                        <span>Service · {monitor.serviceName}</span>
+                        <span>ICP · {monitor.icpName}</span>
                         <span>Platform · {monitor.platform}</span>
                         <span>
                           Last updated · {formatRelative(monitor.updatedAt)}
@@ -158,15 +173,21 @@ export default async function MonitorsPage() {
                         monitorId={monitor.id}
                         status={monitor.status}
                       />
+                      <EditMonitorDialog
+                        monitor={monitor}
+                        icps={icpOptions.map(({ id, name, platform }) => ({
+                          id,
+                          name,
+                          platform,
+                        }))}
+                      />
                       <DeleteMonitorButton monitorId={monitor.id} />
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="outline"
-                        className="ml-auto"
-                      >
-                        <a href={`/dashboard/services`}>View service</a>
-                      </Button>
+                      {monitor.icpDetails ? (
+                        <MonitorIcpDialog
+                          monitorName={monitor.target}
+                          icp={monitor.icpDetails}
+                        />
+                      ) : null}
                     </CardFooter>
                   </Card>
                 )
@@ -176,10 +197,10 @@ export default async function MonitorsPage() {
         </section>
         <aside className="lg:sticky lg:top-24 lg:h-fit">
           <CreateMonitorForm
-            services={services.map((service) => ({
-              id: service.id,
-              name: service.name,
-              platform: service.platform,
+            icps={icpOptions.map(({ id, name, platform }) => ({
+              id,
+              name,
+              platform,
             }))}
           />
         </aside>

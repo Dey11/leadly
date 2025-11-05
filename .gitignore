@@ -3,3 +3,4 @@ backend/node_modules
 backend/*.env
 backend/output.log
 .pnpm-store
+script

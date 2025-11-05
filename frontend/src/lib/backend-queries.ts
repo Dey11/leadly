@@ -1,10 +1,10 @@
 import type {
   AccountResponse,
+  Icp,
   LeadListResponse,
   Monitor,
   Schedule,
   ScheduleLimitsResponse,
-  Service,
   Session,
 } from "@/types/backend";
 import { backendJson, BackendError } from "./api-client";
@@ -36,9 +36,9 @@ export async function getAccountSessions() {
   }
 }
 
-export async function getServices() {
+export async function getIcps() {
   try {
-    return await backendJson<Service[]>("/services");
+    return await backendJson<Icp[]>("/icps");
   } catch (error) {
     if (error instanceof BackendError && error.status === 401) {
       return [];
@@ -47,8 +47,8 @@ export async function getServices() {
   }
 }
 
-export async function getServiceDetail(id: string) {
-  return await backendJson<Service>(`/services/${id}`);
+export async function getIcpDetail(id: string) {
+  return await backendJson<Icp>(`/icps/${id}`);
 }
 
 export async function getMonitors() {

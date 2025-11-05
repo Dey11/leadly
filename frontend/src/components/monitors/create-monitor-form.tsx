@@ -18,49 +18,54 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-export type ServiceOption = {
+export type IcpOption = {
   id: string;
   name: string;
   platform: string;
 };
 
 type CreateMonitorFormProps = {
-  services: ServiceOption[];
+  icps: IcpOption[];
 };
 
-export function CreateMonitorForm({ services }: CreateMonitorFormProps) {
+export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
   const router = useRouter();
-  const [serviceId, setServiceId] = useState(services[0]?.id ?? "");
-  const [platform, setPlatform] = useState("REDDIT");
+  const [icpId, setIcpId] = useState(icps[0]?.id ?? "");
+  const [platform, setPlatform] = useState(icps[0]?.platform ?? "REDDIT");
   const [target, setTarget] = useState("");
-  const [cursor, setCursor] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    if (services.length > 0 && !serviceId) {
-      setServiceId(services[0].id);
+    if (icps.length > 0 && !icpId) {
+      setIcpId(icps[0].id);
+      setPlatform(icps[0].platform);
     }
-  }, [services, serviceId]);
+  }, [icps, icpId]);
+
+  useEffect(() => {
+    const selected = icps.find((icp) => icp.id === icpId);
+    if (selected) {
+      setPlatform(selected.platform);
+    }
+  }, [icps, icpId]);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!serviceId || !target) {
-        throw new Error("Service and target are required.");
+      if (!icpId || !target) {
+        throw new Error("ICP and target are required.");
       }
 
       return clientApi.createMonitor({
-        serviceId,
+        icpId,
         target,
         platform,
-        cursor: cursor.trim() ? cursor.trim() : null,
       });
     },
     onSuccess: () => {
       setError(null);
       setSuccess("Monitor created. Leadly will begin scraping on schedule.");
       setTarget("");
-      setCursor("");
       router.refresh();
     },
     onError: (mutationError: unknown) => {
@@ -68,7 +73,7 @@ export function CreateMonitorForm({ services }: CreateMonitorFormProps) {
       setError(
         mutationError instanceof Error
           ? mutationError.message
-          : "Unable to create the monitor."
+          : "Unable to create the monitor.",
       );
     },
   });
@@ -78,7 +83,7 @@ export function CreateMonitorForm({ services }: CreateMonitorFormProps) {
     mutation.mutate();
   };
 
-  if (services.length === 0) {
+  if (icps.length === 0) {
     return (
       <Card className="bg-background/80">
         <CardHeader>
@@ -86,9 +91,9 @@ export function CreateMonitorForm({ services }: CreateMonitorFormProps) {
         </CardHeader>
         <CardContent>
           <Alert>
-            <AlertTitle>Add a service first</AlertTitle>
+            <AlertTitle>Define an ICP first</AlertTitle>
             <AlertDescription>
-              You need at least one service before you can create monitors.
+              You need at least one ICP before you can create monitors.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -104,23 +109,23 @@ export function CreateMonitorForm({ services }: CreateMonitorFormProps) {
       <CardContent className="space-y-4">
         <form onSubmit={handleSubmit} className="grid gap-4">
           <FieldGroup>
-            <Field data-invalid={!!error && !serviceId}>
-              <FieldLabel htmlFor="monitor-service">Service</FieldLabel>
+            <Field data-invalid={!!error && !icpId}>
+              <FieldLabel htmlFor="monitor-icp">ICP</FieldLabel>
               <Select
-                id="monitor-service"
-                name="serviceId"
-                value={serviceId}
-                onChange={(event) => setServiceId(event.target.value)}
+                id="monitor-icp"
+                name="icpId"
+                value={icpId}
+                onChange={(event) => setIcpId(event.target.value)}
                 required
               >
-                {services.map((service) => (
-                  <option key={service.id} value={service.id}>
-                    {service.name} · {service.platform}
+                {icps.map((icp) => (
+                  <option key={icp.id} value={icp.id}>
+                    {icp.name} · {icp.platform}
                   </option>
                 ))}
               </Select>
-              {!serviceId && error && (
-                <FieldError>Select a service to continue.</FieldError>
+              {!icpId && error && (
+                <FieldError>Select an ICP to continue.</FieldError>
               )}
             </Field>
 
@@ -148,24 +153,10 @@ export function CreateMonitorForm({ services }: CreateMonitorFormProps) {
                 id="monitor-platform"
                 name="platform"
                 value={platform}
-                onChange={(event) => setPlatform(event.target.value)}
+                disabled
               >
                 <option value="REDDIT">Reddit</option>
               </Select>
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="monitor-cursor">
-                Cursor (optional)
-              </FieldLabel>
-              <Textarea
-                id="monitor-cursor"
-                name="cursor"
-                placeholder="Provide a cursor to resume scraping from a specific post."
-                value={cursor}
-                onChange={(event) => setCursor(event.target.value)}
-                rows={2}
-              />
             </Field>
           </FieldGroup>
 
@@ -191,4 +182,3 @@ export function CreateMonitorForm({ services }: CreateMonitorFormProps) {
     </Card>
   );
 }
-

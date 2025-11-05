@@ -19,46 +19,25 @@ import { Input } from "@/components/ui/input";
 type AccountFormProps = {
   defaultName: string;
   defaultEmail: string;
-  defaultImage?: string | null;
 };
 
-export function AccountForm({
-  defaultName,
-  defaultEmail,
-  defaultImage,
-}: AccountFormProps) {
+export function AccountForm({ defaultName, defaultEmail }: AccountFormProps) {
   const router = useRouter();
   const [name, setName] = useState(defaultName);
-  const [email, setEmail] = useState(defaultEmail);
-  const [image, setImage] = useState(defaultImage ?? "");
-  const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const payload: {
-        name?: string;
-        email?: string;
-        image?: string;
-        password?: string;
-      } = {};
-
-      if (name && name !== defaultName) payload.name = name;
-      if (email && email !== defaultEmail) payload.email = email;
-      if (image && image !== (defaultImage ?? "")) payload.image = image;
-      if (password.trim()) payload.password = password.trim();
-
-      if (Object.keys(payload).length === 0) {
+      if (name === defaultName) {
         throw new Error("Update at least one field before saving.");
       }
 
-      return clientApi.updateAccount(payload);
+      return clientApi.updateAccount({ name });
     },
     onSuccess: () => {
       setErrorMessage(null);
       setSuccessMessage("Profile updated. Changes are now live.");
-      setPassword("");
       router.refresh();
     },
     onError: (error: unknown) => {
@@ -66,7 +45,7 @@ export function AccountForm({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Unable to update your account."
+          : "Unable to update your account.",
       );
     },
   });
@@ -95,41 +74,13 @@ export function AccountForm({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="account-email">Email</FieldLabel>
-              <Input
-                id="account-email"
-                name="email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="account-image">Avatar URL</FieldLabel>
-              <Input
-                id="account-image"
-                name="image"
-                type="url"
-                value={image}
-                placeholder="https://"
-                onChange={(event) => setImage(event.target.value)}
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="account-password">Update password</FieldLabel>
-              <Input
-                id="account-password"
-                name="password"
-                type="password"
-                value={password}
-                placeholder="Leave blank to keep current"
-                onChange={(event) => setPassword(event.target.value)}
-              />
-              {password && password.length < 8 && (
-                <FieldError>Use at least 8 characters.</FieldError>
-              )}
+              <FieldLabel>Email</FieldLabel>
+              <p className="rounded-lg border border-dashed border-border/60 bg-card/60 px-3 py-2 text-sm text-muted-foreground">
+                {defaultEmail}
+              </p>
+              <FieldError>
+                Email and password changes are temporarily managed by support.
+              </FieldError>
             </Field>
           </FieldGroup>
 
@@ -155,4 +106,3 @@ export function AccountForm({
     </Card>
   );
 }
-

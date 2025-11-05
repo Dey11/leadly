@@ -1,11 +1,28 @@
-import type { LeadType } from "@prisma/client";
+import type { Icp, LeadType } from "@prisma/client";
 import { google } from "@ai-sdk/google";
 import { RedditPost } from "../types/reddit";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { leadGenerationPrompt } from "../lib/prompts";
-import { MIN_RELEVANCE_SCORE } from "../lib/constants";
+import { MIN_RELEVANCE_SCORE, MODEL } from "../lib/constants";
+import dotenv from "dotenv";
 
+dotenv.config();
+
+const VENDOR_PATTERNS = [
+  /\bfor\s*hire\b/i,
+  /\bhire\s*me\b/i,
+  /\bavailable\s+for\s+work\b/i,
+  /\bavailable\s+to\s+work\b/i,
+  /\blooking\s+for\s+clients\b/i,
+  /\bfreelance\s+(developer|engineer|designer)\b/i,
+  /\bcontractor\s+available\b/i,
+  /\bi\s+can\s+help\b/i,
+];
+
+function isVendorOffer(text: string) {
+  return VENDOR_PATTERNS.some((pattern) => pattern.test(text));
+}
 export interface LeadData {
   platform: "REDDIT";
   leadType: LeadType;
@@ -15,13 +32,47 @@ export interface LeadData {
   reasoning: string;
 }
 
-const model = google("gemini-2.5-flash");
+const model = google(MODEL);
+
+function buildIcpBrief(
+  icp: Pick<
+    Icp,
+    | "name"
+    | "summary"
+    | "targetPersona"
+    | "pains"
+    | "valueProposition"
+    | "qualifyingSignals"
+    | "disqualifyingSignals"
+  >
+) {
+  return [
+    `Name: ${icp.name}`,
+    `Summary: ${icp.summary}`,
+    `Target persona: ${icp.targetPersona}`,
+    `Pain points: ${icp.pains}`,
+    `Value proposition: ${icp.valueProposition}`,
+    `Qualifying signals: ${icp.qualifyingSignals}`,
+    `Disqualifying signals: ${icp.disqualifyingSignals}`,
+  ].join("\n");
+}
 
 export async function processLeads(
   posts: RedditPost[],
-  leadDescription: string
+  icp: Pick<
+    Icp,
+    | "name"
+    | "summary"
+    | "targetPersona"
+    | "pains"
+    | "valueProposition"
+    | "qualifyingSignals"
+    | "disqualifyingSignals"
+  >
 ): Promise<LeadData[]> {
   const leads: LeadData[] = [];
+  const icpBrief = buildIcpBrief(icp);
+
   for (const post of posts) {
     const { object: leadsArray } = await generateObject({
       model,
@@ -52,11 +103,16 @@ export async function processLeads(
         })
       ),
       prompt: leadGenerationPrompt
-        .replace("{lead_description}", leadDescription)
+        .replace("{icp_profile}", icpBrief)
         .replace("{post}", JSON.stringify(post)),
     });
 
     for (const lead of leadsArray) {
+      const summaryText = `${lead.title} ${lead.reasoning}`.toLowerCase();
+      if (isVendorOffer(summaryText)) {
+        continue;
+      }
+
       lead.relevanceScore >= MIN_RELEVANCE_SCORE &&
         leads.push({
           platform: "REDDIT",

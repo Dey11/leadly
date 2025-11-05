@@ -2,22 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 import { clientApi } from "@/lib/client/api";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
-export function DeleteAccountButton() {
+type DeleteIcpButtonProps = {
+  icpId: string;
+};
+
+export function DeleteIcpButton({ icpId }: DeleteIcpButtonProps) {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: () => clientApi.deleteAccount(),
+    mutationFn: () => clientApi.deleteIcp(icpId),
     onSuccess: () => {
-      queryClient.clear();
-      router.replace("/");
       router.refresh();
       setOpen(false);
     },
@@ -31,11 +32,12 @@ export function DeleteAccountButton() {
       <Button
         type="button"
         variant="ghost"
+        size="sm"
         className="text-destructive hover:bg-destructive/10 hover:text-destructive"
         onClick={() => setOpen(true)}
         disabled={mutation.isPending}
       >
-        {mutation.isPending ? "Deleting..." : "Delete account"}
+        {mutation.isPending ? "Deleting..." : "Delete"}
       </Button>
 
       <ConfirmDialog
@@ -45,9 +47,9 @@ export function DeleteAccountButton() {
             setOpen(next);
           }
         }}
-        title="Delete your account?"
-        description="Deleting your account removes all ICPs, monitors, schedules, and leads. This action cannot be undone."
-        confirmLabel="Delete account"
+        title="Delete this ICP?"
+        description="Removing the ICP will also remove its configuration. You must recreate it to resume monitoring."
+        confirmLabel="Delete ICP"
         tone="destructive"
         loading={mutation.isPending}
         onConfirm={() => mutation.mutate()}
