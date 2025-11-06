@@ -13,18 +13,21 @@ import {
   getAccountSessions,
   getAccountSummary,
   getScheduleLimits,
+  getUsageSummary,
 } from "@/lib/backend-queries";
 import { formatDateTime } from "@/lib/format";
+import { BillingPanel } from "@/components/account/billing-panel";
 
 export const metadata = {
   title: "Account · Leadly",
 };
 
 export default async function AccountPage() {
-  const [account, sessions, limits] = await Promise.all([
+  const [account, sessions, limits, usage] = await Promise.all([
     getAccountSummary(),
     getAccountSessions(),
     getScheduleLimits(),
+    getUsageSummary(),
   ]);
 
   if (!account) {
@@ -39,7 +42,7 @@ export default async function AccountPage() {
     <div className="flex flex-col gap-8">
       <DashboardPageHeader
         title="Account settings"
-        description="Update your profile, manage active sessions, and control workspace access. Billing integrations are ready for when payment is enabled."
+        description="Update your profile, manage sessions, and view billing status & usage."
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -92,12 +95,18 @@ export default async function AccountPage() {
                 <span className="font-medium text-foreground">Plan</span>
                 <Badge variant="outline">{tierLabel}</Badge>
               </div>
-              <p>
-                Payments launch soon. We have reserved space in the dashboard for
-                a billing summary, so connecting a provider will be seamless.
-              </p>
             </CardContent>
           </Card>
+
+          <BillingPanel
+            tier={limits?.tier ?? "FREE"}
+            usage={{
+              dailyUsed: usage?.payload.dailyUsed ?? 0,
+              dailyLimit: usage?.payload.dailyLimit ?? 1,
+              monthlyUsed: usage?.payload.monthlyUsed ?? 0,
+              monthlyLimit: usage?.payload.monthlyLimit ?? 30,
+            }}
+          />
 
           <Card className="border-border/60 bg-background/85">
             <CardHeader>

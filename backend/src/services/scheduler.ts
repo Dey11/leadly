@@ -1,5 +1,8 @@
 import { scrapeJobsQueue } from "../lib/queue";
 import db from "../lib/db";
+import { env } from "../env";
+import { TIER_LIMITS } from "../lib/constants";
+import { tryConsumeScrapeCredit, previewUsage } from "../lib/usage";
 
 export async function runScheduler() {
   console.log("Running scheduler");
@@ -39,11 +42,50 @@ export async function runScheduler() {
       continue;
     }
 
-    console.log("User:", user.id);
+    const tier = user.subscription.tier;
+    const limits = TIER_LIMITS[tier];
 
-    // Create scrape jobs for all active monitors
+    // Preview current usage for logs
+    const usagePreview = await previewUsage(user.id, tier, user.subscription.currentPeriodEnd);
+    console.log(
+      JSON.stringify({
+        evt: "scheduler.usage_preview",
+        userId: user.id,
+        tier,
+        dailyUsed: usagePreview.dailyUsed,
+        dailyLimit: usagePreview.dailyLimit,
+        monthlyUsed: usagePreview.monthlyUsed,
+        monthlyLimit: usagePreview.monthlyLimit,
+      })
+    );
+
     for (const monitor of user.monitors) {
       try {
+        // Check and consume a credit per monitor run
+        const { allowed, reason, summary } = await tryConsumeScrapeCredit(
+          user.id,
+          tier,
+          user.subscription.currentPeriodEnd,
+          env.FEATURE_BILLING_ENFORCEMENT // "off" | "log" | "on"
+        );
+
+        if (!allowed) {
+          // Block when enforcement is "on"
+          console.warn(
+            JSON.stringify({
+              evt: "scheduler.blocked",
+              userId: user.id,
+              monitorId: monitor.id,
+              reason,
+              dailyUsed: summary.dailyUsed,
+              dailyLimit: summary.dailyLimit,
+              monthlyUsed: summary.monthlyUsed,
+              monthlyLimit: summary.monthlyLimit,
+            })
+          );
+          continue;
+        }
+
         console.log("Creating scrape job for monitor:", monitor.id);
         const scrapeJob = await db.scrapeJob.create({
           data: {

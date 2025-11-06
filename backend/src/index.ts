@@ -12,6 +12,8 @@ import { accountRouter } from "./routes/account";
 import leadRouter from "./routes/lead";
 import scrapeJobsRouter from "./routes/scrape-jobs";
 import { CRON_INTERVAL } from "./lib/constants";
+import billingRouter from "./routes/billing";
+import { dodoWebhookHandler } from "./controllers/webhooks";
 
 const PORT = env.PORT;
 
@@ -24,6 +26,14 @@ app.use(
     credentials: true,
   })
 );
+
+// Important: register webhook raw-body route BEFORE json parser
+app.post(
+  "/api/v1/webhooks/dodo",
+  express.raw({ type: "application/json" }),
+  dodoWebhookHandler
+);
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -42,6 +52,7 @@ apiRouter.use("/schedule", scheduleRouter);
 apiRouter.use("/account", accountRouter);
 apiRouter.use("/leads", leadRouter);
 apiRouter.use("/monitors", scrapeJobsRouter);
+apiRouter.use("/billing", billingRouter);
 
 const scheduledTask = cron.schedule(CRON_INTERVAL, runScheduler);
 

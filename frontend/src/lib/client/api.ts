@@ -148,6 +148,15 @@ export const clientApi = {
   updateAccount: (body: { name: string }) =>
     request(`${apiBaseUrl}/account`, { method: "PATCH", body }),
   deleteAccount: () => request(`${apiBaseUrl}/account`, { method: "DELETE" }),
+
+  // Billing
+  subscribe: async (plan: "pro" | "premium") => {
+    return request<{ url: string }>(`${apiBaseUrl}/billing/subscribe`, {
+      method: "POST",
+      body: { plan },
+    });
+  },
+
   listLeads: async (params: {
     monitorId?: string;
     platform?: string;

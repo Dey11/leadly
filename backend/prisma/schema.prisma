@@ -65,6 +65,7 @@ model User {
 
   monitors Monitor[]
   icps     Icp[]
+  usage    Usage?
 
   name          String
   emailVerified Boolean   @default(false)
@@ -213,6 +214,27 @@ model Session {
 
   @@unique([token])
   @@map("session")
+}
+
+model Usage {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Monthly window
+  periodStart     DateTime
+  periodEnd       DateTime
+  scrapesUsed     Int      @default(0)
+
+  // Daily window (UTC day)
+  dailyDate       DateTime
+  dailyCount      Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@map("usage")
 }
 
 model Account {

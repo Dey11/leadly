@@ -99,7 +99,12 @@ export const getTierLimits = async (req: Request, res: Response) => {
 
     res.json({
       tier,
-      limits,
+      limits: {
+        monitors: limits.monitors,
+        scrapesPerDay: limits.scrapesPerDay,
+        selectableHours: limits.selectableHours,
+        monthlyScrapeLimit: limits.monthlyScrapeLimit,
+      },
       currentSchedule: await db.userSchedule.findUnique({
         where: { userId: req.userId! },
       }),

@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { env } from "../env";
 import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
+import { initializeOrResetUsagePeriod } from "../lib/usage";
 
 function generateSecureSessionToken(): string {
   const randomBytes = crypto.randomBytes(32).toString("hex");
@@ -86,6 +87,9 @@ export async function register(req: Request, res: Response) {
         currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
       },
     });
+
+    // Initialize free-plan usage window (current month) and reset counters
+    await initializeOrResetUsagePeriod(user.id, SubscriptionTier.FREE);
 
     res
       .cookie("session_token", session.token, {

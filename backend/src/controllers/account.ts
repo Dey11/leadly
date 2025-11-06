@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import db from "../lib/db";
 import { patchAccountSchema } from "../types/account";
+import { previewUsage } from "../lib/usage";
+import { SubscriptionTier } from "@prisma/client";
 
 export async function getAccount(req: Request, res: Response) {
   try {
@@ -139,5 +141,40 @@ export async function getAccountSessions(req: Request, res: Response) {
     });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export async function getUsageSummary(req: Request, res: Response) {
+  try {
+    const userId = req.userId!;
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      include: { subscription: true },
+    });
+
+    if (!user?.subscription) {
+      return res.status(400).json({ error: "User has no active subscription" });
+    }
+
+    const tier = user.subscription.tier as SubscriptionTier;
+    const currentPeriodEnd = user.subscription.currentPeriodEnd;
+
+    const usage = await previewUsage(userId, tier, currentPeriodEnd);
+
+    return res.status(200).json({
+      message: "Usage summary",
+      payload: {
+        tier,
+        dailyUsed: usage.dailyUsed,
+        dailyLimit: usage.dailyLimit,
+        monthlyUsed: usage.monthlyUsed,
+        monthlyLimit: usage.monthlyLimit,
+        periodStart: usage.periodStart,
+        periodEnd: usage.periodEnd,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }

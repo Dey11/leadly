@@ -105,8 +105,22 @@ export interface ScheduleLimitsResponse {
     monitors: number;
     scrapesPerDay: number;
     selectableHours: number;
+    monthlyScrapeLimit: number;
   };
   currentSchedule: Schedule | null;
+}
+
+export interface UsageSummaryResponse {
+  message: string;
+  payload: {
+    tier: "FREE" | "PLUS" | "PRO";
+    dailyUsed: number;
+    dailyLimit: number;
+    monthlyUsed: number;
+    monthlyLimit: number;
+    periodStart: string;
+    periodEnd: string;
+  };
 }
 
 export interface PaginationMeta {

@@ -17,6 +17,20 @@ const envSchema = z.object({
   REDDIT_CLIENT_ID: z.string(),
   REDDIT_CLIENT_SECRET: z.string(),
   REDDIT_USERNAME: z.string().default("nashediCHowkidar"),
+
+  // Dodo Payments
+  DODO_API_KEY: z.string().min(1, "DODO_API_KEY is required"),
+  DODO_ENVIRONMENT: z.enum(["test_mode", "live_mode"]).default("test_mode"),
+  DODO_WEBHOOK_SECRET: z.string().min(1, "DODO_WEBHOOK_SECRET is required"),
+  DODO_PRO_PRODUCT_ID: z.string().min(1, "DODO_PRO_PRODUCT_ID is required"),
+  DODO_PREMIUM_PRODUCT_ID: z.string().min(1, "DODO_PREMIUM_PRODUCT_ID is required"),
+
+  // URLs
+  APP_BASE_URL: z.string().url().optional(),
+  WEBHOOK_PUBLIC_URL: z.string().url().optional(),
+
+  // Feature flags
+  FEATURE_BILLING_ENFORCEMENT: z.enum(["off", "log", "on"]).default("off"),
 });
 
 export const env = envSchema.parse(process.env);
