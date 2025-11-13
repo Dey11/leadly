@@ -357,7 +357,7 @@ Scheduling controls when scrapes run for a user. Tiers cap the number of selecta
 - **Success:** `200 OK`
   ```json
   {
-    "tier": "PLUS",
+    "tier": "PRO",
     "limits": {
       "monitors": 6,
       "scrapesPerDay": 6,

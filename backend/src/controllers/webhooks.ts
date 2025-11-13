@@ -1,12 +1,15 @@
 import type { Request, Response } from "express";
-import { Webhook, type WebhookUnbrandedRequiredHeaders } from "standardwebhooks";
+import {
+  Webhook,
+  type WebhookUnbrandedRequiredHeaders,
+} from "standardwebhooks";
 import { env } from "../env";
 import { getRedis } from "../lib/redis";
 import db from "../lib/db";
 import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
 import { initializeOrResetUsagePeriod } from "../lib/usage";
 
-/**
+/**x
  * Dodo Payments Webhook Handler
  *
  * Security:
@@ -35,12 +38,22 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
       "webhook-timestamp": (req.header("webhook-timestamp") || "") as string,
     };
 
-    if (!headers["webhook-id"] || !headers["webhook-signature"] || !headers["webhook-timestamp"]) {
-      return res.status(400).json({ error: "Missing webhook signature headers" });
+    if (
+      !headers["webhook-id"] ||
+      !headers["webhook-signature"] ||
+      !headers["webhook-timestamp"]
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Missing webhook signature headers" });
     }
 
     // express.raw({ type: 'application/json' }) gives Buffer
-    const raw = Buffer.isBuffer(req.body) ? req.body.toString("utf8") : typeof req.body === "string" ? req.body : JSON.stringify(req.body ?? {});
+    const raw = Buffer.isBuffer(req.body)
+      ? req.body.toString("utf8")
+      : typeof req.body === "string"
+      ? req.body
+      : JSON.stringify(req.body ?? {});
     const redis = getRedis();
     const idemKey = `dodo:webhooks:${headers["webhook-id"]}`;
     const created = await redis.setnx(idemKey, "1"); // 1 if key set, 0 if exists
@@ -63,14 +76,19 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     const type: string = payload?.type || payload?.event_type || "";
     // Common fields we may use
     const data = payload?.data ?? payload?.object ?? {};
-    const subscriptionId: string | undefined = data?.subscription_id || data?.id;
-    const planCode: string | undefined = data?.plan_code || data?.metadata?.plan || data?.metadata?.plan_code;
+    const subscriptionId: string | undefined =
+      data?.subscription_id || data?.id;
+    const planCode: string | undefined =
+      data?.plan_code || data?.metadata?.plan || data?.metadata?.plan_code;
 
-    console.log("[Dodo Webhook]", JSON.stringify({
-      type,
-      subscriptionId,
-      planCode,
-    }));
+    console.log(
+      "[Dodo Webhook]",
+      JSON.stringify({
+        type,
+        subscriptionId,
+        planCode,
+      })
+    );
 
     const userId = (data?.metadata?.user_id as string | undefined) ?? undefined;
 
@@ -78,7 +96,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
       if (!pc) return undefined;
       const norm = String(pc).toLowerCase();
       if (norm === "pro") return SubscriptionTier.PRO;
-      if (norm === "premium") return SubscriptionTier.PLUS;
+      if (norm === "premium") return SubscriptionTier.PREMIUM;
       if (norm === "free") return SubscriptionTier.FREE;
       return undefined;
     };
@@ -118,10 +136,28 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
             },
           });
           // Initialize/reset usage window on activation
-          await initializeOrResetUsagePeriod(userId, tier, undefined, periodEnd);
-          console.log(JSON.stringify({ evt: "subscription.active.persisted", userId, tier, subscriptionId, periodEnd }));
+          await initializeOrResetUsagePeriod(
+            userId,
+            tier,
+            undefined,
+            periodEnd
+          );
+          console.log(
+            JSON.stringify({
+              evt: "subscription.active.persisted",
+              userId,
+              tier,
+              subscriptionId,
+              periodEnd,
+            })
+          );
         } else {
-          console.warn(JSON.stringify({ warn: "subscription.active.no_user_id", subscriptionId }));
+          console.warn(
+            JSON.stringify({
+              warn: "subscription.active.no_user_id",
+              subscriptionId,
+            })
+          );
         }
         break;
       }
@@ -130,32 +166,54 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
           const periodEnd = parsePeriodEnd()!;
           let tierForReset: SubscriptionTier = SubscriptionTier.PRO;
           try {
-            const existing = await db.subscription.findUnique({ where: { userId } });
+            const existing = await db.subscription.findUnique({
+              where: { userId },
+            });
             if (existing?.tier) {
               tierForReset = existing.tier;
             }
           } catch {}
-          await db.subscription.update({
-            where: { userId },
-            data: {
-              status: SubscriptionStatus.ACTIVE,
-              currentPeriodEnd: periodEnd,
-            },
-          }).catch(async () => {
-            await db.subscription.create({
+          await db.subscription
+            .update({
+              where: { userId },
               data: {
-                userId,
                 status: SubscriptionStatus.ACTIVE,
-                tier: tierForReset,
-                subscriptionId: subscriptionId ?? undefined,
                 currentPeriodEnd: periodEnd,
               },
+            })
+            .catch(async () => {
+              await db.subscription.create({
+                data: {
+                  userId,
+                  status: SubscriptionStatus.ACTIVE,
+                  tier: tierForReset,
+                  subscriptionId: subscriptionId ?? undefined,
+                  currentPeriodEnd: periodEnd,
+                },
+              });
             });
-          });
-          await initializeOrResetUsagePeriod(userId, tierForReset, undefined, periodEnd);
-          console.log(JSON.stringify({ evt: "subscription.renewed.persisted", userId, subscriptionId, periodEnd, tierForReset }));
+          await initializeOrResetUsagePeriod(
+            userId,
+            tierForReset,
+            undefined,
+            periodEnd
+          );
+          console.log(
+            JSON.stringify({
+              evt: "subscription.renewed.persisted",
+              userId,
+              subscriptionId,
+              periodEnd,
+              tierForReset,
+            })
+          );
         } else {
-          console.warn(JSON.stringify({ warn: "subscription.renewed.no_user_id", subscriptionId }));
+          console.warn(
+            JSON.stringify({
+              warn: "subscription.renewed.no_user_id",
+              subscriptionId,
+            })
+          );
         }
         break;
       }
@@ -164,64 +222,110 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
           const tier = mapPlanToTier(planCode);
           if (tier) {
             // Update tier
-            await db.subscription.update({
-              where: { userId },
-              data: { tier },
-            }).catch(async () => {
-              await db.subscription.create({
-                data: {
-                  userId,
-                  status: SubscriptionStatus.ACTIVE,
-                  tier,
-                  subscriptionId: subscriptionId ?? undefined,
-                  currentPeriodEnd: parsePeriodEnd()!,
-                },
+            await db.subscription
+              .update({
+                where: { userId },
+                data: { tier },
+              })
+              .catch(async () => {
+                await db.subscription.create({
+                  data: {
+                    userId,
+                    status: SubscriptionStatus.ACTIVE,
+                    tier,
+                    subscriptionId: subscriptionId ?? undefined,
+                    currentPeriodEnd: parsePeriodEnd()!,
+                  },
+                });
               });
-            });
 
             // Reset usage counters on plan change and align to current cycle end if present
             const end = parsePeriodEnd();
             await initializeOrResetUsagePeriod(userId, tier, undefined, end);
 
-            console.log(JSON.stringify({ evt: "subscription.plan_changed.persisted", userId, tier, subscriptionId, periodEnd: end }));
+            console.log(
+              JSON.stringify({
+                evt: "subscription.plan_changed.persisted",
+                userId,
+                tier,
+                subscriptionId,
+                periodEnd: end,
+              })
+            );
           } else {
-            console.warn(JSON.stringify({ warn: "subscription.plan_changed.unknown_plan", userId, planCode }));
+            console.warn(
+              JSON.stringify({
+                warn: "subscription.plan_changed.unknown_plan",
+                userId,
+                planCode,
+              })
+            );
           }
         } else {
-          console.warn(JSON.stringify({ warn: "subscription.plan_changed.no_user_id", subscriptionId, planCode }));
+          console.warn(
+            JSON.stringify({
+              warn: "subscription.plan_changed.no_user_id",
+              subscriptionId,
+              planCode,
+            })
+          );
         }
         break;
       }
       case "subscription.on_hold": {
         if (userId) {
-          await db.subscription.update({
-            where: { userId },
-            data: { status: SubscriptionStatus.PAST_DUE },
-          }).catch(() => {});
-          console.log(JSON.stringify({ evt: "subscription.on_hold.persisted", userId, subscriptionId }));
+          await db.subscription
+            .update({
+              where: { userId },
+              data: { status: SubscriptionStatus.PAST_DUE },
+            })
+            .catch(() => {});
+          console.log(
+            JSON.stringify({
+              evt: "subscription.on_hold.persisted",
+              userId,
+              subscriptionId,
+            })
+          );
         }
         break;
       }
       case "subscription.cancelled": {
         if (userId) {
-          await db.subscription.update({
-            where: { userId },
-            data: {
-              status: SubscriptionStatus.CANCELED,
-              tier: SubscriptionTier.FREE,
-            },
-          }).catch(() => {});
-          console.log(JSON.stringify({ evt: "subscription.cancelled.persisted", userId, subscriptionId }));
+          await db.subscription
+            .update({
+              where: { userId },
+              data: {
+                status: SubscriptionStatus.CANCELED,
+                tier: SubscriptionTier.FREE,
+              },
+            })
+            .catch(() => {});
+          console.log(
+            JSON.stringify({
+              evt: "subscription.cancelled.persisted",
+              userId,
+              subscriptionId,
+            })
+          );
         }
         break;
       }
       case "subscription.failed": {
         if (userId) {
-          await db.subscription.update({
-            where: { userId },
-            data: { status: SubscriptionStatus.INCOMPLETE },
-          }).catch(() => {});
-          console.log(JSON.stringify({ evt: "subscription.failed.persisted", userId, subscriptionId }));
+          await db.subscription
+            .update({
+              where: { userId },
+              data: { status: SubscriptionStatus.INCOMPLETE },
+            })
+            .catch(() => {});
+          console.log(
+            JSON.stringify({
+              evt: "subscription.failed.persisted",
+              userId,
+              subscriptionId,
+            })
+          );
         }
         break;
       }

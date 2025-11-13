@@ -6,6 +6,7 @@ import type {
   Schedule,
   ScheduleLimitsResponse,
   Session,
+  UsageSummaryResponse,
 } from "@/types/backend";
 import { backendJson, BackendError } from "./api-client";
 
@@ -86,18 +87,7 @@ export async function getScheduleLimits() {
 
 export async function getUsageSummary() {
   try {
-    return await backendJson<{
-      message: string;
-      payload: {
-        tier: "FREE" | "PLUS" | "PRO";
-        dailyUsed: number;
-        dailyLimit: number;
-        monthlyUsed: number;
-        monthlyLimit: number;
-        periodStart: string;
-        periodEnd: string;
-      };
-    }>("/account/usage");
+    return await backendJson<UsageSummaryResponse>("/account/usage");
   } catch (error) {
     if (error instanceof BackendError && error.status === 401) {
       return null;

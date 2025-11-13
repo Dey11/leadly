@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarClock,
+  CreditCard,
   LayoutDashboard,
   Layers,
   Radar,
@@ -21,6 +22,7 @@ const iconComponents = {
   leads: Sparkles,
   schedule: CalendarClock,
   account: UserRound,
+  billing: CreditCard,
 } as const;
 
 export type IconKey = keyof typeof iconComponents;

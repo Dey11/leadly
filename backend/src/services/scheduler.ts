@@ -61,6 +61,22 @@ export async function runScheduler() {
 
     for (const monitor of user.monitors) {
       try {
+        const existingJob = await db.scrapeJob.findFirst({
+          where: {
+            monitorId: monitor.id,
+            status: {
+              in: ["PENDING", "RUNNING"],
+            },
+          },
+        });
+
+        if (existingJob) {
+          console.log(
+            `Skipping monitor ${monitor.id} because a job is already ${existingJob.status}`
+          );
+          continue;
+        }
+
         // Check and consume a credit per monitor run
         const { allowed, reason, summary } = await tryConsumeScrapeCredit(
           user.id,

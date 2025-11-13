@@ -923,8 +923,7 @@ export default async function DashboardHome() {
                         variant="outline"
                         className="border-border/70 bg-background/95 text-foreground rounded-full text-xs"
                       >
-                        +
-                        {scheduledHours.length - scheduleHourBadges.length}{" "}
+                        +{scheduledHours.length - scheduleHourBadges.length}{" "}
                         more
                       </Badge>
                     ) : null}

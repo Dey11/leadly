@@ -23,6 +23,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { PricingCta } from "@/components/landing/pricing-cta";
+import { getAccountSummary } from "@/lib/backend-queries";
 
 const palette = {
   wine: "var(--wine)",
@@ -120,55 +122,47 @@ const useCases = [
   },
 ];
 
-const pricingTiers = [
+const pricingPlans = [
   {
     name: "Free",
     price: "$0",
-    cadence: "forever",
-    description:
-      "Prove out Leadly with a generous free tier built for scrappy teams.",
+    cadence: "1 scrape/day · 30/mo",
+    subs: "3 subreddits",
     highlights: [
-      "3 monitors across your key communities",
-      "1 scheduled scrape per day",
+      "Daily monitoring across your core communities",
       "AI summaries & heat scoring",
       "Email alerts (coming soon)",
     ],
-    cta: { label: "Start for free", href: "/register" },
-    note: "No credit card required.",
-  },
-  {
-    name: "Plus",
-    price: "$9",
-    cadence: "/month",
-    description:
-      "Scale outreach with richer cadences and collaborative workflows.",
-    highlights: [
-      "6 monitors & layered keyword filters",
-      "Up to 6 scrapes per day",
-      "CSV & Sheets exports",
-      "Early access to email alerts",
-    ],
-    cta: { label: "Join waitlist", href: "/register" },
-    badge: "Most popular",
-    promo: "First month $4.50",
-    comingSoon: true,
+    cta: { label: "Start free", href: "/register" },
+    note: "On-demand scraping coming soon (30-minute cooldown).",
   },
   {
     name: "Pro",
-    price: "$24",
-    cadence: "/month",
-    description:
-      "For teams that need round-the-clock coverage and deeper insights.",
+    price: "$9",
+    cadence: "6 scrapes/day · 180/mo",
+    subs: "10 subreddits",
     highlights: [
-      "20 monitors with advanced filters",
-      "24 scrape windows every day",
-      "Unlimited historical exports",
-      "Priority support & playbooks",
+      "Layered keyword filters & exports",
+      "Priority monitoring windows",
+      "Lead health dashboards + CSV downloads",
     ],
-    cta: { label: "Talk to us", href: "mailto:hello@leadly.live" },
+    badge: "Most popular",
+    cta: { label: "Purchase now", href: "/dashboard/billing", requiresAuth: true },
+    note: "Includes 10 on-demand scrapes/month (coming soon).",
+  },
+  {
+    name: "Premium",
+    price: "$24",
+    cadence: "24 scrapes/day · 720/mo",
+    subs: "20 subreddits",
+    highlights: [
+      "24×7 coverage with unlimited exports",
+      "Priority support & playbooks",
+      "Dedicated lead-handoff workflows",
+    ],
     badge: "Scale teams",
-    promo: "First month $12",
-    comingSoon: true,
+    cta: { label: "Purchase now", href: "/dashboard/billing", requiresAuth: true },
+    note: "Includes 30 on-demand scrapes/month (coming soon).",
   },
 ];
 
@@ -308,16 +302,24 @@ function GradientBackground() {
   );
 }
 
-function PricingFeature({ feature }: { feature: string }) {
-  return (
-    <li className="flex items-start gap-2 text-sm text-muted-foreground">
-      <CheckCircle2 className="mt-[2px] size-4 text-primary" aria-hidden />
-      <span>{feature}</span>
-    </li>
-  );
-}
+export default async function HomePage() {
+  let account = null;
+  try {
+    account = await getAccountSummary();
+  } catch {
+    account = null;
+  }
+  const isAuthenticated = Boolean(account);
 
-export default function HomePage() {
+  const resolveCtaHref = (planHref: string, requiresAuth?: boolean) => {
+    if (!requiresAuth) {
+      return planHref;
+    }
+    return isAuthenticated
+      ? planHref
+      : `/login?next=${encodeURIComponent(planHref)}`;
+  };
+
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       <div className="absolute inset-x-0 top-0 z-40">
@@ -573,78 +575,77 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section
-          id="pricing"
-          className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-20 md:px-8"
-        >
-          <div className="max-w-3xl space-y-4">
-            <Badge variant="outline" className="border-primary/30 text-primary">
-              Pricing that lets you prove value
-            </Badge>
+        <section id="pricing" className="mx-auto max-w-6xl px-5 py-20">
+          <div className="mx-auto max-w-3xl space-y-4 text-center">
+            <p className="text-sm uppercase tracking-[0.4em] text-muted-foreground">
+              Pricing
+            </p>
             <h2 className="text-3xl font-semibold md:text-4xl">
-              Generous free tier today. Affordable upgrades when billing opens.
+              Choose the cadence that matches your playbook
             </h2>
-            <p className="text-base text-muted-foreground md:text-lg">
-              Start on Free to validate the workflow. When paid plans launch, early
-              users lock in half-off pricing for the first month.
+            <p className="text-base text-muted-foreground">
+              Every plan enforces safe scraping limits while surfacing qualified leads
+              from your favorite communities.
             </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {pricingTiers.map((tier) => (
-              <Card
-                key={tier.name}
-                className={cn(
-                  "relative flex h-full flex-col justify-between border-border/60 bg-background/85 p-6",
-                  tier.name === "Free"
-                    ? "border-primary/40 shadow-lg shadow-primary/20"
-                    : "",
-                )}
-              >
-                <div className="space-y-4">
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {pricingPlans.map((plan) => {
+              const ctaHref = resolveCtaHref(
+                plan.cta.href,
+                plan.cta.requiresAuth,
+              );
+              return (
+                <Card
+                  key={plan.name}
+                  className={cn(
+                    "flex h-full flex-col justify-between rounded-3xl border border-border/60 bg-card/90 p-6 shadow-sm",
+                    plan.name === "Free"
+                      ? "border-primary/40 shadow-lg shadow-primary/20"
+                      : "",
+                  )}
+                >
+                <CardHeader className="space-y-3 border-b border-border/50 pb-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                    {tier.badge ? (
-                      <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                        {tier.badge}
-                      </span>
+                    <CardTitle className="text-2xl font-semibold">{plan.name}</CardTitle>
+                    {plan.badge ? (
+                      <Badge className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                        {plan.badge}
+                      </Badge>
                     ) : null}
                   </div>
-                  <CardDescription>{tier.description}</CardDescription>
-                  <div className="space-y-1">
-                    <p className="text-3xl font-semibold text-foreground">
-                      {tier.price}
-                      <span className="text-base font-medium">
-                        {" "}
-                        {tier.cadence}
-                      </span>
-                    </p>
-                    {tier.promo ? (
-                      <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-                        {tier.promo}
-                      </p>
-                    ) : null}
-                    {tier.comingSoon ? (
-                      <p className="text-xs text-muted-foreground">
-                        Paid upgrades open soon. Reserve your spot.
-                      </p>
-                    ) : null}
+                  <CardDescription className="text-sm text-muted-foreground">
+                    {plan.subs}
+                  </CardDescription>
+                  <div>
+                    <p className="text-4xl font-semibold text-foreground">{plan.price}</p>
+                    <p className="text-sm text-muted-foreground">{plan.cadence}</p>
                   </div>
-                  <ul className="space-y-2">
-                    {tier.highlights.map((feature) => (
-                      <PricingFeature key={feature} feature={feature} />
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <ul className="space-y-3 text-sm text-muted-foreground">
+                    {plan.highlights.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-muted-foreground">
+                        <CheckCircle2 className="size-4 text-primary" aria-hidden />
+                        <span>{feature}</span>
+                      </li>
                     ))}
                   </ul>
-                </div>
-                <div className="mt-6 space-y-2">
-                  <Button asChild className="w-full">
-                    <Link href={tier.cta.href}>{tier.cta.label}</Link>
-                  </Button>
-                  {tier.note ? (
-                    <p className="text-xs text-muted-foreground">{tier.note}</p>
-                  ) : null}
-                </div>
+                    <div className="space-y-2">
+                      <PricingCta
+                        href={ctaHref}
+                        label={plan.cta.label}
+                        requiresAuth={plan.cta.requiresAuth}
+                        isAuthenticated={isAuthenticated}
+                        targetPath={plan.cta.href}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {plan.note}
+                      </p>
+                    </div>
+                </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         </section>
 

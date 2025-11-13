@@ -37,7 +37,7 @@ Entities (see `prisma/schema.prisma`):
 - `ScrapeJob` stores execution status, warm/cold/neutral counts, timestamps.
 - `Lead` references a `ScrapeJob`, holds AI-evaluated reasoning and type.
 - `Session` persists login state and backs the HTTP-only `session_token` cookie.
-- `Subscription` encodes tier (`FREE`, `PLUS`, `PRO`) and limit metadata.
+- `Subscription` encodes tier (`FREE`, `PRO`, `PREMIUM`) and limit metadata.
 
 ### Background processing pipeline
 1. `runScheduler` (cron `*/30 * * * *`) locates users whose schedule contains the current hour, verifies an active subscription, and enqueues BullMQ `scrapeJobs` per active monitor.
@@ -89,7 +89,7 @@ All routes live under `/api/v1`. Controllers respond with raw JSON objects (no c
 - `GET /icps` presently returns **all** scrape jobs; limit to 10 is not enforced.
 - Scrape jobs no longer populate the `metadata` field (`{ after: ... }` in the doc is outdated).
 - `GET /schedule` and `PATCH /schedule` return the raw schedule object (no `message` wrapper); same for most controller responses.
-- `DEFAULT_HOURS_MAP.PLUS` includes `24`, which falls outside the documented `0–23` range (bug worth fixing; validation currently catches hours > 23).
+- `DEFAULT_HOURS_MAP.PREMIUM` includes `24`, which falls outside the documented `0–23` range (bug worth fixing; validation currently catches hours > 23).
 - Session records leave `ipAddress`/`userAgent` empty unless upstream logic populates them later.
 - Registration seeds a default subscription (not mentioned previously).
 
@@ -161,7 +161,7 @@ All routes live under `/api/v1`. Controllers respond with raw JSON objects (no c
 ---
 
 ## Open questions & potential follow-ups
-1. **`DEFAULT_HOURS_MAP.PLUS` uses hour `24`:** Validation rejects it, but correcting the constant will avoid accidental defaults.
+1. **`DEFAULT_HOURS_MAP.PREMIUM` uses hour `24`:** Validation rejects it, but correcting the constant will avoid accidental defaults.
 2. **Session metadata:** If ip/user-agent auditing is desired, populate `ipAddress` and `userAgent` when creating sessions.
 3. **`GET /icps` volume:** Consider reinstating the “last 10 jobs” limit (e.g., `take: 10`) to keep payload sizes manageable.
 4. **Nitter integration:** `scrapeNitter` is implemented but not scheduled—decide whether to wire it into the queue or remove until needed.

@@ -100,7 +100,7 @@ export interface Schedule {
 }
 
 export interface ScheduleLimitsResponse {
-  tier: "FREE" | "PLUS" | "PRO";
+  tier: SubscriptionTier;
   limits: {
     monitors: number;
     scrapesPerDay: number;
@@ -113,7 +113,7 @@ export interface ScheduleLimitsResponse {
 export interface UsageSummaryResponse {
   message: string;
   payload: {
-    tier: "FREE" | "PLUS" | "PRO";
+    tier: SubscriptionTier;
     dailyUsed: number;
     dailyLimit: number;
     monthlyUsed: number;
@@ -150,3 +150,5 @@ export interface LeadUpdateResponse {
     status: LeadStatus;
   };
 }
+
+export type SubscriptionTier = "FREE" | "PRO" | "PREMIUM";

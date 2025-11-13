@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 
 import { clientApi } from "@/lib/client/api";
@@ -11,11 +11,46 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
-export function LoginForm() {
+function sanitizeReturnUrl(value?: string) {
+  if (!value) {
+    return "/dashboard";
+  }
+
+  let decoded = value;
+  try {
+    decoded = decodeURIComponent(value);
+  } catch (error) {
+    console.warn("Failed to decode returnUrl", value, error);
+  }
+
+  if (decoded.startsWith("//")) {
+    return "/dashboard";
+  }
+  if (!decoded.startsWith("/")) {
+    return "/dashboard";
+  }
+  return decoded;
+}
+
+const COOKIE_NAME = "next_redirect";
+
+function clearNextRedirectCookie() {
+  if (typeof document === "undefined") {
+    return;
+  }
+  document.cookie = `${COOKIE_NAME}=; Path=/; Max-Age=0`;
+}
+
+export function LoginForm({ returnUrl }: { returnUrl?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const fallbackReturnUrl = sanitizeReturnUrl(
+    searchParams.get("next") ?? undefined,
+  );
+  const resolvedReturnUrl = returnUrl ?? fallbackReturnUrl;
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -26,8 +61,8 @@ export function LoginForm() {
     },
     onSuccess: () => {
       setFormError(null);
-      router.replace("/dashboard");
-      router.refresh();
+      clearNextRedirectCookie();
+      router.replace(resolvedReturnUrl ?? "/dashboard");
     },
     onError: (error: unknown) => {
       setFormError(error instanceof Error ? error.message : "Unable to sign in.");

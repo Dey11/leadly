@@ -47,8 +47,8 @@ enum SubscriptionStatus {
 
 enum SubscriptionTier {
   FREE
-  PLUS
   PRO
+  PREMIUM
 }
 
 model User {

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-type Tier = "FREE" | "PLUS" | "PRO";
+type Tier = "FREE" | "PRO" | "PREMIUM";
 
 export function BillingPanel(props: {
   tier: Tier;
@@ -20,7 +20,7 @@ export function BillingPanel(props: {
   const { tier, usage } = props;
   const [loading, setLoading] = useState<"pro" | "premium" | null>(null);
   const canUpgradeToPro = tier === "FREE";
-  const canUpgradeToPremium = tier !== "PLUS";
+  const canUpgradeToPremium = tier !== "PREMIUM";
 
   async function handleSubscribe(plan: "pro" | "premium") {
     try {
@@ -42,7 +42,10 @@ export function BillingPanel(props: {
       : 0;
   const monthlyPct =
     usage.monthlyLimit > 0
-      ? Math.min(100, Math.round((usage.monthlyUsed / usage.monthlyLimit) * 100))
+      ? Math.min(
+          100,
+          Math.round((usage.monthlyUsed / usage.monthlyLimit) * 100),
+        )
       : 0;
 
   const tierLabel =
@@ -54,12 +57,12 @@ export function BillingPanel(props: {
         <CardTitle>Billing & usage</CardTitle>
         <Badge variant="outline">{tierLabel}</Badge>
       </CardHeader>
-      <CardContent className="space-y-4 text-sm text-muted-foreground">
+      <CardContent className="text-muted-foreground space-y-4 text-sm">
         <section className="space-y-2">
           <p className="text-foreground font-medium">Daily usage</p>
-          <div className="w-full rounded-full bg-muted">
+          <div className="bg-muted w-full rounded-full">
             <div
-              className="h-2 rounded-full bg-foreground transition-all"
+              className="bg-foreground h-2 rounded-full transition-all"
               style={{ width: `${dailyPct}%` }}
             />
           </div>
@@ -70,9 +73,9 @@ export function BillingPanel(props: {
 
         <section className="space-y-2">
           <p className="text-foreground font-medium">Monthly usage</p>
-          <div className="w-full rounded-full bg-muted">
+          <div className="bg-muted w-full rounded-full">
             <div
-              className="h-2 rounded-full bg-foreground transition-all"
+              className="bg-foreground h-2 rounded-full transition-all"
               style={{ width: `${monthlyPct}%` }}
             />
           </div>
