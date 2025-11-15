@@ -120,6 +120,12 @@ export interface UsageSummaryResponse {
     monthlyLimit: number;
     periodStart: string;
     periodEnd: string;
+    billingContact: {
+      name?: string | null;
+      email?: string | null;
+      phone?: string | null;
+      address?: string | null;
+    };
   };
 }
 

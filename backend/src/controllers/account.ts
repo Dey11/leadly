@@ -156,6 +156,13 @@ export async function getUsageSummary(req: Request, res: Response) {
       return res.status(400).json({ error: "User has no active subscription" });
     }
 
+    const billingContact = {
+      name: user.subscription.billingName ?? undefined,
+      email: user.subscription.billingEmail ?? undefined,
+      phone: user.subscription.billingPhone ?? undefined,
+      address: user.subscription.billingAddress ?? undefined,
+    };
+
     const tier = user.subscription.tier as SubscriptionTier;
     const currentPeriodEnd = user.subscription.currentPeriodEnd;
 
@@ -171,6 +178,7 @@ export async function getUsageSummary(req: Request, res: Response) {
         monthlyLimit: usage.monthlyLimit,
         periodStart: usage.periodStart,
         periodEnd: usage.periodEnd,
+        billingContact,
       },
     });
   } catch (error) {

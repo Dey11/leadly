@@ -34,11 +34,26 @@ export const TIER_LIMITS: Record<
     monthlyScrapeLimit: number; // derived monthly limit
   }
 > = {
-  FREE: { monitors: 3, scrapesPerDay: 1, selectableHours: 1, monthlyScrapeLimit: 30 },
-  PRO: { monitors: 10, scrapesPerDay: 6, selectableHours: 6, monthlyScrapeLimit: 180 },
-  PREMIUM: { monitors: 20, scrapesPerDay: 24, selectableHours: 24, monthlyScrapeLimit: 720 },
+  FREE: {
+    monitors: 3,
+    scrapesPerDay: 1,
+    selectableHours: 1,
+    monthlyScrapeLimit: 30,
+  },
+  PRO: {
+    monitors: 10,
+    scrapesPerDay: 6,
+    selectableHours: 6,
+    monthlyScrapeLimit: 180,
+  },
+  PREMIUM: {
+    monitors: 20,
+    scrapesPerDay: 24,
+    selectableHours: 24,
+    monthlyScrapeLimit: 720,
+  },
 } as const;
 
 export const MODEL = "gemini-2.5-flash-lite";
 
-export const CRON_INTERVAL = "*/30 * * * *";
+export const CRON_INTERVAL = "*/5 * * * *";

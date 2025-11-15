@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { getScheduleLimits, getUsageSummary } from "@/lib/backend-queries";
 import type { UsageSummaryResponse } from "@/types/backend";
+import { BillingActions } from "@/components/billing/actions";
 
 type BillingTier = UsageSummaryResponse["payload"]["tier"];
 
@@ -92,7 +93,11 @@ export default async function BillingPage() {
             current scrape limits and what the higher tiers offer.
           </p>
         </div>
-      </section>
+        </section>
+
+        <section className="grid gap-6">
+          <BillingActions />
+        </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <BillingPanel

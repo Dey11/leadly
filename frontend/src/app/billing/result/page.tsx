@@ -61,6 +61,7 @@ export default async function BillingResultPage({
   const statusCopy = isSuccessful
     ? "Your Dodo checkout completed successfully and the subscription is now active."
     : "We could not verify the subscription. Check Dodo’s checkout logs or try again.";
+  const contact = usagePayload?.billingContact ?? null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -114,6 +115,39 @@ export default async function BillingResultPage({
                 </CardContent>
               </Card>
             </div>
+            {contact ? (
+              <div className="mt-4">
+                <Card className="border-border/40 bg-background/80">
+                  <CardHeader className="pb-0">
+                    <CardTitle className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                      Billing contact
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1 p-4">
+                    {contact.name ? (
+                      <p className="text-sm font-semibold text-foreground">
+                        {contact.name}
+                      </p>
+                    ) : null}
+                    {contact.email ? (
+                      <p className="text-xs text-muted-foreground">
+                        {contact.email}
+                      </p>
+                    ) : null}
+                    {contact.phone ? (
+                      <p className="text-xs text-muted-foreground">
+                        {contact.phone}
+                      </p>
+                    ) : null}
+                    {contact.address ? (
+                      <p className="text-xs text-muted-foreground break-words">
+                        {contact.address}
+                      </p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              </div>
+            ) : null}
             <div className="flex flex-wrap items-center gap-3 pt-6">
               <Button asChild>
                 <Link href="/dashboard/billing">

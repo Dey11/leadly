@@ -319,6 +319,7 @@ export default async function HomePage() {
       ? planHref
       : `/login?next=${encodeURIComponent(planHref)}`;
   };
+  const signInHref = isAuthenticated ? "/dashboard" : "/login";
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -346,7 +347,7 @@ export default async function HomePage() {
           </nav>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild className="text-sm">
-              <Link href="/login">Sign in</Link>
+              <Link href={signInHref}>Sign in</Link>
             </Button>
             <Button asChild className="hidden text-sm md:inline-flex">
               <Link href="/register">

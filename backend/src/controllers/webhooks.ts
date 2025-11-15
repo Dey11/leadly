@@ -76,6 +76,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     const type: string = payload?.type || payload?.event_type || "";
     // Common fields we may use
     const data = payload?.data ?? payload?.object ?? {};
+    const customerId = (data?.customer_id as string | undefined) ?? undefined;
     const subscriptionId: string | undefined =
       data?.subscription_id || data?.id;
     const planCode: string | undefined =
@@ -114,6 +115,53 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
       return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     };
 
+    const getBillingDetails = (payloadData: any) => {
+      const customer = payloadData?.customer ?? {};
+      const metadata = payloadData?.metadata ?? {};
+      const name =
+        customer?.name ??
+        payloadData?.customer_name ??
+        metadata?.billing_name ??
+        undefined;
+      const email =
+        customer?.email ??
+        payloadData?.customer_email ??
+        metadata?.billing_email ??
+        undefined;
+      const phone =
+        customer?.phone_number ??
+        payloadData?.customer_phone_number ??
+        metadata?.billing_phone ??
+        undefined;
+      const addressFields =
+        payloadData?.billing_address ??
+        payloadData?.address ??
+        metadata?.billing_address ??
+        undefined;
+      const address =
+        addressFields && typeof addressFields === "object"
+          ? JSON.stringify(addressFields)
+          : addressFields ?? undefined;
+      return {
+        billingName: name ?? undefined,
+        billingEmail: email ?? undefined,
+        billingPhone: phone ?? undefined,
+        billingAddress: address,
+      };
+    };
+
+    const billingDetails = getBillingDetails(data);
+
+    const attachCustomerId = async (userId: string, id?: string) => {
+      if (!id) return;
+      try {
+        await db.subscription.update({
+          where: { userId },
+          data: { subscriptionCustomerId: id },
+        });
+      } catch {}
+    };
+
     switch (type) {
       case "subscription.active": {
         if (userId) {
@@ -127,12 +175,16 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               status: SubscriptionStatus.ACTIVE,
               tier,
               currentPeriodEnd: periodEnd,
+              subscriptionCustomerId: customerId ?? undefined,
+              ...billingDetails,
             },
             update: {
               subscriptionId: subscriptionId ?? undefined,
               status: SubscriptionStatus.ACTIVE,
               tier,
               currentPeriodEnd: periodEnd,
+              subscriptionCustomerId: customerId ?? undefined,
+              ...billingDetails,
             },
           });
           // Initialize/reset usage window on activation
@@ -179,6 +231,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               data: {
                 status: SubscriptionStatus.ACTIVE,
                 currentPeriodEnd: periodEnd,
+                ...billingDetails,
               },
             })
             .catch(async () => {
@@ -189,6 +242,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                   tier: tierForReset,
                   subscriptionId: subscriptionId ?? undefined,
                   currentPeriodEnd: periodEnd,
+                  ...billingDetails,
                 },
               });
             });
@@ -207,6 +261,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               tierForReset,
             })
           );
+          await attachCustomerId(userId, customerId);
         } else {
           console.warn(
             JSON.stringify({
@@ -235,6 +290,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                     tier,
                     subscriptionId: subscriptionId ?? undefined,
                     currentPeriodEnd: parsePeriodEnd()!,
+                    ...billingDetails,
                   },
                 });
               });
@@ -243,16 +299,17 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
             const end = parsePeriodEnd();
             await initializeOrResetUsagePeriod(userId, tier, undefined, end);
 
-            console.log(
-              JSON.stringify({
-                evt: "subscription.plan_changed.persisted",
-                userId,
-                tier,
-                subscriptionId,
-                periodEnd: end,
-              })
-            );
-          } else {
+          console.log(
+            JSON.stringify({
+              evt: "subscription.plan_changed.persisted",
+              userId,
+              tier,
+              subscriptionId,
+              periodEnd: end,
+            })
+          );
+          await attachCustomerId(userId, customerId);
+        } else {
             console.warn(
               JSON.stringify({
                 warn: "subscription.plan_changed.unknown_plan",

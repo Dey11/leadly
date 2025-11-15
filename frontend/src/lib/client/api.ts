@@ -156,6 +156,16 @@ export const clientApi = {
       body: { plan },
     });
   },
+  openManageSubscription: async () => {
+    return request<{ url: string }>(`${apiBaseUrl}/billing/portal/manage`, {
+      method: "POST",
+    });
+  },
+  openCancelSubscription: async () => {
+    return request<{ url: string }>(`${apiBaseUrl}/billing/portal/cancel`, {
+      method: "POST",
+    });
+  },
 
   listLeads: async (params: {
     monitorId?: string;
