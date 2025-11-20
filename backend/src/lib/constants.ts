@@ -54,6 +54,6 @@ export const TIER_LIMITS: Record<
   },
 } as const;
 
-export const MODEL = "gemini-2.5-flash-lite";
+export const MODEL = "gemini-2.5-flash";
 
 export const CRON_INTERVAL = "*/5 * * * *";

@@ -27,9 +27,9 @@ HARD RULES TO REDUCE FALSE POSITIVES
 7) Return only leads. If nothing qualifies, return [].
 
 LEAD TYPES
-- WARM: Clear or strong implied intent aligned with the ICP. Examples: asking for recommendations that match the offer, describing a painful workflow that our offer solves, requesting a vendor in scope.
-- COLD: The person mentions a situation that likely needs our offer, but no explicit request. Examples: launching a business, scaling operations, manual repetitive work, compliance pain, SEO concerns, lead capture gaps, data chaos, pipeline tracking issues.
-- NEUTRAL: Related topic but weak fit or no actionable pain. Keep neutral leads only if they are plausibly target ICP and may convert with education. If it is unrelated, exclude entirely.
+- WARM: Strong evidence of buying, decision authority, or imminent need aligned with the ICP. Prioritize explicit signals such as requests for recommendations, vendor sourcing, budgeting/approval discussion, express urgency, or describing a painful workflow our offer directly solves. If the quoted text links back to the ICP’s pains or value proposition with a clear buyer mindset, warm is appropriate; otherwise default toward NEUTRAL.
+- COLD: The person describes a situation that maps to our offer but lacks a direct buying signal—e.g., planning a launch, scaling operations, manual repetitive work, compliance pain, SEO concerns, lead capture gaps, data chaos, pipeline tracking issues—without any indication of timing, budget, or decision involvement.
+- NEUTRAL: Related topic but weak fit, no actionable pain, or too far from the ICP even if somewhat relevant. Leave the entry out unless it plausibly targets the ICP and might convert with education. Do not upgrade vague or speculative mentions that lack intent or alignment.
 
 EVIDENCE AND REASONING
 - Be concise and concrete. Quote the most relevant snippet inside the reasoning string when helpful, capped at 30 words.
