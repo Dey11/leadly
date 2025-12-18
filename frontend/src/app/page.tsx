@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+import { Metadata } from "next";
 import {
   ArrowRight,
   BarChart3,
@@ -11,6 +13,8 @@ import {
   Sparkles,
   Target,
   Users,
+  Zap,
+  Shield,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -26,11 +30,16 @@ import { cn } from "@/lib/utils";
 import { PricingCta } from "@/components/landing/pricing-cta";
 import { getAccountSummary } from "@/lib/backend-queries";
 
-const palette = {
-  wine: "var(--wine)",
-  dogwood: "var(--pale-dogwood)",
-  linen: "var(--linen)",
-  licorice: "var(--licorice)",
+export const metadata: Metadata = {
+  title: "Leadly | Turn Reddit Conversations into Revenue",
+  description:
+    "The AI-powered lead generation platform for Reddit. Monitor communities, score buying intent, and draft personalized outreach in seconds.",
+  openGraph: {
+    title: "Leadly | Turn Reddit Conversations into Revenue",
+    description:
+      "The AI-powered lead generation platform for Reddit. Monitor communities, score buying intent, and draft personalized outreach in seconds.",
+    images: ["/assets/hero-dashboard.png"],
+  },
 };
 
 const navLinks = [
@@ -217,88 +226,14 @@ const seoTopics = [
   },
 ];
 
-function HeroLeadPreview() {
-  const sampleLeads = [
-    {
-      channel: "r/SaaS",
-      summary: "Considering community intelligence tools for CS workflows.",
-      score: "Warm",
-      time: "12m ago",
-    },
-    {
-      channel: "r/Entrepreneur",
-      summary: "Need a lightweight way to monitor Reddit for B2B leads.",
-      score: "Neutral",
-      time: "35m ago",
-    },
-    {
-      channel: "r/Sales",
-      summary: "Looking for buyer intent alerts that SDRs can action quickly.",
-      score: "Warm",
-      time: "1h ago",
-    },
-  ];
-
-  return (
-    <div className="relative max-w-lg rounded-3xl border border-border/40 bg-card/85 p-6 shadow-xl shadow-[rgba(12,0,20,0.12)] backdrop-blur">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-            Live pipeline
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Updated whenever your monitors scrape.
-          </p>
-        </div>
-        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-          Free tier
-        </span>
-      </div>
-
-      <div className="space-y-3">
-        {sampleLeads.map((lead) => (
-          <div
-            key={lead.channel + lead.time}
-            className="rounded-2xl border border-border/70 bg-background/90 px-4 py-3"
-          >
-            <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              <span>{lead.channel}</span>
-              <span>{lead.time}</span>
-            </div>
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              {lead.summary}
-            </p>
-            <div className="mt-3 flex items-center gap-2 text-xs">
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-full px-2.5 py-1 font-semibold",
-                  lead.score === "Warm"
-                    ? "bg-primary/15 text-primary"
-                    : "bg-secondary/40 text-foreground",
-                )}
-              >
-                {lead.score} intent
-              </span>
-              <span className="text-muted-foreground">
-                Suggested opener ready
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function GradientBackground() {
   return (
     <div
       aria-hidden
       className="absolute inset-0 -z-10 overflow-hidden"
-      style={{
-        background: `radial-gradient(120% 120% at 0% 0%, ${palette.dogwood} 0%, ${palette.linen} 45%, rgba(255,255,255,0) 70%), radial-gradient(90% 90% at 100% 0%, rgba(212,77,92,0.22) 0%, rgba(255,255,255,0) 55%)`,
-      }}
-    />
+    >
+      <div className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[80%] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/15 via-background to-background blur-[100px]" />
+    </div>
   );
 }
 
@@ -322,15 +257,36 @@ export default async function HomePage() {
   const signInHref = isAuthenticated ? "/dashboard" : "/login";
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
-      <div className="absolute inset-x-0 top-0 z-40">
-        <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-5 text-sm md:px-8">
+    <div className="relative min-h-screen bg-background text-foreground selection:bg-primary/20">
+      {/* Structure Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "Leadly",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
+            offers: {
+              "@type": "Offer",
+              price: "0",
+              priceCurrency: "USD",
+            },
+            description:
+              "AI-powered Reddit lead generation and monitoring tool for B2B sales teams.",
+          }),
+        }}
+      />
+
+      <div className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
+        <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-4 text-sm md:px-8">
           <Link
             href="/"
-            className="flex items-center gap-2 text-lg font-semibold text-foreground"
+            className="flex items-center gap-2 text-lg font-semibold text-foreground transition hover:opacity-80"
           >
-            <span className="inline-flex size-9 items-center justify-center rounded-lg bg-primary/10 text-base font-semibold text-primary">
-              L
+            <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Zap className="size-4 fill-current" />
             </span>
             Leadly
           </Link>
@@ -349,10 +305,10 @@ export default async function HomePage() {
             <Button variant="ghost" asChild className="text-sm">
               <Link href={signInHref}>Sign in</Link>
             </Button>
-            <Button asChild className="hidden text-sm md:inline-flex">
+            <Button asChild className="hidden text-sm md:inline-flex shadow-lg shadow-primary/25">
               <Link href="/register">
                 Start free
-                <ArrowRight className="size-4" />
+                <ArrowRight className="size-4 ml-2" />
               </Link>
             </Button>
           </div>
@@ -360,278 +316,250 @@ export default async function HomePage() {
       </div>
 
       <main>
-        <section className="relative isolate overflow-hidden pt-28">
+        {/* HERO SECTION */}
+        <section className="relative isolate pt-16 md:pt-24 lg:pt-32 pb-20 overflow-hidden">
           <GradientBackground />
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 pb-20 md:grid md:grid-cols-[1.05fr_0.95fr] md:items-center md:px-8 md:pb-28">
-            <div className="space-y-8">
-              <Badge className="bg-primary/10 text-primary">
-                Community intent, captured
-              </Badge>
-              <div className="space-y-4">
-                <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
-                  Turn Reddit signals into pipeline before competitors notice.
-                </h1>
-                <p className="text-lg text-muted-foreground md:text-xl">
-                  Leadly finds the conversations that match your ICP, scores intent,
-                  and hands your team ready-to-engage threads with AI-crafted context.
-                </p>
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                <Button size="lg" asChild className="sm:w-auto">
-                  <Link href="/register">Create your free account</Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  asChild
-                  className="sm:w-auto"
-                >
-                  <Link href="#workflow">See the workflow</Link>
-                </Button>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-3">
-                {heroStats.map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="rounded-2xl border border-border/50 bg-card/80 p-4"
-                  >
-                    <p className="text-2xl font-semibold text-foreground">
-                      {stat.value}
-                    </p>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex justify-center md:justify-end">
-              <HeroLeadPreview />
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-border/40 bg-card/70 py-12">
-          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-6 px-5 text-sm text-muted-foreground md:px-8">
-            <div className="flex items-center gap-2 font-medium text-foreground/80">
-              <Users className="size-4" aria-hidden />
-              Trusted by go-to-market teams testing community-led growth
-            </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <span>Arcadia Labs</span>
-              <span>Northwind Ops</span>
-              <span>SignalStack</span>
-              <span>Brightline AI</span>
-              <span>Parallel Route</span>
-            </div>
-          </div>
-        </section>
-
-        <section
-          id="features"
-          className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-20 md:px-8"
-        >
-          <div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr] md:items-center">
-            <div className="max-w-2xl space-y-4">
-              <Badge variant="outline" className="border-primary/30 text-primary">
-                Why teams choose Leadly
-              </Badge>
-              <h2 className="text-3xl font-semibold md:text-4xl">
-                From messy threads to qualified conversations in minutes.
-              </h2>
-              <p className="text-base text-muted-foreground md:text-lg">
-                Leadly combines intent detection, scoring, and outreach context so
-                your buyers get relevant help fast—and your reps spend their energy
-                on deals that close.
-              </p>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2">
-              {proofPoints.map((point) => (
-                <Card key={point.title} className="border-border/50 bg-background/85">
-                  <CardHeader className="space-y-3">
-                    <span className="inline-flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                      <point.icon className="size-5" aria-hidden />
-                    </span>
-                    <CardTitle className="text-lg">{point.title}</CardTitle>
-                    <CardDescription>{point.body}</CardDescription>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {features.map((feature) => (
-              <Card
-                key={feature.title}
-                className="border-border/70 bg-background/80 transition hover:-translate-y-1 hover:shadow-lg"
-              >
-                <CardHeader className="gap-4">
-                  <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                    <feature.icon className="size-6" aria-hidden />
-                  </span>
-                  <CardTitle>{feature.title}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        <section
-          id="workflow"
-          className="border-y border-border/40 bg-card/70 py-20"
-        >
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 md:px-8">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div className="max-w-2xl space-y-3">
-                <Badge variant="outline" className="border-primary/30 text-primary">
-                  How it works
+          <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="space-y-8 max-w-2xl">
+                <Badge className="bg-primary/10 text-primary border-primary/20 px-3 py-1 text-sm font-medium hover:bg-primary/20 transition-colors">
+                  <Sparkles className="size-3.5 mr-2" />
+                  Now with AI Intent Scoring
                 </Badge>
-                <h2 className="text-3xl font-semibold md:text-4xl">
-                  A clear path from signal to outreach.
-                </h2>
-                <p className="text-base text-muted-foreground md:text-lg">
-                  Launch a monitor in minutes, qualify intent automatically, and
-                  keep the entire team aligned on follow-up.
+                
+                <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-foreground">
+                  Turn Reddit signals into <span className="text-primary">qualified pipeline</span>.
+                </h1>
+                
+                <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
+                  Stop missing opportunities. Leadly monitors relevant communities, 
+                  identifies high-intent conversations, and helps you engage before competitors do.
                 </p>
-              </div>
-              <div className="flex items-center gap-2 rounded-full bg-background/85 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-                <Compass className="size-3.5" aria-hidden />
-                Workflow
-              </div>
-            </div>
-            <div className="grid gap-6 md:grid-cols-3">
-              {workflowSteps.map((step, index) => (
-                <Card
-                  key={step.title}
-                  className="relative overflow-hidden border-border/60 bg-background/85"
-                >
-                  <span className="absolute -left-12 top-9 text-[5rem] font-bold text-[rgba(212,77,92,0.08)]">
-                    {index + 1}
-                  </span>
-                  <CardHeader className="relative space-y-3">
-                    <CardTitle>{step.title}</CardTitle>
-                    <CardDescription>{step.body}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <FileText className="size-4 text-primary" aria-hidden />
-                    <span>Works on desktop and mobile.</span>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
 
-        <section
-          id="use-cases"
-          className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 py-20 md:px-8"
-        >
-          <div className="max-w-3xl space-y-4">
-            <Badge variant="outline" className="border-primary/20 text-primary">
-              Built for your GTM motion
-            </Badge>
-            <h2 className="text-3xl font-semibold md:text-4xl">
-              Leadly fits the way your team sells.
-            </h2>
-            <p className="text-base text-muted-foreground md:text-lg">
-              From proving product-market fit to scaling outbound, Leadly keeps every
-              stakeholder informed with the same source of truth.
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {useCases.map((useCase) => (
-              <Card key={useCase.title} className="border-border/60 bg-background/85">
-                <CardHeader className="space-y-3">
-                  <CardTitle className="text-lg">{useCase.title}</CardTitle>
-                  <CardDescription>{useCase.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {useCase.takeaways.map((item) => (
-                    <div
-                      key={item}
-                      className="flex items-center gap-2 text-sm text-muted-foreground"
-                    >
-                      <CheckCircle2 className="size-4 text-primary" aria-hidden />
-                      <span>{item}</span>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button size="lg" className="h-12 px-8 text-base shadow-xl shadow-primary/20" asChild>
+                    <Link href="/register">Get Started Free</Link>
+                  </Button>
+                  <Button size="lg" variant="outline" className="h-12 px-8 text-base bg-background/50 backdrop-blur-sm" asChild>
+                    <Link href="#workflow">How it Works</Link>
+                  </Button>
+                </div>
+
+                <div className="pt-4 grid grid-cols-3 gap-6 border-t border-border/40">
+                  {heroStats.map((stat) => (
+                    <div key={stat.label}>
+                      <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              </div>
+
+              <div className="relative mt-8 lg:mt-0">
+                <div className="relative rounded-2xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 shadow-2xl overflow-hidden group">
+                  <Image
+                    src="/assets/hero-dashboard.png"
+                    alt="Leadly Dashboard Interface"
+                    width={1200}
+                    height={800}
+                    priority
+                    className="rounded-xl shadow-sm w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.01]"
+                  />
+                  {/* Decorative Elements */}
+                  <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-primary/20 blur-[60px] rounded-full pointing-events-none" />
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="border-y border-border/40 bg-card/70 py-20">
-          <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 md:grid-cols-3 md:px-8">
-            {seoTopics.map((topic) => (
-              <Card key={topic.title} className="border-border/60 bg-background/85">
-                <CardHeader className="space-y-3">
-                  <CardTitle className="text-lg">{topic.title}</CardTitle>
-                  <CardDescription>{topic.body}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
+        {/* SOCIAL PROOF */}
+        <section className="border-y border-border/40 bg-muted/30 py-10">
+          <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-8 px-5 text-sm text-muted-foreground md:px-8">
+            <span className="font-semibold text-foreground/80">Trusted by modern GTM teams</span>
+            <div className="h-4 w-px bg-border/60 hidden sm:block" />
+            <div className="flex flex-wrap items-center justify-center gap-8 opacity-75 grayscale hover:grayscale-0 transition-all duration-500">
+               {/* Placeholders for logos, styled text for now */}
+               <span className="font-bold text-lg">Arcadia</span>
+               <span className="font-bold text-lg">Northwind</span>
+               <span className="font-bold text-lg">SignalStack</span>
+               <span className="font-bold text-lg">Brightline</span>
+               <span className="font-bold text-lg">Parallel</span>
+            </div>
           </div>
         </section>
 
-        <section id="pricing" className="mx-auto max-w-6xl px-5 py-20">
-          <div className="mx-auto max-w-3xl space-y-4 text-center">
-            <p className="text-sm uppercase tracking-[0.4em] text-muted-foreground">
-              Pricing
-            </p>
-            <h2 className="text-3xl font-semibold md:text-4xl">
-              Choose the cadence that matches your playbook
-            </h2>
-            <p className="text-base text-muted-foreground">
-              Every plan enforces safe scraping limits while surfacing qualified leads
-              from your favorite communities.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {pricingPlans.map((plan) => {
-              const ctaHref = resolveCtaHref(
-                plan.cta.href,
-                plan.cta.requiresAuth,
-              );
-              return (
-                <Card
-                  key={plan.name}
-                  className={cn(
-                    "flex h-full flex-col justify-between rounded-3xl border border-border/60 bg-card/90 p-6 shadow-sm",
-                    plan.name === "Free"
-                      ? "border-primary/40 shadow-lg shadow-primary/20"
-                      : "",
-                  )}
-                >
-                <CardHeader className="space-y-3 border-b border-border/50 pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-2xl font-semibold">{plan.name}</CardTitle>
-                    {plan.badge ? (
-                      <Badge className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                        {plan.badge}
-                      </Badge>
-                    ) : null}
+        {/* FEATURES - ALTERNATING */}
+        <section id="features" className="py-24 overflow-hidden relative">
+          <div className="mx-auto max-w-7xl px-5 md:px-8">
+            <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
+               <Badge variant="outline" className="border-primary/20 text-primary">Features</Badge>
+               <h2 className="text-3xl md:text-5xl font-bold">Everything you need to capture intent</h2>
+               <p className="text-lg text-muted-foreground">From monitoring to outreach, we've automated the busywork.</p>
+            </div>
+
+            <div className="space-y-24">
+              {/* Feature 1: Monitoring */}
+              <div className="grid lg:grid-cols-2 gap-16 items-center">
+                <div className="order-2 lg:order-1 relative">
+                   <div className="absolute -inset-4 bg-gradient-to-tr from-primary/10 to-transparent rounded-[2rem] blur-xl" />
+                   <Image 
+                      src="/assets/feature-monitoring.png" 
+                      alt="Smart Monitoring Configuration"
+                      width={600}
+                      height={400}
+                      className="relative rounded-2xl border border-border/60 shadow-2xl bg-card"
+                   />
+                </div>
+                <div className="order-1 lg:order-2 space-y-6">
+                  <div className="inline-flex items-center justify-center size-12 rounded-xl bg-primary/10 text-primary">
+                    <Shield className="size-6" />
                   </div>
-                  <CardDescription className="text-sm text-muted-foreground">
-                    {plan.subs}
-                  </CardDescription>
-                  <div>
-                    <p className="text-4xl font-semibold text-foreground">{plan.price}</p>
-                    <p className="text-sm text-muted-foreground">{plan.cadence}</p>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4 pt-6">
-                  <ul className="space-y-3 text-sm text-muted-foreground">
-                    {plan.highlights.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-muted-foreground">
-                        <CheckCircle2 className="size-4 text-primary" aria-hidden />
-                        <span>{feature}</span>
+                  <h3 className="text-3xl font-bold">Precision Monitoring, Zero Noise</h3>
+                  <p className="text-lg text-muted-foreground leading-relaxed">
+                    Don't waste time scrolling. Configure specific keywords and subreddits, 
+                    and let Leadly filter out the noise. We only alert you when conversations 
+                    match your exact Ideal Customer Profile (ICP).
+                  </p>
+                  <ul className="space-y-3">
+                    {["Target specific subreddits", "Negative keyword filtering", "Real-time alerts"].map(item => (
+                      <li key={item} className="flex items-center gap-3 text-foreground/80">
+                        <CheckCircle2 className="size-5 text-primary" />
+                        {item}
                       </li>
                     ))}
                   </ul>
-                    <div className="space-y-2">
+                </div>
+              </div>
+
+              {/* Feature 2: AI Intelligence */}
+              <div className="grid lg:grid-cols-2 gap-16 items-center">
+                 <div className="space-y-6">
+                  <div className="inline-flex items-center justify-center size-12 rounded-xl bg-primary/10 text-primary">
+                    <Sparkles className="size-6" />
+                  </div>
+                  <h3 className="text-3xl font-bold">AI That Understands Context</h3>
+                  <p className="text-lg text-muted-foreground leading-relaxed">
+                    Engagement matters. Our AI analyzes the sentiment and context of every post, 
+                    giving you a buying intent score and suggesting the perfect angle for your reply.
+                  </p>
+                  <ul className="space-y-3">
+                    {["Sentiment analysis", "Intent scoring (0-100)", "Draft generation"].map(item => (
+                      <li key={item} className="flex items-center gap-3 text-foreground/80">
+                        <CheckCircle2 className="size-5 text-primary" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                 <div className="relative">
+                   <div className="absolute -inset-4 bg-gradient-to-bl from-primary/10 to-transparent rounded-[2rem] blur-xl" />
+                   <Image 
+                      src="/assets/feature-ai.png" 
+                      alt="AI Analysis"
+                      width={600}
+                      height={400}
+                      className="relative rounded-2xl border border-border/60 shadow-2xl bg-card"
+                   />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* WORKFLOW STEPS */}
+        <section id="workflow" className="py-24 bg-card/30 border-y border-border/40">
+           <div className="mx-auto max-w-7xl px-5 md:px-8">
+             <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
+               <div className="space-y-4 max-w-2xl">
+                 <h2 className="text-3xl md:text-4xl font-bold">Three steps to revenue</h2>
+                 <p className="text-lg text-muted-foreground">Launch your first monitor in under 2 minutes.</p>
+               </div>
+               <Button variant="outline" asChild>
+                 <Link href="/register">Start now <ArrowRight className="ml-2 size-4" /></Link>
+               </Button>
+             </div>
+
+             <div className="grid md:grid-cols-3 gap-8">
+               {workflowSteps.map((step, i) => (
+                 <Card key={i} className="bg-background/80 border-border/50 hover:border-primary/30 transition-all hover:shadow-lg">
+                   <CardHeader>
+                     <div className="mb-4 text-4xl font-bold text-primary/10">0{i + 1}</div>
+                     <CardTitle className="text-xl">{step.title}</CardTitle>
+                     <CardDescription className="text-base">{step.body}</CardDescription>
+                   </CardHeader>
+                 </Card>
+               ))}
+             </div>
+           </div>
+        </section>
+
+        {/* USE CASES */}
+        <section id="use-cases" className="py-24">
+          <div className="mx-auto max-w-7xl px-5 md:px-8">
+             <div className="text-center mb-16">
+               <h2 className="text-3xl font-bold">Built for every GTM motion</h2>
+             </div>
+             <div className="grid md:grid-cols-3 gap-6">
+               {useCases.map((useCase) => (
+                 <Card key={useCase.title} className="bg-gradient-to-b from-card to-background border-border/60">
+                   <CardHeader>
+                     <CardTitle>{useCase.title}</CardTitle>
+                     <CardDescription>{useCase.description}</CardDescription>
+                   </CardHeader>
+                   <CardContent>
+                     <div className="space-y-2">
+                       {useCase.takeaways.map(t => (
+                         <div key={t} className="flex items-center gap-2 text-sm text-muted-foreground">
+                           <CheckCircle2 className="size-4 text-primary" /> {t}
+                         </div>
+                       ))}
+                     </div>
+                   </CardContent>
+                 </Card>
+               ))}
+             </div>
+          </div>
+        </section>
+
+        {/* PRICING */}
+        <section id="pricing" className="py-24 bg-muted/20">
+          <div className="mx-auto max-w-7xl px-5 md:px-8">
+            <div className="text-center space-y-4 mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold">Simple, transparent pricing</h2>
+              <p className="text-muted-foreground">Start for free, upgrade as you scale.</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {pricingPlans.map((plan) => {
+                 const ctaHref = resolveCtaHref(plan.cta.href, plan.cta.requiresAuth);
+                 return (
+                  <Card key={plan.name} className={cn(
+                    "relative flex flex-col h-full",
+                    plan.name === "Pro" ? "border-primary shadow-xl shadow-primary/10 scale-105 z-10" : "border-border/50"
+                  )}>
+                    {plan.name === "Pro" && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                        MOST POPULAR
+                      </div>
+                    )}
+                    <CardHeader>
+                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                      <div className="mt-4 flex items-baseline gap-1">
+                        <span className="text-4xl font-bold">{plan.price}</span>
+                        <span className="text-muted-foreground">/mo</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{plan.cadence}</p>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex flex-col">
+                      <ul className="space-y-3 mb-8 flex-1">
+                        {plan.highlights.map(h => (
+                          <li key={h} className="flex items-start gap-2 text-sm text-muted-foreground">
+                            <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
+                            <span>{h}</span>
+                          </li>
+                        ))}
+                      </ul>
                       <PricingCta
                         href={ctaHref}
                         label={plan.cta.label}
@@ -639,125 +567,63 @@ export default async function HomePage() {
                         isAuthenticated={isAuthenticated}
                         targetPath={plan.cta.href}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        {plan.note}
-                      </p>
-                    </div>
-                </CardContent>
-              </Card>
-              );
-            })}
+                    </CardContent>
+                  </Card>
+                 );
+              })}
+            </div>
           </div>
         </section>
 
-        <section className="border-y border-border/40 bg-card/70 py-20">
-          <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 md:grid-cols-2 md:px-8">
-            {testimonials.map((testimonial) => (
-              <Card
-                key={testimonial.author}
-                className="border-border/70 bg-background/85"
-              >
-                <CardContent className="space-y-4 p-6">
-                  <p className="text-base leading-relaxed text-foreground/90">
-                    “{testimonial.quote}”
-                  </p>
-                  <p className="text-sm font-semibold text-primary">
-                    {testimonial.author}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+        {/* FAQ */}
+        <section id="faq" className="py-24">
+          <div className="mx-auto max-w-4xl px-5 md:px-8">
+            <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+            <div className="grid gap-4">
+              {faqs.map((faq, i) => (
+                <Card key={i} className="border-border/40">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{faq.question}</CardTitle>
+                    <CardDescription className="text-base mt-2">{faq.answer}</CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section
-          id="faq"
-          className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-5 py-20 md:px-8"
-        >
-          <div className="space-y-3 text-center">
-            <Badge variant="outline" className="border-primary/30 text-primary">
-              FAQ
-            </Badge>
-            <h2 className="text-3xl font-semibold md:text-4xl">
-              Answers for teams evaluating Leadly
-            </h2>
-            <p className="text-base text-muted-foreground md:text-lg">
-              Still curious? We&apos;re a quick email away at hello@leadly.live.
+        {/* CTA SECTION */}
+        <section className="py-24 px-5">
+          <div className="mx-auto max-w-4xl bg-primary/5 border border-primary/20 rounded-3xl p-8 md:p-16 text-center space-y-6">
+            <h2 className="text-3xl md:text-5xl font-bold">Ready to find your next customers?</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Join hundreds of sales teams who use Leadly to fill their pipeline every week.
             </p>
-          </div>
-          <dl className="space-y-4">
-            {faqs.map((faq) => (
-              <div
-                key={faq.question}
-                className="rounded-2xl border border-border/60 bg-background/85 p-6 text-left"
-              >
-                <dt className="text-lg font-semibold text-foreground">
-                  {faq.question}
-                </dt>
-                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {faq.answer}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-
-        <section className="mx-auto w-full max-w-4xl px-5 pb-24 md:px-8">
-          <div className="flex flex-col items-center gap-6 rounded-3xl border border-border/60 bg-background/90 px-8 py-12 text-center shadow-xl shadow-[rgba(119,51,68,0.12)]">
-            <span className="text-xs font-semibold uppercase tracking-[0.35em] text-primary">
-              Ready when you are
-            </span>
-            <h2 className="text-3xl font-semibold md:text-4xl">
-              Turn community intent into pipeline this week.
-            </h2>
-            <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-              Create a free workspace today. We&apos;ll alert you the moment paid
-              upgrades launch so you can unlock more monitors and cadences.
-            </p>
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
-              <Button asChild size="lg" className="w-full sm:w-auto">
-                <Link href="/register">Create your free account</Link>
+            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+              <Button size="lg" className="h-12 px-8 text-base" asChild>
+                <Link href="/register">Start Free Trial</Link>
               </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto"
-              >
-                <Link href="/login">I already have access</Link>
+              <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
+                <Link href="/login">Log In</Link>
               </Button>
             </div>
           </div>
         </section>
+
       </main>
 
-      <footer className="border-t border-border/40 bg-card/70">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-10 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-8">
-          <div className="flex items-center gap-2 font-medium text-foreground">
-            <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              L
-            </span>
-            Leadly · leadly.live
+      <footer className="border-t border-border/40 bg-card py-12">
+        <div className="mx-auto max-w-7xl px-5 md:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2 font-bold text-lg">
+            <Zap className="size-5 text-primary" /> Leadly
           </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <Link className="transition hover:text-foreground" href="/login">
-              Sign in
-            </Link>
-            <a
-              className="transition hover:text-foreground"
-              href="mailto:hello@leadly.live"
-            >
-              Contact
-            </a>
-            <a className="transition hover:text-foreground" href="#pricing">
-              Pricing
-            </a>
-            <Link className="transition hover:text-foreground" href="/privacy">
-              Privacy
-            </Link>
-            <Link className="transition hover:text-foreground" href="/terms">
-              Terms
-            </Link>
+          <div className="flex gap-8 text-sm text-muted-foreground">
+             <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
+             <Link href="/terms" className="hover:text-foreground">Terms</Link>
+             <a href="mailto:hello@leadly.live" className="hover:text-foreground">Contact</a>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} Leadly Inc.
           </div>
         </div>
       </footer>

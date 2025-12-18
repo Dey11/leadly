@@ -680,14 +680,14 @@ export default async function DashboardHome() {
 
   return (
     <div className="flex flex-col gap-8 pb-12">
-      <section className="border-border/60 bg-card/95 relative overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur md:p-8">
-        <div className="bg-primary/15 pointer-events-none absolute top-0 -right-10 h-48 w-48 rounded-full blur-3xl" />
-        <div className="flex flex-col gap-6">
+      <section className="border-border/40 bg-card/60 relative overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur-md md:p-8">
+        <div className="bg-primary/10 pointer-events-none absolute top-0 -right-10 h-64 w-64 rounded-full blur-[80px]" />
+        <div className="flex flex-col gap-6 relative z-10">
           <DashboardPageHeader
             title="Workspace overview"
             description="Monitor high-signal conversations, review scheduled scrapes, and jump back into leads that need attention."
             action={
-              <Button asChild>
+              <Button asChild className="shadow-lg shadow-primary/20">
                 <Link href="/dashboard/leads">Open leads workspace</Link>
               </Button>
             }
@@ -699,16 +699,16 @@ export default async function DashboardHome() {
               return (
                 <div
                   key={card.label}
-                  className="border-border/60 bg-background/90 rounded-2xl border p-4 shadow-sm"
+                  className="border-border/50 bg-background/50 rounded-2xl border p-5 shadow-sm backdrop-blur-sm hover:border-primary/20 transition-colors"
                 >
                   <div className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wide uppercase">
                     <Icon className="text-primary size-4" aria-hidden />
                     {card.label}
                   </div>
-                  <p className="text-foreground mt-2 text-sm font-semibold">
+                  <p className="text-foreground mt-3 text-sm font-semibold leading-tight">
                     {card.primary}
                   </p>
-                  <p className="text-muted-foreground mt-1 text-xs">
+                  <p className="text-muted-foreground mt-1.5 text-xs line-clamp-2">
                     {card.secondary}
                   </p>
                 </div>
@@ -728,6 +728,7 @@ export default async function DashboardHome() {
             hint={metric.hint}
             trendLabel={metric.trendLabel}
             trendTone={metric.trendTone}
+             className="bg-card/70 border-border/40 backdrop-blur-sm"
           />
         ))}
       </section>

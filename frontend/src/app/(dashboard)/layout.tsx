@@ -53,7 +53,7 @@ export default async function DashboardLayout({
 
   let tierLabel = "Free";
   let limitsDescription =
-    "3 monitors · 1 scrape/day · Upgrade options launching soon.";
+    "3 monitors · 1 scrape/day · Upgrade to unlock real-time alerts.";
 
   if (designMode) {
     tierLabel = "Plus";
@@ -74,14 +74,22 @@ export default async function DashboardLayout({
   }
 
   return (
-    <DashboardShell
-      navItems={navItems}
-      tierLabel={tierLabel}
-      limitsDescription={limitsDescription}
-      accountName={account.name ?? "Leadly user"}
-      accountEmail={account.email}
-    >
-      {children}
-    </DashboardShell>
+    <div className="relative min-h-screen bg-background selection:bg-primary/20">
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 overflow-hidden"
+      >
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background blur-[120px]" />
+      </div>
+      <DashboardShell
+        navItems={navItems}
+        tierLabel={tierLabel}
+        limitsDescription={limitsDescription}
+        accountName={account.name ?? "Leadly user"}
+        accountEmail={account.email}
+      >
+        {children}
+      </DashboardShell>
+    </div>
   );
 }

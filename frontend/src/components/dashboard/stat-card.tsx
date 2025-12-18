@@ -18,6 +18,7 @@ type DashboardStatCardProps = {
   hint?: string;
   trendLabel?: string;
   trendTone?: TrendTone;
+  className?: string;
 };
 
 const trendStyles: Record<TrendTone, string> = {
@@ -33,9 +34,10 @@ export function DashboardStatCard({
   hint,
   trendLabel,
   trendTone = "neutral",
+  className,
 }: DashboardStatCardProps) {
   return (
-    <Card className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/90 shadow-sm backdrop-blur">
+    <Card className={cn("relative overflow-hidden rounded-3xl border border-border/60 bg-card/90 shadow-sm backdrop-blur", className)}>
       <div className="pointer-events-none absolute -right-5 top-0 h-24 w-24 rounded-full bg-primary/15 blur-3xl" />
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div className="space-y-1">

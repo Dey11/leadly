@@ -2,9 +2,8 @@
 
 This repository contains the Leadly lead-monitoring platform. The two active apps are:
 
-- `backend/` – Express 5 + Prisma service that exposes the public API, manages persistence, and schedules scraping work.
-- `frontend/` – Next.js 16 App Router UI that consumes the backend API, renders the dashboard, and triggers mutations from the browser.
-- `script/` – currently unused for this documentation pass (left as-is per request).
+- `backend/` – Express 5 + Prisma service that exposes the public API, manages persistence, schedules scraping work, and handles billing webhooks.
+- `frontend/` – Next.js 16 App Router UI that consumes the backend API, renders the dashboard, manages subscriptions, and triggers mutations from the browser.
 
 The sections below summarise architecture, design decisions, API behaviour, and operational considerations for both apps.
 
@@ -13,158 +12,188 @@ The sections below summarise architecture, design decisions, API behaviour, and 
 ## Backend (`backend/`)
 
 ### Stack & entry points
-- Node 20+ with Express 5 (`src/index.ts`) powering `/api/v1`.
-- Prisma ORM (`prisma/schema.prisma`) backed by PostgreSQL.
-- BullMQ + Redis queue (`src/lib/queue.ts`) with a dedicated worker (`src/workers/reddit.worker.ts`).
-- Node-cron scheduler (`runScheduler` in `src/services/scheduler.ts`) running every 30 minutes.
-- Google Gemini 2.5 Flash via `@ai-sdk/google` for lead scoring (`src/processors/ai.processor.ts`).
-- Playwright-driven Nitter scraper is scaffolded in `src/services/nitterScrape.ts` (not wired into the main flow yet).
+- **Runtime:** Node 20+ with Express 5 (`src/index.ts`) powering `/api/v1`.
+- **Database:** Prisma ORM (`prisma/schema.prisma`) backed by PostgreSQL.
+- **Queue & Cache:** BullMQ + Redis (`src/lib/queue.ts`, `src/lib/redis.ts`) for job queues and webhook idempotency.
+- **Worker:** Dedicated worker process (`src/workers/reddit.worker.ts`) for scraping tasks.
+- **Scheduler:** Node-cron (`src/services/scheduler.ts`) running every 30 minutes.
+- **AI:** Google Gemini 2.5 Flash via `@ai-sdk/google` for lead scoring and enrichment (`src/processors/ai.processor.ts`).
+- **Billing:** Dodo Payments integration via `dodopayments` SDK and `standardwebhooks` for secure webhook verification.
+- **Scraping:** Reddit API client (OAuth2) + scaffolding for Playwright-driven Nitter scraping (currently inactive).
 
 ### Module map
-- `src/routes/` hold Express routers grouped by resource (auth, account, icps, monitors, schedule, leads, scrape jobs).
-- `src/controllers/` contain request handlers with schema validation (Zod in `src/types/*`).
+- `src/routes/` hold Express routers grouped by resource:
+  - `auth`, `account`, `icps`, `monitors`, `schedule`, `leads`, `scrape-jobs`
+  - `billing` (Dodo Payments checkout & portal sessions)
+  - `webhooks` (Dodo event handling)
+- `src/controllers/` contain request handlers, including the raw-body webhook handler (`webhooks.ts`).
 - `src/services/` bundle external integrations (Reddit API wrapper, scheduler).
 - `src/processors/` handle asynchronous work (Reddit scrape + AI enrichment).
 - `src/middleware/auth.ts` verifies session cookies via Prisma and decorates `req.userId`.
-- `src/lib/` exports Prisma singleton, BullMQ queue, constants, prompts, and helpers.
+- `src/lib/` exports Prisma singleton, Redis client, BullMQ queue, Dodo client, constants, and helpers.
 - `src/workers/reddit.worker.ts` consumer process that executes queued scrape jobs.
 
 ### Data model essentials
 Entities (see `prisma/schema.prisma`):
-- `User` with soft-delete flag (`isDeleted`) and one-to-one `Subscription`, `UserSchedule`.
-- `Icp` (name, summary, target persona, pain points, value proposition, qualifying/disqualifying signals, and platform) belongs to a user.
-- `Monitor` (e.g., subreddit) belongs to an ICP and user, tracks cursor + status.
-- `ScrapeJob` stores execution status, warm/cold/neutral counts, timestamps.
-- `Lead` references a `ScrapeJob`, holds AI-evaluated reasoning and type.
-- `Session` persists login state and backs the HTTP-only `session_token` cookie.
-- `Subscription` encodes tier (`FREE`, `PRO`, `PREMIUM`) and limit metadata.
+- `User`: Core identity, soft-deletable (`isDeleted`).
+- `Subscription`: One-to-one with User. Tracks status (`ACTIVE`, `PAST_DUE`, etc.), tier (`FREE`, `PRO`, `PREMIUM`), current period end, and Dodo `subscriptionCustomerId`.
+- `Icp`: Ideal Customer Profile (name, persona, pains, signals) belonging to a user.
+- `Monitor`: Watchlist (e.g., subreddit) belonging to an ICP. Tracks scraping cursor.
+- `ScrapeJob`: Execution record for a monitor. Stores `warm`/`cold`/`neutral` counts.
+- `Lead`: Individual result referencing a `ScrapeJob`. Contains content, AI reasoning, and status.
+- `Session`: Persists login state for `session_token` cookie.
+- `UserSchedule`: Defines when the scheduler should queue jobs for a user.
 
 ### Background processing pipeline
-1. `runScheduler` (cron `*/30 * * * *`) locates users whose schedule contains the current hour, verifies an active subscription, and enqueues BullMQ `scrapeJobs` per active monitor.
-2. `src/workers/reddit.worker.ts` listens to the `scrapeJobs` queue and invokes `processScrapeJob`.
-3. `processScrapeJob`:
-   - Pulls Reddit posts/comments using OAuth 2.0 client credentials (`Reddit` class).
-   - Cleans content (`cleanText`) and calls the Gemini prompt (`leadGenerationPrompt`) per post.
-   - Persists new leads, updates job status + warm/cold/neutral counts, and advances the monitor cursor within a single Prisma transaction.
-4. Failures update the job to `FAILED` with an error message.
+1. **Scheduler** (`cron */30 * * * *`):
+   - Locates users with `UserSchedule` matching the current hour.
+   - Verifies active subscription (status `ACTIVE`).
+   - Enqueues `scrapeJobs` in BullMQ for every active monitor owned by these users.
+2. **Worker** (`src/workers/reddit.worker.ts`):
+   - Consumes `scrapeJobs`.
+   - Fetches posts from Reddit via OAuth2 client.
+   - Cleans text and invokes Gemini 2.5 Flash to score leads against the parent ICP.
+   - Persists `Lead` records, updates `ScrapeJob` stats, and advances `Monitor` cursor in a transaction.
+3. **Webhooks** (Dodo Payments):
+   - Listens for `subscription.*` events.
+   - Verifies signature using `standardwebhooks`.
+   - Uses Redis (`dodo:webhooks:<id>`) for idempotency.
+   - Updates `Subscription` status/tier and resets usage limits (`initializeOrResetUsagePeriod`) on renewal or plan change.
 
 ### Environment variables
-Defined in `src/env.ts` (all required unless noted):
-`PORT`, `DATABASE_URL`, `SESSION_SECRET`, `FRONTEND_URL`, `NITTER_URL`,
-`REDIS_URL` (default `redis://localhost:6380`), `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USERNAME` (default handle).
+Defined in `src/env.ts` and `.env`. All are required unless noted:
+
+**Core & Auth**
+- `PORT` (default 3000)
+- `DATABASE_URL` (Postgres connection string)
+- `REDIS_URL` (default `redis://localhost:6380`)
+- `SESSION_SECRET` (for cookie signing)
+- `FRONTEND_URL` (CORS origin)
+- `BACKEND_URL` (Self-reference for callbacks)
+
+**AI & Scraping**
+- `GOOGLE_GENERATIVE_AI_API_KEY` (Gemini API key)
+- `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USERNAME`
+- `NITTER_URL` (Required structure, even if unused)
+
+**Billing (Dodo Payments)**
+- `DODO_API_KEY` (Live/Test key)
+- `DODO_ENVIRONMENT` (`test_mode` or `live_mode`)
+- `DODO_WEBHOOK_SECRET` (from Dodo dashboard)
+- `DODO_PRO_PRODUCT_ID` (Product ID for Pro plan)
+- `DODO_PREMIUM_PRODUCT_ID` (Product ID for Premium plan)
 
 ### Running the backend locally
 1. `pnpm install`
-2. Provision Postgres + Redis (see `docker-compose.yml` for Redis example).
-3. Populate `.env` with the variables above.
-4. `pnpm prisma:migrate` then `pnpm dev` to start the API; run the worker separately with `pnpm worker`.
+2. Provision Postgres + Redis (ensure Redis is running for detailed job/webhook handling).
+3. Populate `.env` with all variables above.
+4. `pnpm prisma:migrate` to setup DB.
+5. **Start API:** `pnpm dev` (runs Express app + Scheduler).
+6. **Start Worker:** `pnpm worker` (runs BullMQ processor).
 
-> The scheduler runs inside the API process. Stop the server gracefully to shut down cron and queue connections (handlers registered in `src/index.ts`).
+> **Note:** The scheduler runs inside the API process, but the actual scraping happens in the worker process. Both must be running.
 
-### API surface (current behaviour)
-All routes live under `/api/v1`. Controllers respond with raw JSON objects (no consistent `{message, payload}` envelope unless noted).
+### API surface
+All routes live under `/api/v1`.
 
-| Method & Path | Summary | Notable details / differences vs `API_REFERENCE.md` |
-|---------------|---------|-----------------------------------------------------|
-| `POST /auth/register` (`/auth/login`, `/auth/logout`) | Email/password auth issuing `session_token` cookie. | Registration always seeds an `ACTIVE` `FREE` subscription good for 1 year. Session rows omit `ipAddress`/`userAgent`, so `GET /account/sessions` currently returns `null` for those fields. |
-| `GET /account` / `PATCH /account` / `DELETE /account` | Fetch/update/soft-delete current user. | Responses are plain objects (`{ message, payload }`) per code; deleting simply toggles `isDeleted`. |
-| `GET /account/sessions` | List active sessions for the user. | Returns array of session rows. Since session creation omits metadata, `ipAddress`/`userAgent` are `null` despite examples in the original spec. |
-| `POST /icps` | Create an ICP briefing (name, summary, persona, pains, value proposition, qualifying/disqualifying signals, platform). | Returns the persisted ICP with `userId`. |
-| `GET /icps` & `GET /icps/:id` | List ICPs with nested monitors and scrape jobs. | No `take` limit is applied, so *all* related `scrapeJobs` are returned (spec claimed “10 most recent”). |
-| `PATCH /icps/:id` / `DELETE /icps/:id` | Update or remove an ICP. | Delete blocks if monitors still exist (error message updated). |
-| `POST /monitors` | Create monitor under an ICP. | Enforces subscription tier limits via `TIER_LIMITS`. Errors include friendly tier copy. |
-| `GET /monitors` | List monitors with parent ICP and last 10 jobs. | `scrapeJobs` include all aggregation fields; limited via `take: 10`. |
-| `PUT /monitors/:id` / `DELETE /monitors/:id` | Update or remove a monitor. | Standard responses. |
-| `GET /schedule` | Fetch schedule, auto-creates default `[12]` entry if missing. | Returns the `UserSchedule` record directly, not `{ message, payload }` as shown in the old doc. |
-| `PATCH /schedule` | Update scheduled hours (validates uniqueness, range, tier limit). | Returns the upserted schedule object. Follows tier defaults when creating a new record (`DEFAULT_HOURS_MAP`). |
-| `GET /schedule/limits` | Return subscription tier + limits + current schedule (if any). | Matches spec; 400 if subscription missing. |
-| `GET /leads` | Paginated lead list with filters. | Response matches `{ message, payload: { data, pagination } }`. |
-| `GET /leads/:id` | Lead detail with reasoning. | Response matches spec. |
-| `PATCH /leads/:id` | Update lead status. | Returns `{ message, payload: { id, status } }`. |
-| `DELETE /leads/:id` | Delete a lead. | Returns `{ message, payload: {} }`. |
-| `GET /monitors/:monitorId/jobs` | Paginated job history for a monitor. | Adds `leadCount` field calculated on the fly. |
+**Auth & Account**
+| Method & Path | Summary |
+|---------------|---------|
+| `POST /auth/register` | Register user, seeds `FREE` `ACTIVE` subscription. |
+| `POST /auth/login` | Login, issues `session_token`. |
+| `POST /auth/logout` | Logout, clears cookie. |
+| `GET /account` | Get profile. |
+| `PATCH /account` | Update profile details. |
+| `DELETE /account` | Soft-delete user. |
+| `GET /account/sessions` | List active sessions. |
 
-### Corrections vs the original `API_REFERENCE.md`
-- Scheduler cadence is every **30 minutes** (`*/30 * * * *`), not hourly.
-- `GET /icps` presently returns **all** scrape jobs; limit to 10 is not enforced.
-- Scrape jobs no longer populate the `metadata` field (`{ after: ... }` in the doc is outdated).
-- `GET /schedule` and `PATCH /schedule` return the raw schedule object (no `message` wrapper); same for most controller responses.
-- `DEFAULT_HOURS_MAP.PREMIUM` includes `24`, which falls outside the documented `0–23` range (bug worth fixing; validation currently catches hours > 23).
-- Session records leave `ipAddress`/`userAgent` empty unless upstream logic populates them later.
-- Registration seeds a default subscription (not mentioned previously).
+**Resources**
+| Method & Path | Summary | Notes |
+|---------------|---------|-------|
+| `GET /icps` | List ICPs + Monitors + Jobs. | Returns all jobs (no parsing limit yet). |
+| `POST /icps` | Create ICP. | |
+| `PATCH/DELETE /icps/:id`| Update/Delete ICP. | Delete cascades to monitors/leads. |
+| `GET /monitors` | List Monitors. | Includes 10 most recent jobs. |
+| `POST /monitors` | Create Monitor. | Enforces `TIER_LIMITS`. |
+| `GET /schedule` | Get Schedule. | Auto-creates default if missing. |
+| `PATCH /schedule` | Update Schedule. | Validates hours vs Tier. |
+| `GET /leads` | List Leads. | Paginated, supports filtering. |
+| `GET /leads/:id` | Get Lead details. | |
 
-### Operational notes & gotchas
-- The worker process **must** run alongside the API to process BullMQ jobs; otherwise `scrapeJobs` remain `PENDING`.
-- Prisma client is stored on `global` to avoid re-instantiation during hot reloads.
-- Ensure `FRONTEND_URL` matches the actual UI origin; CORS is locked to that value.
-- `NITTER_URL` is required even if Nitter scraping isn’t currently invoked.
+**Billing**
+| Method & Path | Summary | Notes |
+|---------------|---------|-------|
+| `POST /billing/subscribe` | Create Checkout Session. | Body: `{ plan: "pro" \| "premium" }`. Returns `{ url }`. |
+| `POST /billing/portal/manage` | Get Customer Portal URL. | Returns `{ url }`. |
+| `POST /billing/portal/cancel` | Get Cancel Subscription URL. | Returns `{ url }`. |
+| `POST /webhooks/dodo` | Handle Dodo events. | Raw body handler. Verifies signature. |
 
 ---
 
 ## Frontend (`frontend/`)
 
 ### Stack & global setup
-- Next.js 16 App Router (React 19) with TypeScript and Tailwind CSS v4.
-- `src/app/layout.tsx` wraps the tree in a `QueryProvider` (TanStack Query) to coordinate client mutations.
-- Styling uses Tailwind CSS with custom design tokens defined in `src/app/globals.css`.
-- Config & metadata live in `src/config/site.ts`, `components.json`, and `next.config.ts`.
+- **Framework:** Next.js 16 App Router (React 19).
+- **Styling:** Tailwind CSS v4, `tw-animate-css`, `shadcn`-compatible components in `src/components/ui`.
+- **State:** TanStack Query (`@tanstack/react-query`) for server state management.
+- **Icons:** `lucide-react`.
 
 ### Directory highlights
-- `src/app/` – App Router routes. Auth pages live in `(auth)`, dashboard in `(dashboard)`. Static policy pages under `/privacy` and `/terms`.
-- `src/lib/backend-queries.ts` – server-side helpers that fetch from the backend during SSR, automatically forwarding the `session_token` cookie using `backendJson`.
-- `src/lib/client/api.ts` – browser-facing client for mutations (`fetch` with `credentials: "include"`), hitting the backend API directly.
-- `src/components/` – feature-specific UI (auth forms, dashboards, tables, ICP forms) + shared UI primitives (`ui/`).
-- `src/types/backend.ts` – TypeScript mirror of backend responses (used in both server queries & client API layer).
+- `src/app/` – App Router structure:
+  - `(auth)`: Login/Register layouts.
+  - `(dashboard)`: Authenticated app shell, includes `billing` pages.
+  - `api/`: Next.js internal API routes (if any used, mostly pure client-to-backend fetch).
+- `src/lib/backend-queries.ts` – Server-side Data Fetching. Uses `cookies()` to forward `session_token`.
+- `src/lib/client/api.ts` – Client-side Data Mutation. Uses browser cookies via `credentials: "include"`.
+- `src/components/` – Feature components (`dashboard`, `icp`, `billing`) and UI primitives.
+- `src/types/backend.ts` – TypeScript definitions matching Backend API responses.
 
 ### Data flow & session handling
-1. **Server-rendered reads** use `backend-queries` inside server components (e.g., dashboard layout). Each helper calls `backendFetch`, which:
-   - Resolves the backend base URL (`BACKEND_URL`/`NEXT_PUBLIC_BACKEND_URL`, default `http://localhost:3001`).
-   - Pulls the `session_token` cookie from Next’s `cookies()` store and forwards it to the backend.
-   - Throws a typed `BackendError` for non-2xx responses (callers catch 401s to redirect to `/login`).
-2. **Client-side mutations** use `clientApi` within React Query hooks. These calls go straight to the backend (`${backendUrl}/api/v1/...`) and rely on the browser carrying the `session_token` cookie (CORS requires matching `FRONTEND_URL` on the backend).
-3. Auth pages (`/login`, `/register`) are server components that call `getAccountSummary`; if a valid session exists they immediately `redirect("/dashboard")`, preventing already signed-in users from seeing auth forms.
+1. **Server-rendered reads:**
+   - Components use helpers in `backend-queries.ts`.
+   - Helpers resolve `BACKEND_URL` and forward the `session_token` cookie.
+   - Failures (401) trigger redirects to `/login`.
+2. **Client-side mutations:**
+   - React Query hooks use `clientApi`.
+   - Requests hit `NEXT_PUBLIC_BACKEND_URL` directly.
+   - Browser handles cookie transmission automatically.
+   - Optimistic updates or invalidation triggers UI refreshes.
 
 ### Key design decisions
-- **Auth gate in layout:** `src/app/(dashboard)/layout.tsx` fetches the account summary on the server. Missing/401 responses trigger `redirect("/login")`, ensuring all dashboard routes stay private without client-side guards.
-- **React Query for UX:** Mutations (`useMutation`) handle optimistic UI, error toasts, and router refresh (e.g., ICP creation refreshes the dashboard data).
-- **API typing:** `src/types/backend.ts` mirrors backend responses; any divergence (e.g., session metadata being `null`) shows up at compile time.
-- **Styling system:** Tailwind CSS v4 with `tw-animate-css` for animations and custom CSS variables for theming. Components enforce consistent spacing (`Card`, `Badge`, etc.).
-- **Routing:** App Router segments allow separate auth & dashboard layouts, keeping bundle sizes focused.
-- **Dashboard shell:** `src/components/dashboard/shell.tsx` owns the responsive chrome. The sidebar is sticky on desktop so plan/tips cards stay anchored, while mobile uses an overlay drawer that reuses the same nav structure.
-- **Design-ready dashboard cards:** The refreshed overview surface uses modular stat/spotlight components (`dashboard/stat-card.tsx`) with trend badges to keep KPI styling consistent.
-- **Design mode fixtures:** Setting `NEXT_PUBLIC_DESIGN_MODE=1` renders an in-memory dataset for the dashboard, skips backend fetches in server components, and keeps the layout testable without API dependencies.
-- **Dialog + confirmations:** `src/components/ui/dialog.tsx` plus `ui/confirm-dialog.tsx` provide a shadcn-style modal system used for the lead detail view and destructive flows (ICPs, monitors, accounts), replacing browser alerts with consistent UI. Edit dialogs for ICPs/monitors reuse the same primitives.
-- **ICP + monitor management:** Users can now edit ICP briefs and reassign monitors between ICPs inline; backend `DELETE /icps/:id` cascades through monitors, jobs, and leads for a clean removal.
+- **Auth Gate:** `src/app/(dashboard)/layout.tsx` validates session on server entry.
+- **Design Mode:** `NEXT_PUBLIC_DESIGN_MODE=1` enables mock data for UI development without a running backend.
+- **Billing Flow:**
+  - User selects plan -> `mutate` calls `/billing/subscribe`.
+  - Redirects to Dodo Checkout -> User pays.
+  - Redirects back to `/billing/result` (Frontend) while Dodo webhooks (Backend) provision the subscription.
+  - UI typically polls or relies on React Query invalidation to reflect "PRO" status.
 
 ### Environment & scripts
-- `.env.local` expects `BACKEND_URL` or `NEXT_PUBLIC_BACKEND_URL` pointing to the backend base (e.g., `http://localhost:3001`). This value should *not* include `/api/v1`; the code appends that path internally.
-- Optional: `NEXT_PUBLIC_DESIGN_MODE=1` seeds rich mock data for the dashboard UI while you iterate on layout/visuals (real API calls resume when the flag is unset).
-- Scripts (`package.json`): `pnpm dev`, `pnpm build`, `pnpm start`.
-- Tailwind/PostCSS configs already set up for Next.js 16 (no additional wiring required).
+- `.env.local`: `NEXT_PUBLIC_BACKEND_URL` (e.g., `http://localhost:3000`).
+- `pnpm dev`: Start dev server.
+- `pnpm build`: Build production bundle.
 
 ### Known gaps / observations
-- All client mutations assume the backend sets/reads `session_token` via cookies; there is no token fallback.
-- React Query is initialised with retry = 0 for mutations and 1 for queries; adjust if backend stability changes.
-- UI currently targets a single platform (`REDDIT`). Dropdowns hard-code this option.
+- **Client Logic:** Assumes `session_token` is always cookie-managed.
+- **Platform Support:** UI hardcodes `REDDIT` options, though backend `Platform` enum is extensible.
+- **Billing Sync:** There's a slight race condition between user returning to the app and the webhook processing. The UI may need a refresh to gaze the new "PRO" badge immediately if the webhook is slow.
 
 ---
 
 ## End-to-end flow summary
-1. **Signup/Login** – User registers via `/auth/register` (backend seeds a `FREE` subscription) or logs in. The backend issues the `session_token` cookie directly; server components pick it up through `cookies()` on the next request.
-2. **ICP setup** – User creates a detailed ICP briefing. Response includes the ICP ID.
-3. **Monitor creation** – User adds monitors (subreddits). Tier limits enforced server-side.
-4. **Scheduling** – User adjusts scrape hours (validated against tier). Defaults to `[12]` on first access.
-5. **Scheduler + Worker** – Every 30 minutes the scheduler enqueues jobs for monitors tied to schedules matching the current hour. The worker fetches Reddit content, calls Gemini to score leads, and writes `Lead` records.
-6. **Dashboard consumption** – Server components fetch ICPs, monitors, schedule, leads via `backend-queries`; client widgets use React Query to mutate and refetch.
-7. **Lead management** – Users filter leads, mark status, or delete entries from the UI, which maps to the `/leads` endpoints.
+1. **Signup:** User registers. Backend creates `User` & `Subscription` (FREE).
+2. **Subscription:** User upgrades to PRO. Backend generates Dodo link. User pays. Webhook fires -> Backend updates `Subscription` to PRO + resets usage limits.
+3. **Setup:** User creates ICP (persona) and Monitors (subreddits).
+4. **Scheduling:** User sets scrape hours (e.g., 9 AM, 5 PM).
+5. **Collection:**
+   - `scheduler` wakes up at top of hour x:00 or x:30.
+   - Finds matching users.
+   - Pushes jobs to BullMQ.
+   - `worker` processes jobs: Scrapes Reddit -> Gemini AI Analysis -> Save Leads.
+6. **Consumption:** User logs in. Dashboard shows fresh leads. User qualifies/disqualifies them.
 
----
-
-## Open questions & potential follow-ups
-1. **`DEFAULT_HOURS_MAP.PREMIUM` uses hour `24`:** Validation rejects it, but correcting the constant will avoid accidental defaults.
-2. **Session metadata:** If ip/user-agent auditing is desired, populate `ipAddress` and `userAgent` when creating sessions.
-3. **`GET /icps` volume:** Consider reinstating the “last 10 jobs” limit (e.g., `take: 10`) to keep payload sizes manageable.
-4. **Nitter integration:** `scrapeNitter` is implemented but not scheduled—decide whether to wire it into the queue or remove until needed.
-5. **ICP authoring UX:** Consider richer guidance (e.g., templates or markdown preview) so users provide consistent, high-quality signals.
-
-This README is intended as the canonical context file for future LLM assistance—update it alongside significant pipeline or API changes.
+## Operational notes
+- **Webhooks:** Critical for billing. If Redis is down, idempotent checks fail (or pass through depending on config), but mainly `REDIS_URL` is vital.
+- **CORS:** `FRONTEND_URL` in Backend `.env` must match the actual browser origin of the Frontend.
+- **Worker:** Must be running to process any scrapes.
+- **Nitter:** The codebase contains a Nitter scraper structure (`src/services/nitterScrape.ts`) but it is not currently wired into the main `processScrapeJob` flow.
