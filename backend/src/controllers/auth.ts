@@ -94,8 +94,9 @@ export async function register(req: Request, res: Response) {
     res
       .cookie("session_token", session.token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: true, // Required for SameSite=None
+        sameSite: "none", // Required for Cross-Subdomain
+        domain: ".leadly.live", // Required to share cookie with frontend
         maxAge: 1000 * 60 * 60 * 24 * 7,
         path: "/",
       })
@@ -140,8 +141,9 @@ export async function login(req: Request, res: Response) {
     res
       .cookie("session_token", session.token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: true,
+        sameSite: "none",
+        domain: ".leadly.live",
         maxAge: 1000 * 60 * 60 * 24 * 7,
         path: "/",
       })
@@ -168,8 +170,9 @@ export async function logout(req: Request, res: Response) {
     res
       .cookie("session_token", "", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: true,
+        sameSite: "none",
+        domain: ".leadly.live",
         maxAge: 0,
         path: "/",
       })
