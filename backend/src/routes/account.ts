@@ -5,6 +5,7 @@ import {
   deleteAccount,
   getAccountSessions,
   getUsageSummary,
+  updateWalkthroughStatus,
 } from "../controllers/account";
 import { authMiddleware } from "../middleware/auth";
 
@@ -19,3 +20,4 @@ accountRouter.delete("/", authMiddleware, deleteAccount);
 accountRouter.get("/sessions", authMiddleware, getAccountSessions);
 
 accountRouter.get("/usage", authMiddleware, getUsageSummary);
+accountRouter.patch("/walkthrough", authMiddleware, updateWalkthroughStatus);

@@ -16,7 +16,7 @@ export default async function LeadsPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-6">
+    <div id="leads-view" className="flex flex-col gap-6">
       <LeadsView monitors={monitorOptions} />
     </div>
   );

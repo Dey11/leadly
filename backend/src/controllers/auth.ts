@@ -69,27 +69,62 @@ export async function register(req: Request, res: Response) {
 
     const hashedPassword = await bcrypt.hash(payload.data.password, 10);
 
-    const user = await db.user.create({
-      data: {
-        name: payload.data.name,
-        email: payload.data.email,
-        passwordHash: hashedPassword as string,
-      },
+    // Wrap all database operations in a transaction
+    const { user, session } = await db.$transaction(async (tx) => {
+      // Create user
+      const user = await tx.user.create({
+        data: {
+          name: payload.data.name,
+          email: payload.data.email,
+          passwordHash: hashedPassword as string,
+        },
+      });
+
+      // Create session
+      const token = generateSecureSessionToken();
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      await tx.session.deleteMany({
+        where: {
+          userId: user.id,
+          expiresAt: {
+            lt: new Date(),
+          },
+        },
+      });
+
+      const session = await tx.session.create({
+        data: {
+          id: crypto.randomUUID(),
+          token,
+          userId: user.id,
+          expiresAt,
+        },
+      });
+
+      // Create subscription
+      await tx.subscription.create({
+        data: {
+          userId: user.id,
+          status: SubscriptionStatus.ACTIVE,
+          tier: SubscriptionTier.FREE,
+          currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      // Initialize usage tracking using transaction client
+      await initializeOrResetUsagePeriod(tx, user.id, SubscriptionTier.FREE);
+
+      // Create default schedule
+      await tx.userSchedule.create({
+        data: {
+          userId: user.id,
+          scheduledHours: [12],
+        },
+      });
+
+      return { user, session };
     });
-
-    const session = await createUserSession(user.id);
-
-    await db.subscription.create({
-      data: {
-        userId: user.id,
-        status: SubscriptionStatus.ACTIVE,
-        tier: SubscriptionTier.FREE,
-        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-      },
-    });
-
-    // Initialize free-plan usage window (current month) and reset counters
-    await initializeOrResetUsagePeriod(user.id, SubscriptionTier.FREE);
 
     res
       .cookie("session_token", session.token, {
@@ -102,6 +137,7 @@ export async function register(req: Request, res: Response) {
       .status(201)
       .json({ message: "User created successfully" });
   } catch (error) {
+    console.error("Registration failed:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }

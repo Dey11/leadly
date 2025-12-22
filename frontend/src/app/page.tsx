@@ -156,7 +156,11 @@ const pricingPlans = [
       "Lead health dashboards + CSV downloads",
     ],
     badge: "Most popular",
-    cta: { label: "Purchase now", href: "/dashboard/billing", requiresAuth: true },
+    cta: {
+      label: "Purchase now",
+      href: "/dashboard/billing",
+      requiresAuth: true,
+    },
     note: "Includes 10 on-demand scrapes/month (coming soon).",
   },
   {
@@ -170,7 +174,11 @@ const pricingPlans = [
       "Dedicated lead-handoff workflows",
     ],
     badge: "Scale teams",
-    cta: { label: "Purchase now", href: "/dashboard/billing", requiresAuth: true },
+    cta: {
+      label: "Purchase now",
+      href: "/dashboard/billing",
+      requiresAuth: true,
+    },
     note: "Includes 30 on-demand scrapes/month (coming soon).",
   },
 ];
@@ -228,11 +236,8 @@ const seoTopics = [
 
 function GradientBackground() {
   return (
-    <div
-      aria-hidden
-      className="absolute inset-0 -z-10 overflow-hidden"
-    >
-      <div className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[80%] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/15 via-background to-background blur-[100px]" />
+    <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
+      <div className="from-primary/15 via-background to-background absolute -top-[20%] left-1/2 h-[600px] w-[80%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] blur-[100px]" />
     </div>
   );
 }
@@ -257,7 +262,7 @@ export default async function HomePage() {
   const signInHref = isAuthenticated ? "/dashboard" : "/login";
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground selection:bg-primary/20">
+    <div className="bg-background text-foreground selection:bg-primary/20 relative min-h-screen">
       {/* Structure Data for SEO */}
       <script
         type="application/ld+json"
@@ -279,23 +284,28 @@ export default async function HomePage() {
         }}
       />
 
-      <div className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
+      <div className="border-border/40 bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur-md">
         <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-4 text-sm md:px-8">
           <Link
             href="/"
-            className="flex items-center gap-2 text-lg font-semibold text-foreground transition hover:opacity-80"
+            className="text-foreground flex items-center gap-2 text-lg font-semibold transition hover:opacity-80"
           >
-            <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Zap className="size-4 fill-current" />
+            <span className="relative mr-1 size-8">
+              <Image
+                src="/assets/logo-mark.png"
+                alt="Leadly"
+                fill
+                className="object-contain"
+              />
             </span>
             Leadly
           </Link>
-          <nav className="hidden items-center gap-8 font-medium text-muted-foreground md:flex">
+          <nav className="text-muted-foreground hidden items-center gap-8 font-medium md:flex">
             {navLinks.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="transition hover:text-foreground"
+                className="hover:text-foreground transition"
               >
                 {item.label}
               </a>
@@ -305,10 +315,13 @@ export default async function HomePage() {
             <Button variant="ghost" asChild className="text-sm">
               <Link href={signInHref}>Sign in</Link>
             </Button>
-            <Button asChild className="hidden text-sm md:inline-flex shadow-lg shadow-primary/25">
+            <Button
+              asChild
+              className="shadow-primary/25 hidden text-sm shadow-lg md:inline-flex"
+            >
               <Link href="/register">
                 Start free
-                <ArrowRight className="size-4 ml-2" />
+                <ArrowRight className="ml-2 size-4" />
               </Link>
             </Button>
           </div>
@@ -317,56 +330,71 @@ export default async function HomePage() {
 
       <main>
         {/* HERO SECTION */}
-        <section className="relative isolate pt-16 md:pt-24 lg:pt-32 pb-20 overflow-hidden">
+        <section className="relative isolate overflow-hidden pt-16 pb-20 md:pt-24 lg:pt-32">
           <GradientBackground />
           <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="space-y-8 max-w-2xl">
-                <Badge className="bg-primary/10 text-primary border-primary/20 px-3 py-1 text-sm font-medium hover:bg-primary/20 transition-colors">
-                  <Sparkles className="size-3.5 mr-2" />
-                  Now with AI Intent Scoring
+            <div className="grid items-center gap-12 lg:grid-cols-2">
+              <div className="max-w-2xl space-y-8">
+                <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 px-3 py-1 text-sm font-medium transition-colors">
+                  <Sparkles className="mr-2 size-3.5" />
+                  Monitor Reddit for B2B Leads
                 </Badge>
-                
-                <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-foreground">
-                  Turn Reddit signals into <span className="text-primary">qualified pipeline</span>.
+
+                <h1 className="text-foreground text-4xl font-bold tracking-tight sm:text-6xl">
+                  Turn Reddit signals into{" "}
+                  <span className="text-primary">qualified pipeline</span>.
                 </h1>
-                
-                <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
-                  Stop missing opportunities. Leadly monitors relevant communities, 
-                  identifies high-intent conversations, and helps you engage before competitors do.
+
+                <p className="text-muted-foreground max-w-lg text-lg leading-relaxed">
+                  Stop missing opportunities. Leadly monitors relevant
+                  communities, identifies high-intent conversations, and helps
+                  you engage before competitors do.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="h-12 px-8 text-base shadow-xl shadow-primary/20" asChild>
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <Button
+                    size="lg"
+                    className="shadow-primary/20 h-12 px-8 text-base shadow-xl"
+                    asChild
+                  >
                     <Link href="/register">Get Started Free</Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="h-12 px-8 text-base bg-background/50 backdrop-blur-sm" asChild>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="bg-background/50 h-12 px-8 text-base backdrop-blur-sm"
+                    asChild
+                  >
                     <Link href="#workflow">How it Works</Link>
                   </Button>
                 </div>
 
-                <div className="pt-4 grid grid-cols-3 gap-6 border-t border-border/40">
+                <div className="border-border/40 grid grid-cols-3 gap-6 border-t pt-4">
                   {heroStats.map((stat) => (
                     <div key={stat.label}>
-                      <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+                      <p className="text-foreground text-2xl font-bold">
+                        {stat.value}
+                      </p>
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {stat.label}
+                      </p>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div className="relative mt-8 lg:mt-0">
-                <div className="relative rounded-2xl border border-border/40 bg-card/50 backdrop-blur-sm p-4 shadow-2xl overflow-hidden group">
+                <div className="border-border/40 bg-card/50 group relative overflow-hidden rounded-2xl border p-4 shadow-2xl backdrop-blur-sm">
                   <Image
-                    src="/assets/hero-dashboard.png"
-                    alt="Leadly Dashboard Interface"
-                    width={1200}
+                    src="/assets/hero-doodle.png"
+                    alt="Turn conversations into revenue"
+                    width={800}
                     height={800}
                     priority
-                    className="rounded-xl shadow-sm w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.01]"
+                    className="h-auto w-full object-contain p-8"
                   />
                   {/* Decorative Elements */}
-                  <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-primary/20 blur-[60px] rounded-full pointing-events-none" />
+                  <div className="bg-primary/20 pointing-events-none absolute -right-10 -bottom-10 h-40 w-40 rounded-full blur-[60px]" />
                 </div>
               </div>
             </div>
@@ -374,57 +402,78 @@ export default async function HomePage() {
         </section>
 
         {/* SOCIAL PROOF */}
-        <section className="border-y border-border/40 bg-muted/30 py-10">
-          <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-8 px-5 text-sm text-muted-foreground md:px-8">
-            <span className="font-semibold text-foreground/80">Trusted by modern GTM teams</span>
-            <div className="h-4 w-px bg-border/60 hidden sm:block" />
-            <div className="flex flex-wrap items-center justify-center gap-8 opacity-75 grayscale hover:grayscale-0 transition-all duration-500">
-               {/* Placeholders for logos, styled text for now */}
-               <span className="font-bold text-lg">Arcadia</span>
-               <span className="font-bold text-lg">Northwind</span>
-               <span className="font-bold text-lg">SignalStack</span>
-               <span className="font-bold text-lg">Brightline</span>
-               <span className="font-bold text-lg">Parallel</span>
+        <section className="border-border/40 bg-muted/30 border-y py-10">
+          <div className="text-muted-foreground mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-8 px-5 text-sm md:px-8">
+            <span className="text-foreground/80 font-semibold">
+              Trusted by modern GTM teams
+            </span>
+            <div className="bg-border/60 hidden h-4 w-px sm:block" />
+            <div className="flex flex-wrap items-center justify-center gap-8 opacity-75 grayscale transition-all duration-500 hover:grayscale-0">
+              {/* Placeholders for logos, styled text for now */}
+              <span className="text-lg font-bold">Arcadia</span>
+              <span className="text-lg font-bold">Northwind</span>
+              <span className="text-lg font-bold">SignalStack</span>
+              <span className="text-lg font-bold">Brightline</span>
+              <span className="text-lg font-bold">Parallel</span>
             </div>
           </div>
         </section>
 
         {/* FEATURES - ALTERNATING */}
-        <section id="features" className="py-24 overflow-hidden relative">
+        <section id="features" className="relative overflow-hidden py-24">
           <div className="mx-auto max-w-7xl px-5 md:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
-               <Badge variant="outline" className="border-primary/20 text-primary">Features</Badge>
-               <h2 className="text-3xl md:text-5xl font-bold">Everything you need to capture intent</h2>
-               <p className="text-lg text-muted-foreground">From monitoring to outreach, we've automated the busywork.</p>
+            <div className="mx-auto mb-20 max-w-3xl space-y-4 text-center">
+              <Badge
+                variant="outline"
+                className="border-primary/20 text-primary"
+              >
+                Features
+              </Badge>
+              <h2 className="text-3xl font-bold md:text-5xl">
+                Everything you need to capture intent
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                From monitoring to outreach, we've automated the busywork.
+              </p>
             </div>
 
             <div className="space-y-24">
               {/* Feature 1: Monitoring */}
-              <div className="grid lg:grid-cols-2 gap-16 items-center">
-                <div className="order-2 lg:order-1 relative">
-                   <div className="absolute -inset-4 bg-gradient-to-tr from-primary/10 to-transparent rounded-[2rem] blur-xl" />
-                   <Image 
-                      src="/assets/feature-monitoring.png" 
-                      alt="Smart Monitoring Configuration"
-                      width={600}
-                      height={400}
-                      className="relative rounded-2xl border border-border/60 shadow-2xl bg-card"
-                   />
+              <div className="grid items-center gap-16 lg:grid-cols-2">
+                <div className="relative order-2 lg:order-1">
+                  <div className="from-primary/10 absolute -inset-4 rounded-[2rem] bg-gradient-to-tr to-transparent blur-xl" />
+                  <Image
+                    src="/assets/feature-monitoring.png"
+                    alt="Smart Monitoring Configuration"
+                    width={600}
+                    height={400}
+                    className="border-border/60 bg-card relative rounded-2xl border object-contain p-6 shadow-2xl"
+                  />
                 </div>
-                <div className="order-1 lg:order-2 space-y-6">
-                  <div className="inline-flex items-center justify-center size-12 rounded-xl bg-primary/10 text-primary">
+                <div className="order-1 space-y-6 lg:order-2">
+                  <div className="bg-primary/10 text-primary inline-flex size-12 items-center justify-center rounded-xl">
                     <Shield className="size-6" />
                   </div>
-                  <h3 className="text-3xl font-bold">Precision Monitoring, Zero Noise</h3>
-                  <p className="text-lg text-muted-foreground leading-relaxed">
-                    Don't waste time scrolling. Configure specific keywords and subreddits, 
-                    and let Leadly filter out the noise. We only alert you when conversations 
-                    match your exact Ideal Customer Profile (ICP).
+                  <h3 className="text-3xl font-bold">
+                    Precision Monitoring, Zero Noise
+                  </h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    Don't waste time scrolling. Configure specific keywords and
+                    subreddits, and let Leadly filter out the noise. We only
+                    alert you when conversations match your exact Ideal Customer
+                    Profile (ICP).
                   </p>
                   <ul className="space-y-3">
-                    {["Target specific subreddits", "Negative keyword filtering", "Real-time alerts"].map(item => (
-                      <li key={item} className="flex items-center gap-3 text-foreground/80">
-                        <CheckCircle2 className="size-5 text-primary" />
+                    {[
+                      "Target specific subreddits",
+                      "Negative keyword filtering",
+                      "Real-time alerts",
+                    ].map((item) => (
+                      <li
+                        key={item}
+                        className="text-foreground/80 flex items-center gap-3"
+                      >
+                        <CheckCircle2 className="text-primary size-5" />
                         {item}
                       </li>
                     ))}
@@ -433,34 +482,44 @@ export default async function HomePage() {
               </div>
 
               {/* Feature 2: AI Intelligence */}
-              <div className="grid lg:grid-cols-2 gap-16 items-center">
-                 <div className="space-y-6">
-                  <div className="inline-flex items-center justify-center size-12 rounded-xl bg-primary/10 text-primary">
+              <div className="grid items-center gap-16 lg:grid-cols-2">
+                <div className="space-y-6">
+                  <div className="bg-primary/10 text-primary inline-flex size-12 items-center justify-center rounded-xl">
                     <Sparkles className="size-6" />
                   </div>
-                  <h3 className="text-3xl font-bold">AI That Understands Context</h3>
-                  <p className="text-lg text-muted-foreground leading-relaxed">
-                    Engagement matters. Our AI analyzes the sentiment and context of every post, 
-                    giving you a buying intent score and suggesting the perfect angle for your reply.
+                  <h3 className="text-3xl font-bold">
+                    AI That Understands Context
+                  </h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    Engagement matters. Our AI analyzes the sentiment and
+                    context of every post, giving you a buying intent score and
+                    suggesting the perfect angle for your reply.
                   </p>
                   <ul className="space-y-3">
-                    {["Sentiment analysis", "Intent scoring (0-100)", "Draft generation"].map(item => (
-                      <li key={item} className="flex items-center gap-3 text-foreground/80">
-                        <CheckCircle2 className="size-5 text-primary" />
+                    {[
+                      "Sentiment analysis",
+                      "Relevance filtering",
+                      "Contextual summaries",
+                    ].map((item) => (
+                      <li
+                        key={item}
+                        className="text-foreground/80 flex items-center gap-3"
+                      >
+                        <CheckCircle2 className="text-primary size-5" />
                         {item}
                       </li>
                     ))}
                   </ul>
                 </div>
-                 <div className="relative">
-                   <div className="absolute -inset-4 bg-gradient-to-bl from-primary/10 to-transparent rounded-[2rem] blur-xl" />
-                   <Image 
-                      src="/assets/feature-ai.png" 
-                      alt="AI Analysis"
-                      width={600}
-                      height={400}
-                      className="relative rounded-2xl border border-border/60 shadow-2xl bg-card"
-                   />
+                <div className="relative">
+                  <div className="from-primary/10 absolute -inset-4 rounded-[2rem] bg-gradient-to-bl to-transparent blur-xl" />
+                  <Image
+                    src="/assets/feature-ai.png"
+                    alt="AI Analysis"
+                    width={600}
+                    height={400}
+                    className="border-border/60 bg-card relative rounded-2xl border object-contain p-6 shadow-2xl"
+                  />
                 </div>
               </div>
             </div>
@@ -468,78 +527,112 @@ export default async function HomePage() {
         </section>
 
         {/* WORKFLOW STEPS */}
-        <section id="workflow" className="py-24 bg-card/30 border-y border-border/40">
-           <div className="mx-auto max-w-7xl px-5 md:px-8">
-             <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
-               <div className="space-y-4 max-w-2xl">
-                 <h2 className="text-3xl md:text-4xl font-bold">Three steps to revenue</h2>
-                 <p className="text-lg text-muted-foreground">Launch your first monitor in under 2 minutes.</p>
-               </div>
-               <Button variant="outline" asChild>
-                 <Link href="/register">Start now <ArrowRight className="ml-2 size-4" /></Link>
-               </Button>
-             </div>
+        <section
+          id="workflow"
+          className="bg-card/30 border-border/40 border-y py-24"
+        >
+          <div className="mx-auto max-w-7xl px-5 md:px-8">
+            <div className="mb-16 flex flex-col items-end justify-between gap-6 md:flex-row">
+              <div className="max-w-2xl space-y-4">
+                <h2 className="text-3xl font-bold md:text-4xl">
+                  Three steps to revenue
+                </h2>
+                <p className="text-muted-foreground text-lg">
+                  Launch your first monitor in under 2 minutes.
+                </p>
+              </div>
+              <Button variant="outline" asChild>
+                <Link href="/register">
+                  Start now <ArrowRight className="ml-2 size-4" />
+                </Link>
+              </Button>
+            </div>
 
-             <div className="grid md:grid-cols-3 gap-8">
-               {workflowSteps.map((step, i) => (
-                 <Card key={i} className="bg-background/80 border-border/50 hover:border-primary/30 transition-all hover:shadow-lg">
-                   <CardHeader>
-                     <div className="mb-4 text-4xl font-bold text-primary/10">0{i + 1}</div>
-                     <CardTitle className="text-xl">{step.title}</CardTitle>
-                     <CardDescription className="text-base">{step.body}</CardDescription>
-                   </CardHeader>
-                 </Card>
-               ))}
-             </div>
-           </div>
+            <div className="grid gap-8 md:grid-cols-3">
+              {workflowSteps.map((step, i) => (
+                <Card
+                  key={i}
+                  className="bg-background/80 border-border/50 hover:border-primary/30 transition-all hover:shadow-lg"
+                >
+                  <CardHeader>
+                    <div className="text-primary/10 mb-4 text-4xl font-bold">
+                      0{i + 1}
+                    </div>
+                    <CardTitle className="text-xl">{step.title}</CardTitle>
+                    <CardDescription className="text-base">
+                      {step.body}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* USE CASES */}
         <section id="use-cases" className="py-24">
           <div className="mx-auto max-w-7xl px-5 md:px-8">
-             <div className="text-center mb-16">
-               <h2 className="text-3xl font-bold">Built for every GTM motion</h2>
-             </div>
-             <div className="grid md:grid-cols-3 gap-6">
-               {useCases.map((useCase) => (
-                 <Card key={useCase.title} className="bg-gradient-to-b from-card to-background border-border/60">
-                   <CardHeader>
-                     <CardTitle>{useCase.title}</CardTitle>
-                     <CardDescription>{useCase.description}</CardDescription>
-                   </CardHeader>
-                   <CardContent>
-                     <div className="space-y-2">
-                       {useCase.takeaways.map(t => (
-                         <div key={t} className="flex items-center gap-2 text-sm text-muted-foreground">
-                           <CheckCircle2 className="size-4 text-primary" /> {t}
-                         </div>
-                       ))}
-                     </div>
-                   </CardContent>
-                 </Card>
-               ))}
-             </div>
+            <div className="mb-16 text-center">
+              <h2 className="text-3xl font-bold">Built for every GTM motion</h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              {useCases.map((useCase) => (
+                <Card
+                  key={useCase.title}
+                  className="from-card to-background border-border/60 bg-gradient-to-b"
+                >
+                  <CardHeader>
+                    <CardTitle>{useCase.title}</CardTitle>
+                    <CardDescription>{useCase.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {useCase.takeaways.map((t) => (
+                        <div
+                          key={t}
+                          className="text-muted-foreground flex items-center gap-2 text-sm"
+                        >
+                          <CheckCircle2 className="text-primary size-4" /> {t}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* PRICING */}
-        <section id="pricing" className="py-24 bg-muted/20">
+        <section id="pricing" className="bg-muted/20 py-24">
           <div className="mx-auto max-w-7xl px-5 md:px-8">
-            <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold">Simple, transparent pricing</h2>
-              <p className="text-muted-foreground">Start for free, upgrade as you scale.</p>
+            <div className="mb-16 space-y-4 text-center">
+              <h2 className="text-3xl font-bold md:text-4xl">
+                Simple, transparent pricing
+              </h2>
+              <p className="text-muted-foreground">
+                Start for free, upgrade as you scale.
+              </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
               {pricingPlans.map((plan) => {
-                 const ctaHref = resolveCtaHref(plan.cta.href, plan.cta.requiresAuth);
-                 return (
-                  <Card key={plan.name} className={cn(
-                    "relative flex flex-col h-full",
-                    plan.name === "Pro" ? "border-primary shadow-xl shadow-primary/10 scale-105 z-10" : "border-border/50"
-                  )}>
+                const ctaHref = resolveCtaHref(
+                  plan.cta.href,
+                  plan.cta.requiresAuth,
+                );
+                return (
+                  <Card
+                    key={plan.name}
+                    className={cn(
+                      "relative flex h-full flex-col",
+                      plan.name === "Pro"
+                        ? "border-primary shadow-primary/10 z-10 scale-105 shadow-xl"
+                        : "border-border/50",
+                    )}
+                  >
                     {plan.name === "Pro" && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                      <div className="bg-primary text-primary-foreground absolute -top-4 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-bold">
                         MOST POPULAR
                       </div>
                     )}
@@ -549,13 +642,18 @@ export default async function HomePage() {
                         <span className="text-4xl font-bold">{plan.price}</span>
                         <span className="text-muted-foreground">/mo</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">{plan.cadence}</p>
+                      <p className="text-muted-foreground text-sm">
+                        {plan.cadence}
+                      </p>
                     </CardHeader>
-                    <CardContent className="flex-1 flex flex-col">
-                      <ul className="space-y-3 mb-8 flex-1">
-                        {plan.highlights.map(h => (
-                          <li key={h} className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
+                    <CardContent className="flex flex-1 flex-col">
+                      <ul className="mb-8 flex-1 space-y-3">
+                        {plan.highlights.map((h) => (
+                          <li
+                            key={h}
+                            className="text-muted-foreground flex items-start gap-2 text-sm"
+                          >
+                            <CheckCircle2 className="text-primary mt-0.5 size-4 shrink-0" />
                             <span>{h}</span>
                           </li>
                         ))}
@@ -569,7 +667,7 @@ export default async function HomePage() {
                       />
                     </CardContent>
                   </Card>
-                 );
+                );
               })}
             </div>
           </div>
@@ -578,13 +676,17 @@ export default async function HomePage() {
         {/* FAQ */}
         <section id="faq" className="py-24">
           <div className="mx-auto max-w-4xl px-5 md:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+            <h2 className="mb-12 text-center text-3xl font-bold">
+              Frequently Asked Questions
+            </h2>
             <div className="grid gap-4">
               {faqs.map((faq, i) => (
                 <Card key={i} className="border-border/40">
                   <CardHeader>
                     <CardTitle className="text-lg">{faq.question}</CardTitle>
-                    <CardDescription className="text-base mt-2">{faq.answer}</CardDescription>
+                    <CardDescription className="mt-2 text-base">
+                      {faq.answer}
+                    </CardDescription>
                   </CardHeader>
                 </Card>
               ))}
@@ -593,36 +695,58 @@ export default async function HomePage() {
         </section>
 
         {/* CTA SECTION */}
-        <section className="py-24 px-5">
-          <div className="mx-auto max-w-4xl bg-primary/5 border border-primary/20 rounded-3xl p-8 md:p-16 text-center space-y-6">
-            <h2 className="text-3xl md:text-5xl font-bold">Ready to find your next customers?</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Join hundreds of sales teams who use Leadly to fill their pipeline every week.
+        <section className="px-5 py-24">
+          <div className="bg-primary/5 border-primary/20 mx-auto max-w-4xl space-y-6 rounded-3xl border p-8 text-center md:p-16">
+            <h2 className="text-3xl font-bold md:text-5xl">
+              Ready to find your next customers?
+            </h2>
+            <p className="text-muted-foreground mx-auto max-w-2xl text-xl">
+              Join hundreds of sales teams who use Leadly to fill their pipeline
+              every week.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+            <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
               <Button size="lg" className="h-12 px-8 text-base" asChild>
-                <Link href="/register">Start Free Trial</Link>
+                <Link href="/register">Start For Free</Link>
               </Button>
-              <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 px-8 text-base"
+                asChild
+              >
                 <Link href="/login">Log In</Link>
               </Button>
             </div>
           </div>
         </section>
-
       </main>
 
-      <footer className="border-t border-border/40 bg-card py-12">
-        <div className="mx-auto max-w-7xl px-5 md:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2 font-bold text-lg">
-            <Zap className="size-5 text-primary" /> Leadly
+      <footer className="border-border/40 bg-card border-t py-12">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-5 md:flex-row md:px-8">
+          <div className="flex items-center gap-2 text-lg font-bold">
+            <Image
+              src="/assets/logo-mark.png"
+              alt="Leadly"
+              width={24}
+              height={24}
+            />
+            Leadly
           </div>
-          <div className="flex gap-8 text-sm text-muted-foreground">
-             <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
-             <Link href="/terms" className="hover:text-foreground">Terms</Link>
-             <a href="mailto:hello@leadly.live" className="hover:text-foreground">Contact</a>
+          <div className="text-muted-foreground flex gap-8 text-sm">
+            <Link href="/privacy" className="hover:text-foreground">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-foreground">
+              Terms
+            </Link>
+            <a
+              href="mailto:hello@leadly.live"
+              className="hover:text-foreground"
+            >
+              Contact
+            </a>
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             © {new Date().getFullYear()} Leadly Inc.
           </div>
         </div>

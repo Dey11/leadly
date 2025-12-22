@@ -54,7 +54,9 @@ apiRouter.use("/leads", leadRouter);
 apiRouter.use("/monitors", scrapeJobsRouter);
 apiRouter.use("/billing", billingRouter);
 
-const scheduledTask = cron.schedule(CRON_INTERVAL, runScheduler);
+const scheduledTask = cron.schedule(CRON_INTERVAL, runScheduler, {
+  timezone: "UTC",
+});
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

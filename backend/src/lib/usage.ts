@@ -5,10 +5,15 @@ import { SubscriptionTier } from "@prisma/client";
 type Enforcement = "off" | "log" | "on";
 
 function startOfUtcDay(d: Date = new Date()): Date {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
+  return new Date(
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0)
+  );
 }
 
-function monthlyWindowForFree(now: Date = new Date()): { start: Date; end: Date } {
+function monthlyWindowForFree(now: Date = new Date()): {
+  start: Date;
+  end: Date;
+} {
   const y = now.getUTCFullYear();
   const m = now.getUTCMonth();
   const start = new Date(Date.UTC(y, m, 1, 0, 0, 0, 0));
@@ -21,8 +26,11 @@ function monthlyWindowForFree(now: Date = new Date()): { start: Date; end: Date 
  * If periodStart/periodEnd are not provided:
  *  - for FREE: use current UTC month window
  *  - for paid tiers: fallback to 30-day window from "now"
+ *
+ * @param dbClient - Either a Prisma transaction client or the global db client
  */
 export async function initializeOrResetUsagePeriod(
+  dbClient: any, // Prisma.TransactionClient | typeof db
   userId: string,
   tier: SubscriptionTier,
   periodStart?: Date,
@@ -43,7 +51,7 @@ export async function initializeOrResetUsagePeriod(
   }
 
   const today = startOfUtcDay();
-  await db.usage.upsert({
+  await dbClient.usage.upsert({
     where: { userId },
     create: {
       userId,
@@ -87,7 +95,8 @@ async function getOrCreateUsage(
         },
       });
     } else {
-      const end = currentPeriodEnd ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      const end =
+        currentPeriodEnd ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
       const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
       usage = await db.usage.create({
         data: {
@@ -150,7 +159,10 @@ export async function previewUsage(
   const { dailyLimit, monthlyLimit } = computeLimits(tier);
   const today = startOfUtcDay();
 
-  const dailyUsed = usage.dailyDate.toISOString() === today.toISOString() ? usage.dailyCount : 0;
+  const dailyUsed =
+    usage.dailyDate.toISOString() === today.toISOString()
+      ? usage.dailyCount
+      : 0;
   const monthlyUsed = usage.scrapesUsed;
 
   return {
@@ -225,7 +237,9 @@ export async function tryConsumeScrapeCredit(
   if (enforcement === "on" && (wouldExceedDaily || wouldExceedMonthly)) {
     return {
       allowed: false,
-      reason: wouldExceedMonthly ? "monthly_limit_exceeded" : "daily_limit_exceeded",
+      reason: wouldExceedMonthly
+        ? "monthly_limit_exceeded"
+        : "daily_limit_exceeded",
       summary: {
         dailyUsed: currentDaily,
         dailyLimit,

@@ -25,6 +25,8 @@ export async function getAccount(req: Request, res: Response) {
         emailVerified: findExistingUser?.emailVerified,
         image: findExistingUser?.image,
         createdAt: findExistingUser?.createdAt,
+        hasSeenWalkthrough:
+          (findExistingUser as any).hasSeenWalkthrough ?? false,
       },
     };
 
@@ -184,5 +186,35 @@ export async function getUsageSummary(req: Request, res: Response) {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
+  }
+}
+export async function updateWalkthroughStatus(req: Request, res: Response) {
+  try {
+    const userId = req.userId;
+    const findExistingUser = await db.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!findExistingUser) {
+      return res.status(400).json({ error: "User does not exist" });
+    }
+
+    await db.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        hasSeenWalkthrough: true,
+      },
+    });
+
+    res.status(200).json({
+      message: "Walkthrough status updated successfully.",
+      payload: {},
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
   }
 }

@@ -7,7 +7,7 @@ import { clientApi } from "@/lib/client/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatHour } from "@/lib/format";
+import { formatUtcHourAsLocal } from "@/lib/format";
 
 type ScheduleFormProps = {
   scheduledHours: number[];
@@ -18,14 +18,10 @@ export function ScheduleForm({
   scheduledHours,
   maxSelectable,
 }: ScheduleFormProps) {
-  const [selected, setSelected] = useState<Set<number>>(() => {
-    const timezoneOffset = new Date().getTimezoneOffset() / 60;
-    const localHours = scheduledHours.map(h => {
-      const local = h - timezoneOffset;
-      return local < 0 ? local + 24 : local >= 24 ? local - 24 : local;
-    });
-    return new Set(localHours);
-  });
+  // Initialize with UTC hours directly - no conversion needed for state
+  const [selected, setSelected] = useState<Set<number>>(
+    () => new Set(scheduledHours),
+  );
   const [limitReached, setLimitReached] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -35,31 +31,29 @@ export function ScheduleForm({
       if (selected.size === 0) {
         throw new Error("Select at least one hour.");
       }
-      const localHours = Array.from(selected.values());
-      const timezoneOffset = new Date().getTimezoneOffset() / 60;
-      const utcHours = localHours.map(h => {
-        const utc = h + timezoneOffset;
-        return utc < 0 ? utc + 24 : utc >= 24 ? utc - 24 : utc;
-      });
+      // Since 'selected' already contains UTC hours, we just send them as is
+      const utcHours = Array.from(selected.values());
       return clientApi.updateSchedule({
         scheduledHours: utcHours.sort((a, b) => a - b),
       });
     },
     onSuccess: () => {
-      setSuccessMessage("Schedule updated. Your next scrape will follow this cadence.");
+      setSuccessMessage(
+        "Schedule updated. Your next scrape will follow this cadence.",
+      );
       setErrorMessage(null);
     },
     onError: (error: unknown) => {
       setSuccessMessage(null);
       setErrorMessage(
-        error instanceof Error ? error.message : "Unable to save schedule."
+        error instanceof Error ? error.message : "Unable to save schedule.",
       );
     },
   });
 
-  const hours = useMemo(
+  const utcHours = useMemo(
     () => Array.from({ length: 24 }, (_, index) => index),
-    []
+    [],
   );
 
   const toggleHour = (hour: number, checked: boolean) => {
@@ -88,19 +82,23 @@ export function ScheduleForm({
         <CardTitle>Scrape cadence</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Select up to {maxSelectable} unique hours in your local timezone. Leadly
-          will scrape your monitors at these times.
+        <p className="text-muted-foreground text-sm">
+          Select up to {maxSelectable} unique hours in your local timezone.
+          Leadly will scrape your monitors at these times.
         </p>
 
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid grid-cols-3 gap-3 text-sm sm:grid-cols-4">
-            {hours.map((hour) => {
-              const isChecked = selected.has(hour);
+            {utcHours.map((utcHour) => {
+              const isChecked = selected.has(utcHour);
+              // Format the UTC hour as local time for display
+              // This handles half-hour timezones correctly (e.g. 12 UTC -> 17:30 IST)
+              const localLabel = formatUtcHourAsLocal(utcHour);
+
               return (
                 <label
-                  key={hour}
-                  className={`flex cursor-pointer select-none items-center gap-2 rounded-xl border border-border/60 bg-card/80 px-3 py-2 transition-colors ${
+                  key={utcHour}
+                  className={`border-border/60 bg-card/80 flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 transition-colors select-none ${
                     isChecked
                       ? "border-primary/60 bg-primary/10 text-primary"
                       : "hover:border-border"
@@ -111,24 +109,23 @@ export function ScheduleForm({
                     className="hidden"
                     checked={isChecked}
                     onChange={(event) =>
-                      toggleHour(hour, event.currentTarget.checked)
+                      toggleHour(utcHour, event.currentTarget.checked)
                     }
                   />
-                  <span className="text-sm font-medium">
-                    {formatHour(hour)}
-                  </span>
+                  <span className="text-sm font-medium">{localLabel}</span>
                 </label>
               );
             })}
           </div>
 
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="text-muted-foreground flex items-center justify-between text-xs">
             <span>
               {selected.size}/{maxSelectable} hours selected
             </span>
             {limitReached && (
               <span className="text-destructive">
-                Limit reached. Deselect an hour before adding another.
+                Limit reached. Deselect an hour before adding another. Free
+                users only get 1 uneditable hour.
               </span>
             )}
           </div>
@@ -154,4 +151,3 @@ export function ScheduleForm({
     </Card>
   );
 }
-

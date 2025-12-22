@@ -26,10 +26,12 @@ export function BillingActions() {
       if (!action?.url) {
         throw new Error("Unable to generate portal link");
       }
-      window.location.href = action.url;
+      window.open(action.url, "_blank", "noopener,noreferrer");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Unable to open Dodo portal at this time",
+        err instanceof Error
+          ? err.message
+          : "Unable to open Dodo portal at this time",
       );
     } finally {
       setLoading(null);
@@ -40,8 +42,9 @@ export function BillingActions() {
     <Card className="border-border/60 bg-card/90">
       <CardHeader className="space-y-2">
         <CardTitle>Subscription actions</CardTitle>
-        <p className="text-xs text-muted-foreground">
-          Manage payment methods, view invoices, or cancel directly in Dodo’s portal.
+        <p className="text-muted-foreground text-xs">
+          Manage payment methods, view invoices, or cancel directly in Dodo’s
+          portal.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -57,14 +60,18 @@ export function BillingActions() {
             disabled={loading !== null}
             onClick={() => handleAction("manage")}
           >
-            {loading === "manage" ? "Opening management portal…" : "Manage subscription"}
+            {loading === "manage"
+              ? "Opening management portal…"
+              : "Manage subscription"}
           </Button>
           <Button
             variant="outline"
             disabled={loading !== null}
             onClick={() => handleAction("cancel")}
           >
-            {loading === "cancel" ? "Opening cancellation flow…" : "Cancel subscription"}
+            {loading === "cancel"
+              ? "Opening cancellation flow…"
+              : "Cancel subscription"}
           </Button>
         </div>
       </CardContent>

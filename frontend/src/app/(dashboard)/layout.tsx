@@ -4,6 +4,7 @@ import { DashboardShell } from "@/components/dashboard/shell";
 import { type DashboardNavItem } from "@/components/dashboard/nav";
 import { getAccountSummary, getScheduleLimits } from "@/lib/backend-queries";
 import type { AccountSummary } from "@/types/backend";
+import { Walkthrough } from "@/components/dashboard/walkthrough";
 
 const navItems: DashboardNavItem[] = [
   { href: "/dashboard", label: "Overview", icon: "overview" },
@@ -41,6 +42,7 @@ export default async function DashboardLayout({
         emailVerified: true,
         image: null,
         createdAt: new Date().toISOString(),
+        hasSeenWalkthrough: false,
       };
     } else {
       redirect("/login");
@@ -74,13 +76,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="relative min-h-screen bg-background selection:bg-primary/20">
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 overflow-hidden"
-      >
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background blur-[120px]" />
+    <div className="bg-background selection:bg-primary/20 relative min-h-screen">
+      <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="from-primary/5 via-background to-background absolute top-0 left-1/2 h-[600px] w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] blur-[120px]" />
       </div>
+      <Walkthrough hasSeenWalkthrough={account.hasSeenWalkthrough} />
       <DashboardShell
         navItems={navItems}
         tierLabel={tierLabel}

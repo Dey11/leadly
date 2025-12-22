@@ -148,6 +148,8 @@ export const clientApi = {
   updateAccount: (body: { name: string }) =>
     request(`${apiBaseUrl}/account`, { method: "PATCH", body }),
   deleteAccount: () => request(`${apiBaseUrl}/account`, { method: "DELETE" }),
+  updateWalkthroughStatus: () =>
+    request(`${apiBaseUrl}/account/walkthrough`, { method: "PATCH" }),
 
   // Billing
   subscribe: async (plan: "pro" | "premium") => {
@@ -167,14 +169,16 @@ export const clientApi = {
     });
   },
 
-  listLeads: async (params: {
-    monitorId?: string;
-    platform?: string;
-    leadType?: LeadType;
-    status?: LeadStatus;
-    page?: number;
-    limit?: number;
-  } = {}) => {
+  listLeads: async (
+    params: {
+      monitorId?: string;
+      platform?: string;
+      leadType?: LeadType;
+      status?: LeadStatus;
+      page?: number;
+      limit?: number;
+    } = {},
+  ) => {
     const query = buildQueryString(params);
     const response = await request<LeadListResponse>(
       `${apiBaseUrl}/leads${query}`,

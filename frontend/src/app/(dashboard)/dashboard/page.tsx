@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
+import { DashboardScheduleCard } from "@/components/dashboard/schedule-card";
+import { DashboardSpotlightCards } from "@/components/dashboard/spotlight-cards";
 import { DashboardStatCard } from "@/components/dashboard/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +29,7 @@ import {
   getLeads,
   getSchedule,
 } from "@/lib/backend-queries";
-import { formatDateTime, formatHour, formatRelative } from "@/lib/format";
+import { formatDateTime, formatRelative } from "@/lib/format";
 import type {
   Icp,
   LeadStatus,
@@ -551,15 +553,6 @@ export default async function DashboardHome() {
   const scheduledHours = schedule
     ? Array.from(new Set(schedule.scheduledHours)).sort((a, b) => a - b)
     : [];
-  const primeHours = scheduledHours.length
-    ? selectPrimeHours(scheduledHours)
-    : [];
-  const primeHoursLabel = primeHours.length
-    ? primeHours.map((hour) => formatHour(hour)).join(" · ")
-    : "Aim for late morning, lunchtime, and early evening scrapes.";
-  const scheduleHourBadges = scheduledHours
-    .slice(0, 8)
-    .map((hour) => formatHour(hour));
 
   const latestWarmLeads = jobs[0]?.warmLeads ?? 0;
   const previousWarmLeads = jobs[1]?.warmLeads ?? 0;
@@ -652,73 +645,36 @@ export default async function DashboardHome() {
       ? Math.round((leadSummary.warm / leadBreakdownTotal) * 100)
       : 0;
 
-  const spotlightCards = [
-    {
-      label: "Last scrape",
-      icon: Radar,
-      primary: lastCompletedLabel,
-      secondary: jobVolumeLabel,
-    },
-    {
-      label: "Cadence",
-      icon: CalendarClock,
-      primary: schedule ? primeHoursLabel : "Select scrape windows",
-      secondary: schedule
-        ? "Lean on these windows to catch peak community momentum."
-        : "Choose hours to start automated scrapes.",
-    },
-    {
-      label: "Coverage",
-      icon: Layers,
-      primary: `${activeMonitorCount} active monitors`,
-      secondary:
-        icps.length > 0
-          ? `${icps.length} ICPs managed · ${monitors.length} monitors total`
-          : "Spin up your first ICP to begin tracking.",
-    },
-  ];
-
   return (
     <div className="flex flex-col gap-8 pb-12">
       <section className="border-border/40 bg-card/60 relative overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur-md md:p-8">
         <div className="bg-primary/10 pointer-events-none absolute top-0 -right-10 h-64 w-64 rounded-full blur-[80px]" />
-        <div className="flex flex-col gap-6 relative z-10">
+        <div className="relative z-10 flex flex-col gap-6">
           <DashboardPageHeader
             title="Workspace overview"
             description="Monitor high-signal conversations, review scheduled scrapes, and jump back into leads that need attention."
             action={
-              <Button asChild className="shadow-lg shadow-primary/20">
+              <Button asChild className="shadow-primary/20 shadow-lg">
                 <Link href="/dashboard/leads">Open leads workspace</Link>
               </Button>
             }
           />
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {spotlightCards.map((card) => {
-              const Icon = card.icon;
-              return (
-                <div
-                  key={card.label}
-                  className="border-border/50 bg-background/50 rounded-2xl border p-5 shadow-sm backdrop-blur-sm hover:border-primary/20 transition-colors"
-                >
-                  <div className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wide uppercase">
-                    <Icon className="text-primary size-4" aria-hidden />
-                    {card.label}
-                  </div>
-                  <p className="text-foreground mt-3 text-sm font-semibold leading-tight">
-                    {card.primary}
-                  </p>
-                  <p className="text-muted-foreground mt-1.5 text-xs line-clamp-2">
-                    {card.secondary}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+          <DashboardSpotlightCards
+            schedule={schedule}
+            lastCompletedLabel={lastCompletedLabel}
+            jobVolumeLabel={jobVolumeLabel}
+            activeMonitorCount={activeMonitorCount}
+            icpCount={icps.length}
+            monitorCount={monitors.length}
+          />
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section
+        id="dashboard-metrics"
+        className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      >
         {metrics.map((metric) => (
           <DashboardStatCard
             key={metric.label}
@@ -728,13 +684,16 @@ export default async function DashboardHome() {
             hint={metric.hint}
             trendLabel={metric.trendLabel}
             trendTone={metric.trendTone}
-             className="bg-card/70 border-border/40 backdrop-blur-sm"
+            className="bg-card/70 border-border/40 backdrop-blur-sm"
           />
         ))}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,2.1fr)_minmax(0,1fr)]">
-        <Card className="border-border/60 bg-card/95 overflow-hidden rounded-3xl border shadow-sm">
+        <Card
+          id="recent-activity"
+          className="border-border/60 bg-card/95 overflow-hidden rounded-3xl border shadow-sm"
+        >
           <CardHeader className="border-border/50 flex flex-col gap-3 border-b pb-6 md:flex-row md:items-center md:justify-between">
             <div>
               <CardTitle>Recent scrape activity</CardTitle>
@@ -785,7 +744,9 @@ export default async function DashboardHome() {
                         {job.icpName}
                       </td>
                       <td className="py-4 pr-3">
-                        <Badge className={jobStatusStyles[job.status]}>
+                        <Badge
+                          className={`${jobStatusStyles[job.status]} capitalize`}
+                        >
                           {job.status.toLowerCase()}
                         </Badge>
                       </td>
@@ -880,76 +841,7 @@ export default async function DashboardHome() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/60 bg-card/95 rounded-3xl border shadow-sm">
-            <CardHeader>
-              <CardTitle>Schedule</CardTitle>
-              <CardDescription>
-                Upcoming scrape windows for your workspace.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-muted-foreground space-y-4 text-sm">
-              {schedule ? (
-                <>
-                  <div className="border-primary/20 bg-primary/10 text-primary rounded-2xl border p-4 text-sm">
-                    <div className="flex items-center gap-2 font-semibold">
-                      <Target className="size-4" aria-hidden />
-                      Prime hours
-                    </div>
-                    <p className="text-primary/80 mt-1 text-xs">
-                      {primeHours.length
-                        ? primeHoursLabel
-                        : "Dial in a handful of windows to maximise Reddit visibility."}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {scheduleHourBadges.length > 0 ? (
-                      scheduleHourBadges.map((hour) => (
-                        <Badge
-                          key={hour}
-                          variant="outline"
-                          className="border-border/70 bg-background/95 text-foreground rounded-full text-xs"
-                        >
-                          {hour}
-                        </Badge>
-                      ))
-                    ) : (
-                      <span className="text-xs">
-                        No hours selected yet. Add monitoring windows to begin
-                        scraping.
-                      </span>
-                    )}
-                    {schedule &&
-                    scheduledHours.length > scheduleHourBadges.length ? (
-                      <Badge
-                        variant="outline"
-                        className="border-border/70 bg-background/95 text-foreground rounded-full text-xs"
-                      >
-                        +{scheduledHours.length - scheduleHourBadges.length}{" "}
-                        more
-                      </Badge>
-                    ) : null}
-                  </div>
-                  <p className="text-xs">
-                    Need more cadences? Paid plans unlock higher frequencies
-                    once billing is live.
-                  </p>
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
-                    <Link href="/dashboard/schedule">Adjust schedule</Link>
-                  </Button>
-                </>
-              ) : (
-                <div className="border-border/60 bg-background/85 rounded-2xl border p-4 text-sm">
-                  No schedule yet. We will create one automatically after your
-                  first monitor is live.
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <DashboardScheduleCard schedule={schedule} />
         </div>
       </section>
 
@@ -994,7 +886,7 @@ export default async function DashboardHome() {
                     {lead.content}
                   </p>
                   <div className="text-muted-foreground mt-3 flex items-center justify-between text-xs">
-                    <span className="inline-flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 capitalize">
                       <Sparkles className="text-primary size-3.5" aria-hidden />
                       {lead.platform.toLowerCase()}
                     </span>

@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Platform {
@@ -67,11 +66,12 @@ model User {
   icps     Icp[]
   usage    Usage?
 
-  name          String
-  emailVerified Boolean   @default(false)
-  image         String?
-  sessions      Session[]
-  accounts      Account[]
+  name               String
+  emailVerified      Boolean   @default(false)
+  image              String?
+  sessions           Session[]
+  accounts           Account[]
+  hasSeenWalkthrough Boolean   @default(false)
 
   @@map("users")
 }
@@ -221,21 +221,21 @@ model Session {
 }
 
 model Usage {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Monthly window
-  periodStart     DateTime
-  periodEnd       DateTime
-  scrapesUsed     Int      @default(0)
+  periodStart DateTime
+  periodEnd   DateTime
+  scrapesUsed Int      @default(0)
 
   // Daily window (UTC day)
-  dailyDate       DateTime
-  dailyCount      Int      @default(0)
+  dailyDate  DateTime
+  dailyCount Int      @default(0)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("usage")
