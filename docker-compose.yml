@@ -9,18 +9,42 @@ services:
     volumes:
       - leadly_redis_data:/data
 
+  leadly_db:
+    image: postgres:15-alpine
+    container_name: leadly_db
+    network_mode: host
+    restart: always
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    volumes:
+      - leadly_postgres_data:/var/lib/postgresql/data
+    
+    command: >
+      postgres 
+      -c listen_addresses='localhost'
+      -c max_connections=20
+      -c shared_buffers=1GB 
+      -c effective_cache_size=3GB 
+      -c maintenance_work_mem=64MB 
+      -c checkpoint_completion_target=0.9 
+      -c wal_buffers=16MB 
+      -c default_statistics_target=100 
+      -c random_page_cost=1.1 
+      -c effective_io_concurrency=200
+
   leadly_backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     network_mode: host
-    image: leadly_backend:latest
+    image: leadly_backend:${TAG}
     container_name: leadly_backend
     restart: always
     pull_policy: build
     environment:
       - DATABASE_URL
-      - PORT
       - NODE_ENV
       - SESSION_SECRET
       - FRONTEND_URL
@@ -44,13 +68,12 @@ services:
       dockerfile: Dockerfile
     entrypoint: ["bun", "src/workers/reddit.worker.ts"]
     container_name: leadly_worker
-    image: leadly_worker:latest
+    image: leadly_worker:${TAG}
     network_mode: host
     restart: always
     pull_policy: build
     environment:
       - DATABASE_URL
-      - PORT
       - NODE_ENV
       - SESSION_SECRET
       - FRONTEND_URL
@@ -76,7 +99,7 @@ services:
       args:
         NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
     network_mode: host
-    image: leadly_frontend:latest
+    image: leadly_frontend:${TAG}
     container_name: leadly_frontend
     restart: always
     pull_policy: build
@@ -88,6 +111,7 @@ services:
 
 volumes:
   leadly_redis_data:
+  leadly_postgres_data:
 
 networks:
   default: 
