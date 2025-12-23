@@ -237,7 +237,7 @@ const seoTopics = [
 function GradientBackground() {
   return (
     <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
-      <div className="from-primary/15 via-background to-background absolute -top-[20%] left-1/2 h-[600px] w-[80%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] blur-[100px]" />
+      <div className="from-primary/15 via-background to-background absolute -top-[20%] left-1/2 h-[600px] w-[80%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] blur-[100px]" />
     </div>
   );
 }
@@ -386,7 +386,7 @@ export default async function HomePage() {
               <div className="relative mt-8 lg:mt-0">
                 <div className="border-border/40 bg-card/50 group relative overflow-hidden rounded-2xl border p-4 shadow-2xl backdrop-blur-sm">
                   <Image
-                    src="/assets/hero-doodle.png"
+                    src="/assets/hero-dashboard.png"
                     alt="Turn conversations into revenue"
                     width={800}
                     height={800}
@@ -441,7 +441,7 @@ export default async function HomePage() {
               {/* Feature 1: Monitoring */}
               <div className="grid items-center gap-16 lg:grid-cols-2">
                 <div className="relative order-2 lg:order-1">
-                  <div className="from-primary/10 absolute -inset-4 rounded-[2rem] bg-gradient-to-tr to-transparent blur-xl" />
+                  <div className="from-primary/10 absolute -inset-4 rounded-4xl bg-linear-to-tr to-transparent blur-xl" />
                   <Image
                     src="/assets/feature-monitoring.png"
                     alt="Smart Monitoring Configuration"
@@ -512,7 +512,7 @@ export default async function HomePage() {
                   </ul>
                 </div>
                 <div className="relative">
-                  <div className="from-primary/10 absolute -inset-4 rounded-[2rem] bg-gradient-to-bl to-transparent blur-xl" />
+                  <div className="from-primary/10 absolute -inset-4 rounded-4xl bg-linear-to-bl to-transparent blur-xl" />
                   <Image
                     src="/assets/feature-ai.png"
                     alt="AI Analysis"
@@ -579,7 +579,7 @@ export default async function HomePage() {
               {useCases.map((useCase) => (
                 <Card
                   key={useCase.title}
-                  className="from-card to-background border-border/60 bg-gradient-to-b"
+                  className="from-card to-background border-border/60 bg-linear-to-b"
                 >
                   <CardHeader>
                     <CardTitle>{useCase.title}</CardTitle>
