@@ -1,9 +1,10 @@
 services:
   leadly_redis:
     container_name: leadly_redis
-    image: redis:alpine
+    image: redis:7-alpine
     network_mode: host
     restart: always
+    pull_policy: if_not_present
     command: redis-server --port 6381 --save 60 1 --loglevel warning
     volumes:
       - leadly_redis_data:/data
@@ -13,10 +14,27 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     network_mode: host
+    image: leadly_backend:latest
     container_name: leadly_backend
     restart: always
-    pull_policy: never
-    env_file: "./backend/.env"
+    pull_policy: build
+    environment:
+      - DATABASE_URL
+      - PORT
+      - NODE_ENV
+      - SESSION_SECRET
+      - FRONTEND_URL
+      - NITTER_URL=
+      - REDIS_URL
+      - DODO_API_KEY
+      - DODO_ENVIRONMENT
+      - DODO_WEBHOOK_SECRET
+      - DODO_PRO_PRODUCT_ID
+      - DODO_PREMIUM_PRODUCT_ID
+      - REDDIT_CLIENT_ID
+      - REDDIT_CLIENT_SECRET
+      - REDDIT_USERNAME
+      - GOOGLE_GENERATIVE_AI_API_KEY
     depends_on:
       - leadly_redis
 
@@ -26,10 +44,27 @@ services:
       dockerfile: Dockerfile
     entrypoint: ["bun", "src/workers/reddit.worker.ts"]
     container_name: leadly_worker
+    image: leadly_worker:latest
     network_mode: host
     restart: always
-    pull_policy: never
-    env_file: "./backend/.env"
+    pull_policy: build
+    environment:
+      - DATABASE_URL
+      - PORT
+      - NODE_ENV
+      - SESSION_SECRET
+      - FRONTEND_URL
+      - NITTER_URL=
+      - REDIS_URL
+      - DODO_API_KEY
+      - DODO_ENVIRONMENT
+      - DODO_WEBHOOK_SECRET
+      - DODO_PRO_PRODUCT_ID
+      - DODO_PREMIUM_PRODUCT_ID
+      - REDDIT_CLIENT_ID
+      - REDDIT_CLIENT_SECRET
+      - REDDIT_USERNAME
+      - GOOGLE_GENERATIVE_AI_API_KEY
     depends_on:
       - leadly_backend
       - leadly_redis
@@ -38,11 +73,16 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    env_file: "./frontend/.env"
+      args:
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
     network_mode: host
+    image: leadly_frontend:latest
     container_name: leadly_frontend
     restart: always
-    pull_policy: never
+    pull_policy: build
+    environment:
+      - BACKEND_URL
+      - NEXT_PUBLIC_BACKEND_URL
     depends_on:
       - leadly_backend
 
