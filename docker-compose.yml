@@ -1,40 +1,55 @@
 services:
-  redis:
+  leadly_redis:
+    container_name: leadly_redis
     image: redis:alpine
-    ports:
-      - "6379:6379"
+    network_mode: host
+    restart: always
+    command: redis-server --port 6381 --save 60 1 --loglevel warning
     volumes:
-      - redis_data:/data
+      - leadly_redis_data:/data
 
-  backend:
+  leadly_backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
+    network_mode: host
+    container_name: leadly_backend
+    restart: always
+    pull_policy: never
     env_file: "./backend/.env"
     depends_on:
-      - redis
+      - leadly_redis
 
-  worker:
+  leadly_worker:
     build:
       context: ./backend
       dockerfile: Dockerfile
     entrypoint: ["bun", "src/workers/reddit.worker.ts"]
+    container_name: leadly_worker
+    network_mode: host
+    restart: always
+    pull_policy: never
     env_file: "./backend/.env"
     depends_on:
-      - backend
-      - redis
+      - leadly_backend
+      - leadly_redis
 
-  frontend:
+  leadly_frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     env_file: "./frontend/.env"
+    network_mode: host
+    container_name: leadly_frontend
+    restart: always
+    pull_policy: never
     depends_on:
-      - backend
+      - leadly_backend
 
 volumes:
-  redis_data:
+  leadly_redis_data:
+
+networks:
+  default: 
+    external: true
+    name: host
