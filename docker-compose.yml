@@ -44,6 +44,7 @@ services:
     restart: always
     pull_policy: build
     environment:
+      - PORT=${BACKEND_PORT}
       - DATABASE_URL
       - NODE_ENV
       - SESSION_SECRET
@@ -106,6 +107,7 @@ services:
     environment:
       - BACKEND_URL
       - NEXT_PUBLIC_BACKEND_URL
+      - PORT=${FRONTEND_PORT}
     depends_on:
       - leadly_backend
 
