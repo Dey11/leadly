@@ -23,6 +23,7 @@ services:
     
     command: >
       postgres 
+      -p 5433
       -c listen_addresses='localhost'
       -c max_connections=20
       -c shared_buffers=1GB 
