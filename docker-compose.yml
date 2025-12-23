@@ -14,7 +14,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     network_mode: host
-    image: leadly_backend:latest
+    image: leadly_backend:${TAG}
     container_name: leadly_backend
     restart: always
     pull_policy: build
@@ -44,7 +44,7 @@ services:
       dockerfile: Dockerfile
     entrypoint: ["bun", "src/workers/reddit.worker.ts"]
     container_name: leadly_worker
-    image: leadly_worker:latest
+    image: leadly_worker:${TAG}
     network_mode: host
     restart: always
     pull_policy: build
@@ -76,7 +76,7 @@ services:
       args:
         NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
     network_mode: host
-    image: leadly_frontend:latest
+    image: leadly_frontend:${TAG}
     container_name: leadly_frontend
     restart: always
     pull_policy: build
