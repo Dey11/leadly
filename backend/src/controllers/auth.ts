@@ -69,9 +69,7 @@ export async function register(req: Request, res: Response) {
 
     const hashedPassword = await bcrypt.hash(payload.data.password, 10);
 
-    // Wrap all database operations in a transaction
     const { user, session } = await db.$transaction(async (tx) => {
-      // Create user
       const user = await tx.user.create({
         data: {
           name: payload.data.name,
@@ -80,7 +78,6 @@ export async function register(req: Request, res: Response) {
         },
       });
 
-      // Create session
       const token = generateSecureSessionToken();
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
@@ -102,7 +99,6 @@ export async function register(req: Request, res: Response) {
         },
       });
 
-      // Create subscription
       await tx.subscription.create({
         data: {
           userId: user.id,
@@ -112,10 +108,8 @@ export async function register(req: Request, res: Response) {
         },
       });
 
-      // Initialize usage tracking using transaction client
       await initializeOrResetUsagePeriod(tx, user.id, SubscriptionTier.FREE);
 
-      // Create default schedule
       await tx.userSchedule.create({
         data: {
           userId: user.id,
@@ -129,8 +123,9 @@ export async function register(req: Request, res: Response) {
     res
       .cookie("session_token", session.token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: true,
+        sameSite: "none",
+        domain: ".leadly.live",
         maxAge: 1000 * 60 * 60 * 24 * 7,
         path: "/",
       })
@@ -176,8 +171,9 @@ export async function login(req: Request, res: Response) {
     res
       .cookie("session_token", session.token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: true,
+        sameSite: "none",
+        domain: ".leadly.live",
         maxAge: 1000 * 60 * 60 * 24 * 7,
         path: "/",
       })
@@ -204,8 +200,9 @@ export async function logout(req: Request, res: Response) {
     res
       .cookie("session_token", "", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: true,
+        sameSite: "none",
+        domain: ".leadly.live",
         maxAge: 0,
         path: "/",
       })
