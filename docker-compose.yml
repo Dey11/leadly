@@ -65,6 +65,7 @@ services:
       - REDDIT_CLIENT_SECRET
       - REDDIT_USERNAME
       - GOOGLE_GENERATIVE_AI_API_KEY
+      - RESEND_API_KEY
     depends_on:
       - leadly_redis
 
