@@ -18,6 +18,7 @@ import { dodoWebhookHandler } from "./controllers/webhooks";
 const PORT = env.PORT;
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(
   cors({

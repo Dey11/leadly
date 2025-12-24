@@ -44,5 +44,4 @@ COPY --from=prerelease /usr/src/app/prisma.config.ts .
 
 # run the app
 USER bun
-EXPOSE 3001
 ENTRYPOINT [ "bun", "src/index.ts" ]
