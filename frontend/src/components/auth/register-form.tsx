@@ -27,7 +27,7 @@ export function RegisterForm() {
     },
     onSuccess: () => {
       setFormError(null);
-      router.replace("/dashboard");
+      router.replace(`/verify-email?email=${encodeURIComponent(email)}`);
       router.refresh();
     },
     onError: (error: unknown) => {

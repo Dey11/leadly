@@ -68,6 +68,13 @@ model User {
 
   name               String
   emailVerified      Boolean   @default(false)
+  emailOtp           String?
+  emailOtpExpiresAt  DateTime?
+  resetToken         String?   @unique
+  resetTokenExpiresAt DateTime?
+  pendingEmail         String?
+  emailChangeToken     String?   @unique
+  emailChangeTokenExpiresAt DateTime?
   image              String?
   sessions           Session[]
   accounts           Account[]

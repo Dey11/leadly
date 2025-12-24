@@ -57,9 +57,24 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
       if (!email || !password) {
         throw new Error("Email and password are required.");
       }
-      return clientApi.login({ email, password });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3001"}/api/v1/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        if (data.requiresVerification) {
+          router.replace(`/verify-email?email=${encodeURIComponent(data.email)}`);
+          return;
+        }
+        throw new Error(data.error || "Login failed");
+      }
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (!data) return;
       setFormError(null);
       clearNextRedirectCookie();
       router.replace(resolvedReturnUrl ?? "/dashboard");

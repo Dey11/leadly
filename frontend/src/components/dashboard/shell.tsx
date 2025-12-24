@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -10,6 +10,9 @@ import {
   PanelsTopLeft,
   Sparkles,
   X,
+  Settings,
+  User,
+  CreditCard,
 } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -37,7 +40,9 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -46,7 +51,18 @@ export function DashboardShell({
 
   useEffect(() => {
     setIsMobileNavOpen(false);
+    setIsProfileOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const resolvedName = accountName?.trim() || "Leadly workspace";
   const resolvedEmail = accountEmail || "member@leadly.app";
@@ -170,26 +186,60 @@ export function DashboardShell({
               >
                 {tierLabel} tier
               </Badge>
-              <div className="bg-primary/15 text-primary hidden size-10 items-center justify-center rounded-full text-sm font-semibold shadow-sm sm:flex sm:size-11">
-                {avatarInitial}
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-full text-sm font-semibold shadow-sm transition-all hover:bg-primary/25 hover:scale-105 sm:size-11 cursor-pointer"
+                  aria-label="Open profile menu"
+                  aria-expanded={isProfileOpen}
+                >
+                  {avatarInitial}
+                </button>
+                {isProfileOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-3 border-b border-border">
+                      <p className="text-sm font-semibold text-foreground truncate">{resolvedName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{resolvedEmail}</p>
+                    </div>
+                    <div className="py-1">
+                      <Link
+                        href="/dashboard/account"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <User className="size-4 text-muted-foreground" />
+                        Account settings
+                      </Link>
+                      <Link
+                        href="/dashboard/billing"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <CreditCard className="size-4 text-muted-foreground" />
+                        Billing & plans
+                      </Link>
+                    </div>
+                    <div className="border-t border-border pt-1">
+                      <LogoutButton
+                        variant="ghost"
+                        className="w-full justify-start gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-destructive/10 hover:text-destructive rounded-none"
+                      >
+                        <LogOut className="size-4" />
+                        Sign out
+                      </LogoutButton>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:hidden">
                 <LogoutButton
                   variant="outline"
                   size="icon-sm"
-                  className="sm:hidden"
                   aria-label="Sign out"
                 >
                   <LogOut className="size-4" aria-hidden />
                   <span className="sr-only">Sign out</span>
                 </LogoutButton>
-                {/* <LogoutButton
-                  variant="outline"
-                  size="sm"
-                  className="hidden sm:inline-flex"
-                >
-                  Sign out
-                </LogoutButton> */}
               </div>
             </div>
           </div>

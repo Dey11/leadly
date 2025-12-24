@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { LoginForm } from "@/components/auth/login-form";
 import { siteConfig } from "@/config/site";
@@ -29,14 +30,24 @@ function resolveReturnUrl(value?: string) {
 }
 
 interface LoginPageProps {
-  searchParams: { next?: string };
+  searchParams: Promise<{ next?: string }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const returnUrl = resolveReturnUrl(searchParams.next);
+  const params = await searchParams;
+  const returnUrl = resolveReturnUrl(params.next);
   const cookieStore = await cookies();
   const cookieValue = cookieStore.get("next_redirect")?.value;
   const returnFromCookie = resolveReturnUrl(cookieValue);
   const finalReturnUrl = returnUrl ?? returnFromCookie;
-  return <LoginForm returnUrl={finalReturnUrl} />;
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4" />
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    }>
+      <LoginForm returnUrl={finalReturnUrl} />
+    </Suspense>
+  );
 }

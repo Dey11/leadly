@@ -86,6 +86,36 @@ export const clientApi = {
     request<{ message?: string }>(`${apiBaseUrl}/auth/logout`, {
       method: "POST",
     }),
+  verifyEmail: (body: { email: string; otp: string }) =>
+    request<{ message?: string }>(`${apiBaseUrl}/auth/verify-email`, {
+      method: "POST",
+      body,
+    }),
+  resendVerificationEmail: (body: { email: string }) =>
+    request<{ message?: string }>(`${apiBaseUrl}/auth/resend-verification-email`, {
+      method: "POST",
+      body,
+    }),
+  forgotPassword: (body: { email: string }) =>
+    request<{ message?: string }>(`${apiBaseUrl}/auth/forgot-password`, {
+      method: "POST",
+      body,
+    }),
+  resetPassword: (body: { token: string; password: string }) =>
+    request<{ message?: string }>(`${apiBaseUrl}/auth/reset-password`, {
+      method: "POST",
+      body,
+    }),
+  requestEmailChange: (body: { newEmail: string; password: string }) =>
+    request<{ message?: string }>(`${apiBaseUrl}/auth/request-email-change`, {
+      method: "POST",
+      body,
+    }),
+  confirmEmailChange: (body: { token: string }) =>
+    request<{ message?: string }>(`${apiBaseUrl}/auth/confirm-email-change`, {
+      method: "POST",
+      body,
+    }),
   createIcp: (body: {
     name: string;
     summary: string;

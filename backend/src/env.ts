@@ -33,6 +33,9 @@ const envSchema = z.object({
 
   // Feature flags
   FEATURE_BILLING_ENFORCEMENT: z.enum(["off", "log", "on"]).default("off"),
+
+  // Resend
+  RESEND_API_KEY: z.string().min(1, "RESEND_API_KEY is required"),
 });
 
 export const env = envSchema.parse(process.env);
