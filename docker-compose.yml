@@ -123,9 +123,30 @@ services:
     depends_on:
       - leadly_db
 
+  leadly_backup:
+    image: prodrigestivill/postgres-backup-local
+    container_name: leadly_backup
+    network_mode: host
+    restart: always
+    environment:
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - SCHEDULE=0 */6 * * *
+      - BACKUP_KEEP_DAYS=7
+      - POST_BACKUP_COMMAND=apk add --no-cache curl && curl -F chat_id=${BACKUP_CHANNEL_ID} -F caption="📦 Leadly DB Backup | 📅 $(date "+%Y-%m-%d %H:%M") | 📂 $(basename $BACKUP_FILE)" -F document=@$BACKUP_FILE https://api.telegram.org/bot${BACKUP_BOT_TOKEN}/sendDocument
+      
+    volumes:
+      - leadly_backup_data:/backups
+    depends_on:
+      - leadly_db
+
 volumes:
   leadly_redis_data:
   leadly_postgres_data:
+  leadly_backup_data:
 
 networks:
   default: 
