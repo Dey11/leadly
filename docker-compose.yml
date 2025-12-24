@@ -112,6 +112,17 @@ services:
     depends_on:
       - leadly_backend
 
+  leadly_db_viewer:
+    image: adminer
+    container_name: leadly_db_viewer
+    network_mode: host
+    restart: always
+    environment:
+      - ADMINER_DEFAULT_SERVER=localhost:5433
+    command: php -S 0.0.0.0:8888 -t /var/www/html
+    depends_on:
+      - leadly_db
+
 volumes:
   leadly_redis_data:
   leadly_postgres_data:
