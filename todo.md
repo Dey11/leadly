@@ -16,7 +16,7 @@ Things to take care of:
 - [x] routes for email validation
 
 - [x] logo
-- [] favicon not appearing in prod
+- [x] favicon not appearing in prod
 - [x] the account icon, when i click on it, it should hav a small panel for acc info
 
 - [x] forget pwd full flow
