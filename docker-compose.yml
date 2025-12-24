@@ -5,7 +5,9 @@ services:
     network_mode: host
     restart: always
     pull_policy: if_not_present
-    command: redis-server --port 6381 --save 60 1 --loglevel warning
+    environment:
+      - REDIS_PORT
+    command: redis-server --port ${REDIS_PORT} --save 60 1 --loglevel warning
     volumes:
       - leadly_redis_data:/data
 
@@ -18,13 +20,15 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - POSTGRES_DB
+      - POSTGRES_PORT
+      - POSTGRES_HOST
     volumes:
       - leadly_postgres_data:/var/lib/postgresql/data
     
     command: >
       postgres 
-      -p 5433
-      -c listen_addresses='localhost'
+      -p ${POSTGRES_PORT}
+      -c listen_addresses='${POSTGRES_HOST}'
       -c max_connections=20
       -c shared_buffers=1GB 
       -c effective_cache_size=3GB 
@@ -50,7 +54,7 @@ services:
       - NODE_ENV
       - SESSION_SECRET
       - FRONTEND_URL
-      - NITTER_URL=
+      - NITTER_URL
       - REDIS_URL
       - DODO_API_KEY
       - DODO_ENVIRONMENT
@@ -118,7 +122,7 @@ services:
     network_mode: host
     restart: always
     environment:
-      - ADMINER_DEFAULT_SERVER=localhost:5433
+      - ADMINER_DEFAULT_SERVER=localhost:${POSTGRES_PORT}
     command: php -S 0.0.0.0:8888 -t /var/www/html
     depends_on:
       - leadly_db
@@ -139,7 +143,7 @@ services:
       - HEALTHCHECK_PORT
       - BACKUP_CHANNEL_ID
       - BACKUP_BOT_TOKEN
-      - POST_BACKUP_COMMAND=curl -F chat_id=$${BACKUP_CHANNEL_ID} -F caption="📦 Leadly DB Backup | 📅 $(date "+%Y-%m-%d %H:%M") | 📂 $(basename $$BACKUP_FILE)" -F document=@$$BACKUP_FILE https://api.telegram.org/bot$${BACKUP_BOT_TOKEN}/sendDocument
+      - POST_BACKUP_COMMAND=curl -F chat_id=$${BACKUP_CHANNEL_ID} -F caption="Leadly DB Backup | $$(date "+%Y-%m-%d %H:%M") | $$(basename $$BACKUP_FILE)" -F document=@$$BACKUP_FILE https://api.telegram.org/bot$${BACKUP_BOT_TOKEN}/sendDocument
 
     volumes:
       - leadly_backup_data:/backups
