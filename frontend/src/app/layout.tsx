@@ -12,8 +12,7 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   icons: [
-    { rel: "icon", url: "/favicon.ico" },
-    { rel: "apple-touch-icon", url: "/apple-touch-icon.png" },
+    { rel: "icon", url: "/favicon.ico" }
   ],
   openGraph: {
     title: siteConfig.name,
