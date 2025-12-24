@@ -137,8 +137,8 @@ services:
       - SCHEDULE=0 */6 * * *
       - BACKUP_KEEP_DAYS=7
       - HEALTHCHECK_PORT=8123
-      - POST_BACKUP_COMMAND=apk add --no-cache curl && curl -F chat_id=${BACKUP_CHANNEL_ID} -F caption="📦 Leadly DB Backup | 📅 $(date "+%Y-%m-%d %H:%M") | 📂 $(basename $BACKUP_FILE)" -F document=@$BACKUP_FILE https://api.telegram.org/bot${BACKUP_BOT_TOKEN}/sendDocument
-      
+      - POST_BACKUP_COMMAND=apk add --no-cache curl && curl -F chat_id=${BACKUP_CHANNEL_ID} -F caption="📦 Leadly DB Backup | 📅 $(date "+%Y-%m-%d %H:%M") | 📂 $(basename $$BACKUP_FILE)" -F document=@$$BACKUP_FILE https://api.telegram.org/bot${BACKUP_BOT_TOKEN}/sendDocument
+
     volumes:
       - leadly_backup_data:/backups
     depends_on:
