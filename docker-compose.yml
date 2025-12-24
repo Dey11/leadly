@@ -65,6 +65,7 @@ services:
       - REDDIT_CLIENT_SECRET
       - REDDIT_USERNAME
       - GOOGLE_GENERATIVE_AI_API_KEY
+      - RESEND_API_KEY
     depends_on:
       - leadly_redis
 
@@ -79,11 +80,12 @@ services:
     restart: always
     pull_policy: build
     environment:
+      - PORT=${BACKEND_PORT}
       - DATABASE_URL
       - NODE_ENV
       - SESSION_SECRET
       - FRONTEND_URL
-      - NITTER_URL=
+      - NITTER_URL
       - REDIS_URL
       - DODO_API_KEY
       - DODO_ENVIRONMENT
@@ -94,6 +96,7 @@ services:
       - REDDIT_CLIENT_SECRET
       - REDDIT_USERNAME
       - GOOGLE_GENERATIVE_AI_API_KEY
+      - RESEND_API_KEY
     depends_on:
       - leadly_backend
       - leadly_redis
