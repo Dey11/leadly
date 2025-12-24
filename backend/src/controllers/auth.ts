@@ -255,7 +255,7 @@ export async function logout(req: Request, res: Response) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    await db.session.delete({
+    await db.session.deleteMany({
       where: {
         token: sessionToken,
       },
