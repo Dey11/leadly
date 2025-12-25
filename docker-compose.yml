@@ -146,10 +146,9 @@ services:
       - HEALTHCHECK_PORT
       - BACKUP_CHANNEL_ID
       - BACKUP_BOT_TOKEN
-      - 'POST_BACKUP_COMMAND=curl -v --fail -F chat_id=$${BACKUP_CHANNEL_ID} -F "caption=Leadly DB Backup | $$(date ''+%Y-%m-%d %H:%M'') | $$(basename $$BACKUP_FILE)" -F document=@$$BACKUP_FILE https://api.telegram.org/bot$${BACKUP_BOT_TOKEN}/sendDocument'
-
     volumes:
       - leadly_backup_data:/backups
+      - ./backup-hooks:/hooks
     depends_on:
       - leadly_db
 
