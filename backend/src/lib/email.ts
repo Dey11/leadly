@@ -46,26 +46,3 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     }
 }
 
-export async function sendEmailChangeEmail(newEmail: string, token: string) {
-    const confirmUrl = `${env.FRONTEND_URL}/confirm-email-change?token=${token}`;
-
-    const { error } = await resend.emails.send({
-        from: "Leadly Security <security@leadly.live>",
-        to: newEmail,
-        subject: "Confirm your new email - Leadly",
-        html: `
-      <h2>Email Change Request</h2>
-      <p>You requested to change your Leadly account email to this address.</p>
-      <p>Click the button below to confirm this change:</p>
-      <a href="${confirmUrl}" style="display: inline-block; padding: 12px 24px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Confirm Email Change</a>
-      <p style="margin-top: 24px;">Or copy this link: <a href="${confirmUrl}">${confirmUrl}</a></p>
-      <p>This link will expire in 1 hour.</p>
-      <p>If you didn't request this, you can safely ignore this email.</p>
-    `,
-    });
-
-    if (error) {
-        console.error("Failed to send email change email:", error);
-        throw new Error("Failed to send email change email");
-    }
-}

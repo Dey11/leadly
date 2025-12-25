@@ -1,6 +1,6 @@
 ## Before launch
-- [ ] add pwd validation checks - 1 small, 1 upper, 1 special, ...
-- [ ] check if email is linked to dodo customer profile -> resetting email shouldnt be allowed then since dodo creates the customer
+- [x] add pwd validation checks - 1 small, 1 upper, 1 special, 1 number (min 8, max 32 chars)
+- [x] check if email is linked to dodo customer profile -> email change feature removed entirely (Dodo API doesn't support email updates)
 - [ ] make landing page, dashboard look better (dey)
 - [ ] Use AI to suggest the subreddits to scrape based on the lead description (ICP) w ratelimits*
 - [ ] Use AI to suggest the ICP w ratelimits*

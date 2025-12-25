@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import { registerSchema, loginSchema, verifyEmailSchema, resendVerificationEmailSchema, forgotPasswordSchema, resetPasswordSchema, requestEmailChangeSchema, confirmEmailChangeSchema, formatZodError } from "../types/schema";
+import { registerSchema, loginSchema, verifyEmailSchema, resendVerificationEmailSchema, forgotPasswordSchema, resetPasswordSchema, formatZodError } from "../types/schema";
 import db from "../lib/db";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { env } from "../env";
 import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
 import { initializeOrResetUsagePeriod } from "../lib/usage";
-import { sendVerificationEmail, sendPasswordResetEmail, sendEmailChangeEmail } from "../lib/email";
+import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/email";
 import { validateEmail } from "../lib/email-validator";
 import { checkRateLimit, incrementRateLimit } from "../lib/rate-limit";
 
@@ -69,6 +69,13 @@ export async function register(req: Request, res: Response) {
     }
 
     const email = payload.data.email.toLowerCase();
+    const rateLimitCheck = await checkRateLimit(req, "register");
+    if (rateLimitCheck.exceeded) {
+      return res.status(429).json({
+        error: rateLimitCheck.error,
+        retryAfter: rateLimitCheck.retryAfter,
+      });
+    }
 
     const findExistingUser = await db.user.findUnique({
       where: {
@@ -84,26 +91,58 @@ export async function register(req: Request, res: Response) {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    if (findExistingUser && !findExistingUser.emailVerified) {
-      await db.user.delete({ where: { id: findExistingUser.id } });
-    }
-
     const emailValidation = await validateEmail(email);
     if (!emailValidation.valid) {
       return res.status(400).json({ error: emailValidation.reason });
     }
 
-    const rateLimitCheck = await checkRateLimit(req, "register");
-    if (rateLimitCheck.exceeded) {
-      return res.status(429).json({
-        error: rateLimitCheck.error,
-        retryAfter: rateLimitCheck.retryAfter,
+    const hashedPassword = await bcrypt.hash(payload.data.password, 10);
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    // If unverified user exists, update instead of delete to prevent race condition
+    if (findExistingUser && !findExistingUser.emailVerified) {
+      const token = generateSecureSessionToken();
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      const { user, session } = await db.$transaction(async (tx) => {
+        const user = await tx.user.update({
+          where: { id: findExistingUser.id },
+          data: {
+            name: payload.data.name,
+            passwordHash: hashedPassword,
+            emailOtp: otp,
+            emailOtpExpiresAt: otpExpiresAt,
+          },
+        });
+
+        await tx.session.deleteMany({ where: { userId: user.id } });
+
+        const session = await tx.session.create({
+          data: {
+            id: crypto.randomUUID(),
+            token,
+            userId: user.id,
+            expiresAt,
+          },
+        });
+
+        return { user, session };
       });
+
+      try {
+        await sendVerificationEmail(email, otp);
+        await incrementRateLimit(req, "register");
+      } catch (emailError) {
+        console.error("Failed to send verification email:", emailError);
+      }
+
+      return res
+        .cookie("session_token", session.token, getCookieOptions())
+        .status(200)
+        .json({ message: "Verification email resent", email: user.email });
     }
 
-    const hashedPassword = await bcrypt.hash(payload.data.password, 10);
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
     const { user, session } = await db.$transaction(async (tx) => {
       const user = await tx.user.create({
@@ -191,10 +230,11 @@ export async function login(req: Request, res: Response) {
     });
 
     if (!userInDb) {
-      return res.status(400).json({ error: "User not found" });
+      await bcrypt.compare(payload.data.password, "$2b$10$dummyhashtopreventtimingattacks");
+      return res.status(400).json({ error: "Invalid email or password" });
     }
     if (userInDb?.isDeleted) {
-      return res.status(400).json({ error: "User is deleted" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -203,7 +243,7 @@ export async function login(req: Request, res: Response) {
     );
 
     if (!isPasswordValid) {
-      return res.status(400).json({ error: "Invalid password" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     if (!userInDb.emailVerified) {
@@ -215,7 +255,7 @@ export async function login(req: Request, res: Response) {
         });
       }
 
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otp = crypto.randomInt(100000, 999999).toString();
       const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
       await db.user.update({
@@ -357,7 +397,7 @@ export async function resendVerificationEmail(req: Request, res: Response) {
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 999999).toString();
     const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
     await db.user.update({
@@ -479,142 +519,6 @@ export async function resetPassword(req: Request, res: Response) {
     res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
     console.error("Password reset failed:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-}
-
-export async function requestEmailChange(req: Request, res: Response) {
-  try {
-    const payload = requestEmailChangeSchema.safeParse(req.body);
-    if (!payload.success) {
-      return res.status(400).json({ error: formatZodError(payload.error) });
-    }
-
-    const sessionToken = req.cookies.session_token;
-    if (!sessionToken) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const session = await db.session.findUnique({
-      where: { token: sessionToken },
-      include: { user: true },
-    });
-
-    if (!session || session.expiresAt < new Date()) {
-      return res.status(401).json({ error: "Session expired" });
-    }
-
-    const user = session.user;
-
-    if (user.isDeleted) {
-      return res.status(403).json({ error: "User is deleted" });
-    }
-
-    const { newEmail, password } = payload.data;
-
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
-      return res.status(400).json({ error: "Incorrect password" });
-    }
-
-    if (newEmail.toLowerCase() === user.email.toLowerCase()) {
-      return res.status(400).json({ error: "New email must be different from current email" });
-    }
-
-    const existingUser = await db.user.findUnique({
-      where: { email: newEmail.toLowerCase() },
-    });
-    if (existingUser) {
-      return res.status(400).json({ error: "This email is already in use" });
-    }
-
-    const emailValidation = await validateEmail(newEmail);
-    if (!emailValidation.valid) {
-      return res.status(400).json({ error: emailValidation.reason });
-    }
-
-    const rateLimitCheck = await checkRateLimit(req, "requestEmailChange");
-    if (rateLimitCheck.exceeded) {
-      return res.status(429).json({
-        error: rateLimitCheck.error,
-        retryAfter: rateLimitCheck.retryAfter,
-      });
-    }
-
-    const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
-
-    await db.user.update({
-      where: { id: user.id },
-      data: {
-        pendingEmail: newEmail.toLowerCase(),
-        emailChangeToken: token,
-        emailChangeTokenExpiresAt: expiresAt,
-      },
-    });
-
-    await sendEmailChangeEmail(newEmail, token);
-    await incrementRateLimit(req, "requestEmailChange");
-
-    res.status(200).json({ message: "Confirmation email sent to new address" });
-  } catch (error) {
-    console.error("Email change request failed:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-}
-
-export async function confirmEmailChange(req: Request, res: Response) {
-  try {
-    const payload = confirmEmailChangeSchema.safeParse(req.body);
-    if (!payload.success) {
-      return res.status(400).json({ error: formatZodError(payload.error) });
-    }
-
-    const user = await db.user.findUnique({
-      where: { emailChangeToken: payload.data.token },
-    });
-
-    if (!user) {
-      return res.status(400).json({ error: "Invalid or expired token" });
-    }
-
-    if (user.isDeleted) {
-      return res.status(400).json({ error: "User is deleted" });
-    }
-
-    if (!user.emailChangeTokenExpiresAt || user.emailChangeTokenExpiresAt < new Date()) {
-      return res.status(400).json({ error: "Token has expired" });
-    }
-
-    if (!user.pendingEmail) {
-      return res.status(400).json({ error: "No pending email change" });
-    }
-
-    const emailTaken = await db.user.findUnique({
-      where: { email: user.pendingEmail },
-    });
-
-    if (emailTaken) {
-      return res.status(400).json({ error: "This email is already in use" });
-    }
-
-    await db.user.update({
-      where: { id: user.id },
-      data: {
-        email: user.pendingEmail,
-        pendingEmail: null,
-        emailChangeToken: null,
-        emailChangeTokenExpiresAt: null,
-      },
-    });
-
-    await db.session.deleteMany({
-      where: { userId: user.id },
-    });
-
-    res.status(200).json({ message: "Email changed successfully" });
-  } catch (error) {
-    console.error("Email change confirmation failed:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }

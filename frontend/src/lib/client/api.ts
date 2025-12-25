@@ -106,16 +106,6 @@ export const clientApi = {
       method: "POST",
       body,
     }),
-  requestEmailChange: (body: { newEmail: string; password: string }) =>
-    request<{ message?: string }>(`${apiBaseUrl}/auth/request-email-change`, {
-      method: "POST",
-      body,
-    }),
-  confirmEmailChange: (body: { token: string }) =>
-    request<{ message?: string }>(`${apiBaseUrl}/auth/confirm-email-change`, {
-      method: "POST",
-      body,
-    }),
   createIcp: (body: {
     name: string;
     summary: string;

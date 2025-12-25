@@ -14,7 +14,6 @@ export const rateLimitConfigs: Record<string, RateLimitConfig> = {
     verifyEmail: { windowMs: 15 * 60 * 1000, maxRequests: 5, keyPrefix: "rl:verify", message: "Too many verification attempts. Try again in 15 minutes." },
     forgotPassword: { windowMs: 60 * 60 * 1000, maxRequests: 3, keyPrefix: "rl:forgot", message: "Too many password reset requests. Try again in an hour." },
     resetPassword: { windowMs: 15 * 60 * 1000, maxRequests: 5, keyPrefix: "rl:reset", message: "Too many reset attempts. Try again in 15 minutes." },
-    requestEmailChange: { windowMs: 60 * 60 * 1000, maxRequests: 3, keyPrefix: "rl:email-change", message: "Too many email change requests. Try again in an hour." },
     resendOtp: { windowMs: 5 * 60 * 1000, maxRequests: 2, keyPrefix: "rl:resend", message: "Please wait before requesting another code." },
 };
 
