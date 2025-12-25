@@ -57,3 +57,7 @@ export const TIER_LIMITS: Record<
 export const MODEL = "gemini-flash-latest";
 
 export const CRON_INTERVAL = "0 * * * *";
+
+// Retry settings for failed scrape jobs
+export const MAX_SCRAPE_RETRY_COUNT = 3;
+export const SCRAPE_RETRY_DELAY_MS = 60 * 60 * 1000;

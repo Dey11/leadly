@@ -1,11 +1,52 @@
 import { scrapeJobsQueue } from "../lib/queue";
 import db from "../lib/db";
 import { env } from "../env";
-import { TIER_LIMITS } from "../lib/constants";
+import { TIER_LIMITS, MAX_SCRAPE_RETRY_COUNT } from "../lib/constants";
 import { tryConsumeScrapeCredit, previewUsage } from "../lib/usage";
+
+async function pickupRetryJobs() {
+  const now = new Date();
+
+  const jobsToRetry = await db.scrapeJob.findMany({
+    where: {
+      status: "FAILED",
+      retryCount: { lt: MAX_SCRAPE_RETRY_COUNT },
+      nextRetryAt: { lte: now },
+    },
+    include: {
+      monitor: { include: { icp: true } },
+    },
+  });
+
+  console.log(`Found ${jobsToRetry.length} jobs ready for retry`);
+
+  for (const job of jobsToRetry) {
+    try {
+      console.log(`Retrying job ${job.id} (attempt ${job.retryCount + 1}/${MAX_SCRAPE_RETRY_COUNT})`);
+
+      await db.scrapeJob.update({
+        where: { id: job.id },
+        data: { status: "PENDING" },
+      });
+
+      await scrapeJobsQueue.add("scrapeJobs", {
+        monitorId: job.monitorId,
+        jobId: job.id,
+      });
+
+      console.log(`Scheduled retry for job ${job.id}`);
+    } catch (error) {
+      console.error(`Failed to schedule retry for job ${job.id}:`, error);
+    }
+  }
+}
 
 export async function runScheduler() {
   console.log("Running scheduler");
+
+  // Pick up retry jobs first
+  await pickupRetryJobs();
+
   const currentHour = new Date().getUTCHours();
   console.log("Current UTC hour:", currentHour);
 

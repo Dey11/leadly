@@ -5,7 +5,7 @@ import type { Job } from "bullmq";
 import type { LeadStatus } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { env } from "../env";
-import { MAX_SCRAPE_POSTS_LIMIT } from "../lib/constants";
+import { MAX_SCRAPE_POSTS_LIMIT, MAX_SCRAPE_RETRY_COUNT, SCRAPE_RETRY_DELAY_MS } from "../lib/constants";
 
 export async function processScrapeJob(job: Job) {
   console.log("Processing job with data:", job.data);
@@ -14,16 +14,15 @@ export async function processScrapeJob(job: Job) {
     throw new Error("Missing monitorId or jobId in job data");
   }
 
-  const [scrapeJob, monitor] = await Promise.all([
-    db.scrapeJob.findUnique({
-      where: { id: job.data.jobId },
-      include: { monitor: { include: { icp: true } } },
-    }),
-    db.monitor.findUnique({
-      where: { id: job.data.monitorId },
-      include: { user: true, icp: true },
-    }),
-  ]);
+  let scrapeJob = await db.scrapeJob.findUnique({
+    where: { id: job.data.jobId },
+    include: { monitor: { include: { icp: true } } },
+  });
+
+  const monitor = await db.monitor.findUnique({
+    where: { id: job.data.monitorId },
+    include: { user: true, icp: true },
+  });
 
   console.log("Found scrapeJob:", !!scrapeJob, "Found monitor:", !!monitor);
 
@@ -94,6 +93,7 @@ export async function processScrapeJob(job: Job) {
           warmLeads: warmLeads.length,
           coldLeads: coldLeads.length,
           neutralLeads: neutralLeads.length,
+          nextRetryAt: null,
         },
       });
 
@@ -108,15 +108,55 @@ export async function processScrapeJob(job: Job) {
     });
   } catch (error) {
     console.error("Job processing failed:", error);
+
+    const currentRetryCount = (scrapeJob?.retryCount ?? 0) + 1;
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+    console.log(`Job ${job.data.jobId} failed. Retry count: ${currentRetryCount}/${MAX_SCRAPE_RETRY_COUNT}`);
+
     try {
-      await db.scrapeJob.update({
-        where: { id: job.data.jobId },
-        data: {
-          status: "FAILED",
-          errorMessage:
-            error instanceof Error ? error.message : "Unknown error",
-        },
-      });
+      if (currentRetryCount < MAX_SCRAPE_RETRY_COUNT) {
+        // Schedule for retry
+        const nextRetryAt = new Date(Date.now() + SCRAPE_RETRY_DELAY_MS);
+        console.log(`Scheduling retry for job ${job.data.jobId} at ${nextRetryAt.toISOString()}`);
+
+        await db.scrapeJob.update({
+          where: { id: job.data.jobId },
+          data: {
+            status: "FAILED",
+            retryCount: currentRetryCount,
+            nextRetryAt,
+            errorMessage,
+          },
+        });
+      } else {
+        // Permanently failed - move to FailedScrapeJob
+        console.log(`Job ${job.data.jobId} permanently failed after ${MAX_SCRAPE_RETRY_COUNT} retries`);
+
+        await db.$transaction([
+          db.failedScrapeJob.create({
+            data: {
+              monitorId: job.data.monitorId,
+              originalJobId: job.data.jobId,
+              errorMessage,
+              metadata: {
+                stack: error instanceof Error ? error.stack : null,
+                context: job.data,
+                retryCount: currentRetryCount,
+              },
+            },
+          }),
+          db.scrapeJob.update({
+            where: { id: job.data.jobId },
+            data: {
+              status: "FAILED",
+              retryCount: currentRetryCount,
+              nextRetryAt: null,
+              errorMessage,
+            },
+          }),
+        ]);
+      }
     } catch (updateError) {
       console.error("Failed to update scrapeJob status:", updateError);
     }
