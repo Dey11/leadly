@@ -28,7 +28,6 @@ ENV DATABASE_URL=${DATABASE_URL}
 
 # Generate Prisma Client
 RUN bunx prisma generate
-RUN bunx prisma db push
 
 # [optional] tests & build
 ENV NODE_ENV=production
