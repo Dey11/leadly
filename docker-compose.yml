@@ -142,6 +142,7 @@ services:
       - POSTGRES_PASSWORD
       - POSTGRES_DB
       - SCHEDULE
+      - HEALTHCHECK_PORT
       - BACKUP_KEEP_DAYS
       - BACKUP_CHANNEL_ID
       - BACKUP_BOT_TOKEN
