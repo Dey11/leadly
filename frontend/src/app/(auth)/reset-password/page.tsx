@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 
 import { clientApi } from "@/lib/client/api";
+import { validatePassword } from "@/lib/validation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -29,9 +30,12 @@ function ResetPasswordContent() {
             if (!password) {
                 throw new Error("Please enter a new password.");
             }
-            if (password.length < 8) {
-                throw new Error("Password must be at least 8 characters.");
+            
+            const passwordError = validatePassword(password);
+            if (passwordError) {
+                throw new Error(passwordError);
             }
+
             if (password !== confirmPassword) {
                 throw new Error("Passwords do not match.");
             }

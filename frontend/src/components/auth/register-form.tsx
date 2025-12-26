@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 
 import { clientApi } from "@/lib/client/api";
+import { validatePassword } from "@/lib/validation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -23,6 +24,12 @@ export function RegisterForm() {
       if (!name || !email || !password) {
         throw new Error("Please fill every field to continue.");
       }
+      
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        throw new Error(passwordError);
+      }
+
       return clientApi.register({ name, email, password });
     },
     onSuccess: () => {
