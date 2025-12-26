@@ -133,8 +133,8 @@ services:
   leadly_backup:
     image: prodrigestivill/postgres-backup-local
     container_name: leadly_backup
-    network_mode: host
     restart: always
+    network_mode: host
     environment:
       - POSTGRES_HOST
       - POSTGRES_PORT
@@ -143,12 +143,11 @@ services:
       - POSTGRES_DB
       - SCHEDULE
       - BACKUP_KEEP_DAYS
-      - HEALTHCHECK_PORT
       - BACKUP_CHANNEL_ID
       - BACKUP_BOT_TOKEN
     volumes:
       - leadly_backup_data:/backups
-      - leadly_backup_hooks:/hooks
+      - ./backup:/hooks
     depends_on:
       - leadly_db
 
