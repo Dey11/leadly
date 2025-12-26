@@ -148,7 +148,7 @@ services:
       - BACKUP_BOT_TOKEN
     volumes:
       - leadly_backup_data:/backups
-      - ./backup-hooks:/hooks
+      - leadly_backup_hooks:/hooks
     depends_on:
       - leadly_db
 
