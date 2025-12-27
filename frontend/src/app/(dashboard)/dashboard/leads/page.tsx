@@ -1,12 +1,12 @@
 import { LeadsView } from "@/components/leads/leads-view";
-import { getMonitors } from "@/lib/backend-queries";
+import { getMonitors, getUsageSummary } from "@/lib/backend-queries";
 
 export const metadata = {
   title: "Leads · Leadly",
 };
 
 export default async function LeadsPage() {
-  const monitors = await getMonitors();
+  const [monitors, usage] = await Promise.all([getMonitors(), getUsageSummary()]);
 
   const monitorOptions = monitors.map((monitor) => ({
     id: monitor.id,
@@ -17,7 +17,8 @@ export default async function LeadsPage() {
 
   return (
     <div id="leads-view" className="flex flex-col gap-6">
-      <LeadsView monitors={monitorOptions} />
+      <LeadsView monitors={monitorOptions} tier={usage?.payload?.tier ?? "FREE"} />
     </div>
   );
 }
+
