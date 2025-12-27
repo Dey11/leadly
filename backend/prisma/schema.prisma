@@ -190,6 +190,7 @@ model ScrapeJob {
 
   @@index([monitorId])
   @@index([status, retryCount, nextRetryAt])
+  @@index([createdAt])
   @@map("scrape_jobs")
 }
 
@@ -229,6 +230,9 @@ model Lead {
   updatedAt DateTime @updatedAt
 
   @@index([scrapeJobId])
+  @@index([status])
+  @@index([leadType])
+  @@index([createdAt])
   @@map("leads")
 }
 
@@ -244,6 +248,8 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
+  @@index([userId])
+  @@index([expiresAt])
   @@map("session")
 }
 

@@ -1,11 +1,12 @@
 ## Before launch
 - [x] add pwd validation checks - 1 small, 1 upper, 1 special, 1 number (min 8, max 32 chars)
 - [x] check if email is linked to dodo customer profile -> email change feature removed entirely (Dodo API doesn't support email updates)
-- [ ] make landing page, dashboard look better (dey)
 - [x] Use AI to suggest the subreddits to scrape based on the lead description (ICP) w ratelimits*
 - [x] Use AI to suggest the ICP w ratelimits*
 - [x] if the scrape job fails, we should pick it in the next hour. we should have a failed counter, if the same thing failed 3 times, we shouldnt pick it again. make a new db table for such jobs. we need to manually check what went wrong for such jobs. this is critical, pls test this well
 - [ ] need leadly support email (can send email, but receiving is done on registrar ends, dey work.)
+- [ ] can make static landing page (since it doesnt change right? dey?)
+- [ ] make landing page, dashboard look better (dey)
       
 * global rate limits ok, in memory
 
@@ -14,6 +15,10 @@
 - [ ] most leads are warm, dont see cold/neutral leads yet -> needs finetuning
 - [ ] think about rotating the reddit credentials using a rotation strategy
 - [ ] maybe post levels of filtering. aggressive, moderate, mild. aggressive can bring out false positives but thats okay. mild will be more accurate but will miss some leads. moderate will be a balance between the two
+
+## when scaling is needed
+- [ ] implement redis cache layer on rarely changing things like (user account/profile, icps, monitors list, schedule settings, usage stats/dashboard stats (30sec or something)), cache session (auth middleware hits db on every request)
+- [ ] batch db queries (using include)
     
 
 ## Random q

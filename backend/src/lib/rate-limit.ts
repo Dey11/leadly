@@ -91,6 +91,20 @@ export function rateLimit(action: keyof typeof rateLimitConfigs) {
 // In-Memory Rate Limiting (for AI features)
 
 const memoryRateLimitMap = new Map<string, { count: number; windowStart: number }>();
+let lastCleanup = Date.now();
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+function cleanupExpiredEntries(maxWindowMs: number) {
+    const now = Date.now();
+    if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
+
+    lastCleanup = now;
+    for (const [key, entry] of memoryRateLimitMap) {
+        if (now - entry.windowStart >= maxWindowMs) {
+            memoryRateLimitMap.delete(key);
+        }
+    }
+}
 
 export type InMemoryRateLimitConfig = {
     windowMs: number;
@@ -109,6 +123,10 @@ export function checkInMemoryRateLimit(
     config: InMemoryRateLimitConfig
 ): InMemoryRateLimitResult {
     const now = Date.now();
+
+    // Cleanup expired entries periodically
+    cleanupExpiredEntries(config.windowMs);
+
     const entry = memoryRateLimitMap.get(key);
 
     if (!entry || now - entry.windowStart >= config.windowMs) {
