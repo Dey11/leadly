@@ -8,6 +8,7 @@ import { clientApi } from "@/lib/client/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AiAssistDialog } from "@/components/icps/ai-assist-dialog";
 import {
   Field,
   FieldError,
@@ -34,16 +35,31 @@ export function CreateIcpForm() {
   const [formState, setFormState] = useState(INITIAL_STATE);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+
+  const handleAiValues = (values: {
+    name: string;
+    summary: string;
+    targetPersona: string;
+    pains: string;
+    valueProposition: string;
+    qualifyingSignals: string;
+    disqualifyingSignals: string;
+  }) => {
+    setFormState((prev) => ({ ...prev, ...values }));
+    setError(null);
+    setSuccess(null);
+  };
 
   const updateField =
     (field: keyof typeof INITIAL_STATE) =>
-    (
-      event: ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >,
-    ) => {
-      setFormState((prev) => ({ ...prev, [field]: event.target.value }));
-    };
+      (
+        event: ChangeEvent<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >,
+      ) => {
+        setFormState((prev) => ({ ...prev, [field]: event.target.value }));
+      };
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -106,9 +122,22 @@ export function CreateIcpForm() {
 
   return (
     <Card className="bg-background/80">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between gap-4">
         <CardTitle>Define a new ICP</CardTitle>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setAiDialogOpen(true)}
+        >
+          Use AI Help
+        </Button>
       </CardHeader>
+      <AiAssistDialog
+        open={aiDialogOpen}
+        onOpenChange={setAiDialogOpen}
+        onUseValues={handleAiValues}
+      />
       <CardContent className="">
         <form onSubmit={handleSubmit} className="grid gap-4">
           <FieldGroup>

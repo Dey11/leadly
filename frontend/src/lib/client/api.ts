@@ -170,6 +170,27 @@ export const clientApi = {
   deleteAccount: () => request(`${apiBaseUrl}/account`, { method: "DELETE" }),
   updateWalkthroughStatus: () =>
     request(`${apiBaseUrl}/account/walkthrough`, { method: "PATCH" }),
+  suggestIcp: async (body: { description: string }) => {
+    const response = await request<{
+      message: string; payload: {
+        name: string;
+        summary: string;
+        targetPersona: string;
+        pains: string;
+        valueProposition: string;
+        qualifyingSignals: string;
+        disqualifyingSignals: string;
+      }
+    }>(`${apiBaseUrl}/icps/ai/suggest`, { method: "POST", body });
+    return response.payload;
+  },
+  suggestSubreddits: async (body: { icpId: string }) => {
+    const response = await request<{ message: string; payload: string[] }>(
+      `${apiBaseUrl}/monitors/ai/suggest-subreddits`,
+      { method: "POST", body }
+    );
+    return response.payload;
+  },
 
   // Billing
   subscribe: async (plan: "pro" | "premium") => {

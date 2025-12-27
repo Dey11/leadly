@@ -86,3 +86,59 @@ export function rateLimit(action: keyof typeof rateLimitConfigs) {
         }
     };
 }
+
+
+// In-Memory Rate Limiting (for AI features)
+
+const memoryRateLimitMap = new Map<string, { count: number; windowStart: number }>();
+
+export type InMemoryRateLimitConfig = {
+    windowMs: number;
+    maxRequests: number;
+    message?: string;
+};
+
+export type InMemoryRateLimitResult = {
+    allowed: boolean;
+    retryAfterMs: number;
+    retryAfterSeconds: number;
+};
+
+export function checkInMemoryRateLimit(
+    key: string,
+    config: InMemoryRateLimitConfig
+): InMemoryRateLimitResult {
+    const now = Date.now();
+    const entry = memoryRateLimitMap.get(key);
+
+    if (!entry || now - entry.windowStart >= config.windowMs) {
+        memoryRateLimitMap.set(key, { count: 1, windowStart: now });
+        return { allowed: true, retryAfterMs: 0, retryAfterSeconds: 0 };
+    }
+
+    if (entry.count >= config.maxRequests) {
+        const retryAfterMs = config.windowMs - (now - entry.windowStart);
+        return {
+            allowed: false,
+            retryAfterMs,
+            retryAfterSeconds: Math.ceil(retryAfterMs / 1000),
+        };
+    }
+
+    entry.count++;
+    return { allowed: true, retryAfterMs: 0, retryAfterSeconds: 0 };
+}
+
+export function createRateLimitResponse(retryAfterSeconds: number, message?: string) {
+    return {
+        error: message || `Rate limit exceeded. Please wait ${retryAfterSeconds} seconds before trying again.`,
+        retryAfter: retryAfterSeconds,
+    };
+}
+
+export const AI_RATE_LIMIT_CONFIG: InMemoryRateLimitConfig = {
+    windowMs: 60 * 1000,
+    maxRequests: 3,
+    message: "Rate limit exceeded. Please wait before trying again.",
+};
+

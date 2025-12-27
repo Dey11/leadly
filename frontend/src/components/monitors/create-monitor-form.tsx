@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 
 export type IcpOption = {
   id: string;
@@ -28,6 +27,23 @@ type CreateMonitorFormProps = {
   icps: IcpOption[];
 };
 
+function SparkleIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z" />
+    </svg>
+  );
+}
+
 export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
   const router = useRouter();
   const [icpId, setIcpId] = useState(icps[0]?.id ?? "");
@@ -35,6 +51,10 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
   const [target, setTarget] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestLoading, setSuggestLoading] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
 
   useEffect(() => {
     if (icps.length > 0 && !icpId) {
@@ -49,6 +69,11 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
       setPlatform(selected.platform);
     }
   }, [icps, icpId]);
+
+  useEffect(() => {
+    setSuggestions([]);
+    setSuggestError(null);
+  }, [icpId]);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -66,6 +91,7 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
       setError(null);
       setSuccess("Monitor created. Leadly will begin scraping on schedule.");
       setTarget("");
+      setSuggestions([]);
       router.refresh();
     },
     onError: (mutationError: unknown) => {
@@ -81,6 +107,34 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     mutation.mutate();
+  };
+
+  const handleSuggestSubreddits = async () => {
+    if (!icpId) {
+      setSuggestError("Please select an ICP first.");
+      return;
+    }
+
+    setSuggestLoading(true);
+    setSuggestError(null);
+
+    try {
+      const result = await clientApi.suggestSubreddits({ icpId });
+      setSuggestions(result);
+    } catch (err) {
+      setSuggestError(
+        err instanceof Error
+          ? err.message
+          : "Failed to suggest subreddits. Please try again.",
+      );
+    } finally {
+      setSuggestLoading(false);
+    }
+  };
+
+  const handleSelectSuggestion = (subreddit: string) => {
+    setTarget(subreddit);
+    setSuggestions([]);
   };
 
   if (icps.length === 0) {
@@ -130,9 +184,31 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
             </Field>
 
             <Field data-invalid={!!error && !target}>
-              <FieldLabel htmlFor="monitor-target">
-                Target (e.g., subreddit)
-              </FieldLabel>
+              <div className="flex items-center justify-between">
+                <FieldLabel htmlFor="monitor-target">
+                  Target (e.g., subreddit)
+                </FieldLabel>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSuggestSubreddits}
+                  disabled={suggestLoading || !icpId}
+                  className="text-primary h-auto px-2 py-1 text-xs"
+                >
+                  {suggestLoading ? (
+                    <span className="flex items-center gap-1">
+                      <span className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                      Suggesting...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <SparkleIcon className="h-3 w-3" />
+                      Suggest
+                    </span>
+                  )}
+                </Button>
+              </div>
               <Input
                 id="monitor-target"
                 name="target"
@@ -144,6 +220,30 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
               />
               {!target && error && (
                 <FieldError>Provide a target to monitor.</FieldError>
+              )}
+
+              {suggestError && (
+                <p className="mt-1 text-xs text-red-500">{suggestError}</p>
+              )}
+
+              {suggestions.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-muted-foreground mb-1.5 text-xs">
+                    Click to use:
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {suggestions.map((subreddit) => (
+                      <button
+                        key={subreddit}
+                        type="button"
+                        onClick={() => handleSelectSuggestion(subreddit)}
+                        className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
+                      >
+                        {subreddit}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </Field>
 
@@ -182,3 +282,4 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
     </Card>
   );
 }
+

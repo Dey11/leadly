@@ -54,8 +54,8 @@ export const TIER_LIMITS: Record<
   },
 } as const;
 
+export const MODEL_LITE = "gemini-2.0-flash-lite";
 export const MODEL = "gemini-flash-latest";
-
 export const CRON_INTERVAL = "0 * * * *";
 
 // Retry settings for failed scrape jobs
