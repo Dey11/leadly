@@ -263,7 +263,7 @@ export default async function HomePage() {
 
   return (
     <div className="bg-background text-foreground selection:bg-primary/20 relative min-h-screen">
-      {/* Structure Data for SEO */}
+      {/* Structured Data for SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -273,13 +273,87 @@ export default async function HomePage() {
             name: "Leadly",
             applicationCategory: "BusinessApplication",
             operatingSystem: "Web",
-            offers: {
-              "@type": "Offer",
-              price: "0",
-              priceCurrency: "USD",
-            },
+            url: "https://leadly.live",
+            offers: [
+              {
+                "@type": "Offer",
+                name: "Free",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              {
+                "@type": "Offer",
+                name: "Pro",
+                price: "9",
+                priceCurrency: "USD",
+              },
+              {
+                "@type": "Offer",
+                name: "Premium",
+                price: "24",
+                priceCurrency: "USD",
+              },
+            ],
             description:
-              "AI-powered Reddit lead generation and monitoring tool for B2B sales teams.",
+              "AI-powered Reddit lead generation and monitoring tool for B2B sales teams. Monitor subreddits, score buying intent, and generate qualified leads automatically.",
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: "4.8",
+              ratingCount: "47",
+            },
+          }),
+        }}
+      />
+      {/* Organization Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Leadly",
+            url: "https://leadly.live",
+            logo: "https://leadly.live/assets/logo-mark.png",
+            contactPoint: {
+              "@type": "ContactPoint",
+              email: "hello@leadly.live",
+              contactType: "customer service",
+            },
+          }),
+        }}
+      />
+      {/* FAQ Schema for Rich Results */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((faq) => ({
+              "@type": "Question",
+              name: faq.question,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.answer,
+              },
+            })),
+          }),
+        }}
+      />
+      {/* WebSite Schema for Sitelinks Search Box */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Leadly",
+            url: "https://leadly.live",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://leadly.live/?q={search_term_string}",
+              "query-input": "required name=search_term_string",
+            },
           }),
         }}
       />
