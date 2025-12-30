@@ -66,16 +66,16 @@ model User {
   icps     Icp[]
   usage    Usage?
 
-  name               String
-  emailVerified      Boolean   @default(false)
-  emailOtp           String?
-  emailOtpExpiresAt  DateTime?
-  resetToken         String?   @unique
+  name                String
+  emailVerified       Boolean   @default(false)
+  emailOtp            String?
+  emailOtpExpiresAt   DateTime?
+  resetToken          String?   @unique
   resetTokenExpiresAt DateTime?
-  image              String?
-  sessions           Session[]
-  accounts           Account[]
-  hasSeenWalkthrough Boolean   @default(false)
+  image               String?
+  sessions            Session[]
+  accounts            Account[]
+  hasSeenWalkthrough  Boolean   @default(false)
 
   @@map("users")
 }
@@ -83,7 +83,7 @@ model User {
 model Subscription {
   id     String @id @default(cuid())
   userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   subscriptionCustomerId String? @unique
   subscriptionId         String? @unique
@@ -195,17 +195,17 @@ model ScrapeJob {
 }
 
 model FailedScrapeJob {
-  id            String   @id @default(cuid())
-  monitorId     String
-  monitor       Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  monitorId String
+  monitor   Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 
   originalJobId String   @unique
   errorMessage  String   @db.Text
   failedAt      DateTime @default(now())
   metadata      Json?
 
-  reviewed    Boolean  @default(false)
-  reviewNotes String?  @db.Text
+  reviewed    Boolean @default(false)
+  reviewNotes String? @db.Text
 
   @@index([monitorId])
   @@index([reviewed])
