@@ -151,9 +151,9 @@ const pricingPlans = [
     cadence: "6 scrapes/day · 180/mo",
     subs: "10 subreddits",
     highlights: [
-      "Layered keyword filters & exports",
+      "Basic keyword filters",
       "Priority monitoring windows",
-      "Lead health dashboards + CSV downloads",
+      "Ability to change monitoring windows",
     ],
     badge: "Most popular",
     cta: {
@@ -170,8 +170,8 @@ const pricingPlans = [
     subs: "20 subreddits",
     highlights: [
       "24×7 coverage with unlimited exports",
-      "Priority support & playbooks",
-      "Dedicated lead-handoff workflows",
+      "Priority support",
+      "CSV exports",
     ],
     badge: "Scale teams",
     cta: {
@@ -180,19 +180,6 @@ const pricingPlans = [
       requiresAuth: true,
     },
     note: "Includes 30 on-demand scrapes/month (coming soon).",
-  },
-];
-
-const testimonials = [
-  {
-    quote:
-      "We booked 12 qualified demos in week one. Leadly surfaces buying intent long before prospects enter vendor funnels.",
-    author: "Priya Sharma · Head of Growth, CalyxAI",
-  },
-  {
-    quote:
-      "Outbound finally feels strategic. Our SDRs start every morning with context-rich threads and a plan to engage.",
-    author: "Marcus Allen · Founder, OpsForge",
   },
 ];
 
