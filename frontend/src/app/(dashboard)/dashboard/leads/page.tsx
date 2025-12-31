@@ -1,24 +1,17 @@
-import { LeadsView } from "@/components/leads/leads-view";
-import { getMonitors, getUsageSummary } from "@/lib/backend-queries";
+import { Suspense } from "react";
+import { LeadsSkeleton } from "@/components/leads/leads-skeleton";
+import { LeadsContent } from "@/components/leads/leads-content";
+
+import { siteConfig } from "@/config/site";
 
 export const metadata = {
-  title: "Leads · Leadly",
+  title: `Leads · ${siteConfig.name}`,
 };
 
-export default async function LeadsPage() {
-  const [monitors, usage] = await Promise.all([getMonitors(), getUsageSummary()]);
-
-  const monitorOptions = monitors.map((monitor) => ({
-    id: monitor.id,
-    label: monitor.icp
-      ? `${monitor.icp.name} · ${monitor.target}`
-      : monitor.target,
-  }));
-
+export default function LeadsPage() {
   return (
-    <div id="leads-view" className="flex flex-col gap-6">
-      <LeadsView monitors={monitorOptions} tier={usage?.payload?.tier ?? "FREE"} />
-    </div>
+    <Suspense fallback={<LeadsSkeleton />}>
+      <LeadsContent />
+    </Suspense>
   );
 }
-

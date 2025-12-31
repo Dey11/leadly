@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { CookieConsent } from "@/components/ui/cookie-consent";
 import NextTopLoader from "nextjs-toploader";
 
 export const metadata: Metadata = {
@@ -63,12 +65,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-background text-foreground">
-      <body className="bg-background min-h-screen font-sans antialiased">
-        <QueryProvider>
-          <NextTopLoader color="#734" />
-          {children}
-        </QueryProvider>
+    <html
+      lang="en"
+      className="bg-background text-foreground"
+      suppressHydrationWarning
+    >
+      <body
+        className="bg-background min-h-screen font-sans antialiased"
+        suppressHydrationWarning
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <NextTopLoader color="#734" />
+            {children}
+            <CookieConsent />
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

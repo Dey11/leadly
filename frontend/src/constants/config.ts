@@ -1,0 +1,1 @@
+export const DATA_REFRESH_INTERVAL = 10000;

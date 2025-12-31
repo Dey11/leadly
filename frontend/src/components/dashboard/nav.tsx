@@ -13,7 +13,13 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const iconComponents = {
   overview: LayoutDashboard,
@@ -87,7 +93,7 @@ export function DashboardNav({
             {variant === "sidebar" ? (
               <span
                 className={cn(
-                  "absolute left-2 top-1/2 hidden h-7 w-1.5 -translate-y-1/2 rounded-full bg-primary/70 transition-opacity lg:block",
+                  "bg-primary/70 absolute top-1/2 left-2 hidden h-7 w-1.5 -translate-y-1/2 rounded-full transition-opacity lg:block",
                   isActive ? "opacity-100" : "opacity-0",
                 )}
                 aria-hidden
@@ -104,7 +110,7 @@ export function DashboardNav({
             />
             <span className="truncate">{item.label}</span>
             {item.badge ? (
-              <span className="ml-auto rounded-full bg-primary/10 px-2 py-[2px] text-xs font-semibold text-primary">
+              <span className="bg-primary/10 text-primary ml-auto rounded-full px-2 py-[2px] text-xs font-semibold">
                 {item.badge}
               </span>
             ) : null}
@@ -139,24 +145,23 @@ export function DashboardNavSelect({
   return (
     <Select
       value={activeItem?.href ?? ""}
-      onChange={(event) => {
-        const value = event.target.value;
+      onValueChange={(value) => {
         if (value && value !== pathname) {
           router.push(value);
         }
         onNavigate?.();
       }}
     >
-      {!activeItem ? (
-        <option value="" disabled>
-          {placeholder}
-        </option>
-      ) : null}
-      {items.map((item) => (
-        <option key={item.href} value={item.href}>
-          {item.label}
-        </option>
-      ))}
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {items.map((item) => (
+          <SelectItem key={item.href} value={item.href}>
+            {item.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
     </Select>
   );
 }

@@ -18,6 +18,7 @@ import {
 import { LogoutButton } from "@/components/auth/logout-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 import { cn } from "@/lib/utils";
 
 import { DashboardNav, type DashboardNavItem } from "./nav";
@@ -56,7 +57,10 @@ export function DashboardShell({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
         setIsProfileOpen(false);
       }
     }
@@ -180,6 +184,9 @@ export function DashboardShell({
               </h1> */}
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
+              <div className="hidden sm:block">
+                <ModeToggle />
+              </div>
               <Badge
                 variant="outline"
                 className="border-primary/30 text-primary hidden sm:inline-flex"
@@ -189,40 +196,44 @@ export function DashboardShell({
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-full text-sm font-semibold shadow-sm transition-all hover:bg-primary/25 hover:scale-105 sm:size-11 cursor-pointer"
+                  className="bg-primary/15 text-primary hover:bg-primary/25 flex size-10 cursor-pointer items-center justify-center rounded-full text-sm font-semibold shadow-sm transition-all hover:scale-105 sm:size-11"
                   aria-label="Open profile menu"
                   aria-expanded={isProfileOpen}
                 >
                   {avatarInitial}
                 </button>
                 {isProfileOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="px-4 py-3 border-b border-border">
-                      <p className="text-sm font-semibold text-foreground truncate">{resolvedName}</p>
-                      <p className="text-xs text-muted-foreground truncate">{resolvedEmail}</p>
+                  <div className="border-border bg-card animate-in fade-in slide-in-from-top-2 absolute top-full right-0 z-50 mt-2 w-64 rounded-xl border py-2 shadow-lg duration-200">
+                    <div className="border-border border-b px-4 py-3">
+                      <p className="text-foreground truncate text-sm font-semibold">
+                        {resolvedName}
+                      </p>
+                      <p className="text-muted-foreground truncate text-xs">
+                        {resolvedEmail}
+                      </p>
                     </div>
                     <div className="py-1">
                       <Link
                         href="/dashboard/account"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors"
+                        className="text-foreground hover:bg-primary/10 flex items-center gap-3 px-4 py-2.5 text-sm transition-colors"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <User className="size-4 text-muted-foreground" />
+                        <User className="text-muted-foreground size-4" />
                         Account settings
                       </Link>
                       <Link
                         href="/dashboard/billing"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors"
+                        className="text-foreground hover:bg-primary/10 flex items-center gap-3 px-4 py-2.5 text-sm transition-colors"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <CreditCard className="size-4 text-muted-foreground" />
+                        <CreditCard className="text-muted-foreground size-4" />
                         Billing & plans
                       </Link>
                     </div>
-                    <div className="border-t border-border pt-1">
+                    <div className="border-border border-t pt-1">
                       <LogoutButton
                         variant="ghost"
-                        className="w-full justify-start gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-destructive/10 hover:text-destructive rounded-none"
+                        className="text-foreground hover:bg-destructive/10 hover:text-destructive w-full justify-start gap-3 rounded-none px-4 py-2.5 text-sm"
                       >
                         <LogOut className="size-4" />
                         Sign out
