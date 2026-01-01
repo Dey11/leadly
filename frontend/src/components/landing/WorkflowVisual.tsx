@@ -1,105 +1,120 @@
 "use client";
 
-import { motion, AnimatePresence } from "motion/react";
-import { useEffect, useState } from "react";
-import { Search, Brain, Target } from "lucide-react";
+import { motion } from "motion/react";
+import { Search, Brain, Target, ArrowRight } from "lucide-react";
 
 const steps = [
   {
     id: "monitor",
     icon: Search,
-    title: "Monitoring Reddit...",
-    subtitle: "r/startups, r/SaaS",
-    color: "bg-blue-500",
+    title: "Monitor",
+    subtitle: "Scanning Reddit",
+    color: "from-blue-500 to-blue-600",
+    bgColor: "bg-blue-500/10",
+    iconColor: "text-blue-500",
   },
   {
     id: "analyze",
     icon: Brain,
-    title: "High Intent Detected",
-    subtitle: "Score: 98/100",
-    color: "bg-purple-500",
+    title: "Analyze",
+    subtitle: "AI Intent Scoring",
+    color: "from-purple-500 to-purple-600",
+    bgColor: "bg-purple-500/10",
+    iconColor: "text-purple-500",
   },
   {
     id: "deliver",
     icon: Target,
-    title: "Lead Delivered",
-    subtitle: "Ready for your outreach",
-    color: "bg-green-500",
+    title: "Deliver",
+    subtitle: "Qualified Leads",
+    color: "from-green-500 to-green-600",
+    bgColor: "bg-green-500/10",
+    iconColor: "text-green-500",
   },
 ];
 
 export function WorkflowVisual() {
-  const [activeStep, setActiveStep] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % steps.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
-    <div className="relative flex h-full w-full items-center justify-center p-8">
-      {/* Background circles */}
+    <div className="relative flex h-full w-full items-center justify-center p-4 sm:p-8">
+      {/* Background glow */}
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.2, 0.1] }}
+          animate={{ scale: [1, 1.05, 1], opacity: [0.08, 0.12, 0.08] }}
           transition={{ duration: 4, repeat: Infinity }}
-          className="bg-primary/10 h-64 w-64 rounded-full blur-3xl"
+          className="bg-primary/20 h-48 w-48 rounded-full blur-3xl sm:h-64 sm:w-64"
         />
       </div>
 
-      <div className="relative w-full max-w-sm">
-        <AnimatePresence mode="wait">
+      {/* Flow diagram */}
+      <div className="relative flex w-full max-w-md flex-col items-center gap-3 sm:gap-4">
+        {steps.map((step, index) => (
           <motion.div
-            key={activeStep}
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="flex flex-col items-center gap-6"
+            key={step.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: index * 0.15 }}
+            className="flex w-full flex-col items-center"
           >
-            {/* Icon Circle */}
-            <div
-              className={`flex h-20 w-20 items-center justify-center rounded-2xl shadow-xl ${steps[activeStep].color} text-white`}
+            {/* Step card */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-card/80 border-border/50 flex w-full items-center gap-3 rounded-xl border p-3 shadow-sm backdrop-blur-sm sm:gap-4 sm:rounded-2xl sm:p-4"
             >
-              {(() => {
-                const Icon = steps[activeStep].icon;
-                return <Icon className="h-10 w-10" />;
-              })()}
-            </div>
-
-            {/* Text Content */}
-            <div className="space-y-2 text-center">
-              <h3 className="text-2xl font-bold tracking-tight">
-                {steps[activeStep].title}
-              </h3>
-              <p className="text-muted-foreground text-lg">
-                {steps[activeStep].subtitle}
-              </p>
-            </div>
-
-            {/* Progress Indicators */}
-            <div className="mt-4 flex gap-2">
-              {steps.map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{
-                    height: 4,
-                    width: i === activeStep ? 24 : 8,
-                    opacity: i === activeStep ? 1 : 0.3,
-                    backgroundColor:
-                      i === activeStep ? "var(--primary)" : "currentColor",
-                  }}
-                  className="bg-foreground rounded-full transition-all duration-300"
+              {/* Icon */}
+              <div
+                className={`${step.bgColor} flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12`}
+              >
+                <step.icon
+                  className={`h-5 w-5 sm:h-6 sm:w-6 ${step.iconColor}`}
                 />
-              ))}
-            </div>
-          </motion.div>
-        </AnimatePresence>
+              </div>
 
-        {/* Mock Interface Background (Subtle) */}
-        <div className="border-border/50 absolute top-1/2 left-1/2 -z-10 h-48 w-64 -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-dashed opacity-50" />
+              {/* Text */}
+              <div className="flex-1">
+                <h4 className="text-foreground text-sm font-semibold sm:text-base">
+                  {step.title}
+                </h4>
+                <p className="text-muted-foreground text-xs sm:text-sm">
+                  {step.subtitle}
+                </p>
+              </div>
+
+              {/* Step number */}
+              <div className="text-muted-foreground/40 text-xl font-bold sm:text-2xl">
+                {index + 1}
+              </div>
+            </motion.div>
+
+            {/* Connector arrow */}
+            {index < steps.length - 1 && (
+              <motion.div
+                initial={{ opacity: 0, scaleY: 0 }}
+                whileInView={{ opacity: 1, scaleY: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: index * 0.15 + 0.3 }}
+                className="flex h-6 flex-col items-center justify-center sm:h-8"
+              >
+                <div className="from-border to-border/30 h-full w-px bg-gradient-to-b" />
+                <ArrowRight className="text-muted-foreground/50 h-3 w-3 rotate-90 sm:h-4 sm:w-4" />
+              </motion.div>
+            )}
+          </motion.div>
+        ))}
+
+        {/* Final result indicator */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="mt-2 flex items-center gap-2 rounded-full bg-green-500/10 px-3 py-1.5 sm:mt-3 sm:px-4 sm:py-2"
+        >
+          <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+          <span className="text-xs font-medium text-green-600 sm:text-sm">
+            Ready for outreach
+          </span>
+        </motion.div>
       </div>
     </div>
   );

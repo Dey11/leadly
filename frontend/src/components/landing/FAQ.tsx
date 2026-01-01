@@ -63,10 +63,10 @@ export function FAQ() {
           transition={{ duration: 0.6 }}
           className="mx-auto mb-10 max-w-3xl text-center sm:mb-14"
         >
-          <h2 className="text-foreground mb-4 text-2xl font-bold tracking-tight sm:mb-5 sm:text-3xl md:text-4xl lg:text-5xl">
+          <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
             Frequently asked questions
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-sm leading-relaxed sm:max-w-2xl sm:px-0 sm:text-base md:text-lg lg:text-xl">
+          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
             Everything you need to know about Leadly
           </p>
         </motion.div>

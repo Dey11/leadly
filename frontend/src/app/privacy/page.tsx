@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
+import { SEO_CONFIG } from "@/constants/seo";
 
 export const metadata: Metadata = {
-  title: `Privacy Policy · ${siteConfig.name}`,
-  description:
-    "Learn how Leadly collects, stores, and uses data to deliver community-sourced leads responsibly.",
+  title: SEO_CONFIG.legal.privacy.title,
+  description: SEO_CONFIG.legal.privacy.description,
 };
 
 export default function PrivacyPage() {

@@ -36,7 +36,7 @@ export function TrustSafety() {
           className="border-border/50 bg-card mx-auto max-w-4xl rounded-xl border p-6 shadow-sm sm:rounded-2xl sm:p-10 md:p-14"
         >
           <div className="mb-8 text-center sm:mb-10">
-            <h2 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">
+            <h2 className="text-foreground font-display text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">
               Trust & Safety
             </h2>
           </div>

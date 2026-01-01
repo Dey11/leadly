@@ -41,10 +41,10 @@ export function Solution() {
               transition={{ duration: 0.6 }}
               className="text-center lg:text-left"
             >
-              <h2 className="text-foreground mb-4 text-2xl font-bold tracking-tight sm:mb-5 sm:text-3xl md:text-4xl lg:text-5xl">
+              <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
                 How Leadly works
               </h2>
-              <p className="text-muted-foreground mx-auto max-w-lg text-sm leading-relaxed sm:text-base md:text-lg lg:mx-0 lg:text-xl">
+              <p className="text-muted-foreground mx-auto max-w-lg text-base leading-relaxed sm:text-lg md:text-lg lg:mx-0 lg:text-xl">
                 We turn millions of Reddit conversations into a structured
                 pipeline of warm leads.
               </p>

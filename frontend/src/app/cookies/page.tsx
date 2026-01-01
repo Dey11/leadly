@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
+import { SEO_CONFIG } from "@/constants/seo";
 
 export const metadata: Metadata = {
-  title: `Cookie Policy · ${siteConfig.name}`,
-  description:
-    "Learn about the cookies Leadly uses and how to manage your preferences.",
+  title: SEO_CONFIG.legal.cookies.title,
+  description: SEO_CONFIG.legal.cookies.description,
 };
 
 export default function CookiesPage() {

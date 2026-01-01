@@ -22,7 +22,9 @@ async function pickupRetryJobs() {
 
   for (const job of jobsToRetry) {
     try {
-      console.log(`Retrying job ${job.id} (attempt ${job.retryCount + 1}/${MAX_SCRAPE_RETRY_COUNT})`);
+      console.log(
+        `Retrying job ${job.id} (attempt ${job.retryCount + 1}/${MAX_SCRAPE_RETRY_COUNT})`
+      );
 
       await db.scrapeJob.update({
         where: { id: job.id },
@@ -87,7 +89,11 @@ export async function runScheduler() {
     const limits = TIER_LIMITS[tier];
 
     // Preview current usage for logs
-    const usagePreview = await previewUsage(user.id, tier, user.subscription.currentPeriodEnd);
+    const usagePreview = await previewUsage(
+      user.id,
+      tier,
+      user.subscription.currentPeriodEnd
+    );
     console.log(
       JSON.stringify({
         evt: "scheduler.usage_preview",

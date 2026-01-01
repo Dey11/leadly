@@ -2,9 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { Metadata } from "next";
 import { siteConfig } from "@/config/site";
+import { SEO_CONFIG } from "@/constants/seo";
 
 // Landing Components
 import { Hero } from "@/components/landing/Hero";
+import { Features } from "@/components/landing/Features";
+import { ThreeSteps } from "@/components/landing/ThreeSteps";
 import { Problem } from "@/components/landing/Problem";
 import { Solution } from "@/components/landing/Solution";
 import { Competitors } from "@/components/landing/Competitors";
@@ -19,14 +22,12 @@ import { LandingNav } from "@/components/landing/LandingNav";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "Leadly | AI-Powered Reddit Lead Generation",
-  description:
-    "Leadly uses AI to monitor Reddit conversations in real time, surfacing high-intent leads for your business. No keyword guessing. No false positives.",
+  title: SEO_CONFIG.landing.main.title,
+  description: SEO_CONFIG.landing.main.description,
   openGraph: {
-    title: "Leadly | AI-Powered Reddit Lead Generation",
-    description:
-      "Leadly uses AI to monitor Reddit conversations in real time, surfacing high-intent leads for your business. No keyword guessing. No false positives.",
-    images: ["/assets/og-home.png"],
+    title: SEO_CONFIG.landing.main.title,
+    description: SEO_CONFIG.landing.main.description,
+    images: [SEO_CONFIG.default.ogImage],
   },
 };
 
@@ -68,7 +69,7 @@ export default function HomePage() {
           <div className="flex items-center">
             <Link
               href="/"
-              className="text-foreground flex shrink-0 items-center gap-2 text-lg font-bold transition hover:opacity-80"
+              className="text-foreground font-display flex shrink-0 items-center gap-2 text-lg font-bold transition hover:opacity-80"
             >
               <span className="relative mr-1 size-8">
                 <Image
@@ -104,6 +105,8 @@ export default function HomePage() {
 
       <main>
         <Hero />
+        <Features />
+        <ThreeSteps />
         <Problem />
         <Solution />
         <Competitors />

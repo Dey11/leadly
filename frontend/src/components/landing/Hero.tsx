@@ -74,7 +74,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-foreground mb-4 text-3xl leading-tight font-bold tracking-tight sm:mb-6 sm:text-4xl sm:leading-[1.1] md:text-5xl lg:text-6xl xl:text-7xl"
+            className="text-foreground font-display mb-4 text-4xl leading-tight font-bold tracking-tight sm:mb-6 sm:text-5xl sm:leading-[1.1] md:text-5xl lg:text-6xl xl:text-7xl"
           >
             Find leads on Reddit <br className="hidden sm:block" />
             <AnimatedWord
@@ -93,11 +93,11 @@ export function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-muted-foreground mx-auto mb-8 max-w-xl px-2 text-base leading-relaxed sm:mb-10 sm:max-w-2xl sm:px-0 sm:text-lg md:text-xl"
+            className="text-muted-foreground mx-auto mb-8 max-w-xl px-2 text-base leading-relaxed sm:mb-10 sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl"
           >
             Our AI monitors Reddit 24/7, surfacing people{" "}
-            <span className="text-foreground font-medium">actively asking</span>{" "}
-            for products like yours. No keyword guessing. No false positives.
+            <span className="highlight-word">actively asking</span> for products
+            like yours. No keyword guessing. No false positives.
           </motion.p>
 
           {/* CTA buttons */}

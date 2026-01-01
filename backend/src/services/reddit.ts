@@ -40,7 +40,7 @@ export class Reddit {
 
   async validateSubreddit(subreddit: string): Promise<boolean> {
     const token = await this.getToken();
-    
+
     try {
       const response = await axios.get(
         `${this.baseUrl}/api/search_reddit_names?query=${subreddit}&exact=true`,
@@ -52,7 +52,7 @@ export class Reddit {
           timeout: this.timeout,
         }
       );
-      
+
       return response.data.names && response.data.names.length > 0;
     } catch {
       return false;

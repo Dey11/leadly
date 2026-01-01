@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "bun dist/index.js",
+    "start:worker": "bun dist/workers/reddit.worker.js",
     "dev": "bun src/index.ts",
     "worker": "bun src/workers/reddit.worker.ts",
     "worker:dev": "bun src/workers/reddit.worker.ts > output.log 2>&1",
@@ -12,7 +13,9 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:push": "prisma db push",
-    "build": "tsc"
+    "typecheck": "tsc",
+    "lint": "bunx prettier --write .",
+    "build": "bun build ./src/index.ts ./src/workers/reddit.worker.ts --outdir ./dist --minify --target bun --external '*'"
   },
   "keywords": [],
   "author": "",

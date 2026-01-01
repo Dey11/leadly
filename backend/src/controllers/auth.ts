@@ -1,5 +1,13 @@
 import { Request, Response } from "express";
-import { registerSchema, loginSchema, verifyEmailSchema, resendVerificationEmailSchema, forgotPasswordSchema, resetPasswordSchema, formatZodError } from "../types/schema";
+import {
+  registerSchema,
+  loginSchema,
+  verifyEmailSchema,
+  resendVerificationEmailSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  formatZodError,
+} from "../types/schema";
 import db from "../lib/db";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -143,7 +151,6 @@ export async function register(req: Request, res: Response) {
         .json({ message: "Verification email resent", email: user.email });
     }
 
-
     const { user, session } = await db.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {
@@ -230,7 +237,10 @@ export async function login(req: Request, res: Response) {
     });
 
     if (!userInDb) {
-      await bcrypt.compare(payload.data.password, "$2b$10$dummyhashtopreventtimingattacks");
+      await bcrypt.compare(
+        payload.data.password,
+        "$2b$10$dummyhashtopreventtimingattacks"
+      );
       return res.status(400).json({ error: "Invalid email or password" });
     }
     if (userInDb?.isDeleted) {
@@ -437,7 +447,9 @@ export async function forgotPassword(req: Request, res: Response) {
     });
 
     if (!user || user.isDeleted) {
-      return res.status(200).json({ message: "If an account exists, a reset link has been sent" });
+      return res
+        .status(200)
+        .json({ message: "If an account exists, a reset link has been sent" });
     }
 
     const rateLimitCheck = await checkRateLimit(req, "forgotPassword");
@@ -466,7 +478,9 @@ export async function forgotPassword(req: Request, res: Response) {
       console.error("Failed to send password reset email:", emailError);
     }
 
-    res.status(200).json({ message: "If an account exists, a reset link has been sent" });
+    res
+      .status(200)
+      .json({ message: "If an account exists, a reset link has been sent" });
   } catch (error) {
     console.error("Forgot password failed:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -496,9 +510,14 @@ export async function resetPassword(req: Request, res: Response) {
       return res.status(400).json({ error: "Reset token has expired" });
     }
 
-    const isSamePassword = await bcrypt.compare(payload.data.password, user.passwordHash);
+    const isSamePassword = await bcrypt.compare(
+      payload.data.password,
+      user.passwordHash
+    );
     if (isSamePassword) {
-      return res.status(400).json({ error: "New password cannot be the same as the old password" });
+      return res
+        .status(400)
+        .json({ error: "New password cannot be the same as the old password" });
     }
 
     const hashedPassword = await bcrypt.hash(payload.data.password, 10);

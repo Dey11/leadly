@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
+import { SEO_CONFIG } from "@/constants/seo";
 
 export const metadata: Metadata = {
-  title: `Terms of Service · ${siteConfig.name}`,
-  description:
-    "Review the terms and conditions for accessing and using the Leadly platform.",
+  title: SEO_CONFIG.legal.terms.title,
+  description: SEO_CONFIG.legal.terms.description,
 };
 
 export default function TermsPage() {

@@ -38,15 +38,13 @@ export function Problem() {
           transition={{ duration: 0.6 }}
           className="mx-auto mb-10 max-w-3xl text-center sm:mb-14 lg:mb-16"
         >
-          <h2 className="text-foreground mb-4 text-2xl font-bold tracking-tight sm:mb-6 sm:text-3xl md:text-4xl lg:text-5xl">
+          <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-6 sm:text-4xl md:text-5xl">
             Why traditional lead gen is broken
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-sm leading-relaxed sm:max-w-2xl sm:px-0 sm:text-base md:text-lg lg:text-xl">
-            Every day, people ask questions like "Any good CRM for startups?" or
-            "Looking for an agency that does X." These are high-intent buyers.
-            <br />
-            The problem? Those conversations are buried inside Reddit, and
-            manually tracking them is impossible.
+          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
+            High-intent buyers are asking for recommendations on Reddit every
+            hour in niche subs. The problem? These conversations are buried, and
+            finding them manually is impossible.
           </p>
         </motion.div>
 

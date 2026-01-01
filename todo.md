@@ -5,17 +5,39 @@
 - [x] Use AI to suggest the subreddits to scrape based on the lead description (ICP) w ratelimits\*
 - [x] Use AI to suggest the ICP w ratelimits\*
 - [x] if the scrape job fails, we should pick it in the next hour. we should have a failed counter, if the same thing failed 3 times, we shouldnt pick it again. make a new db table for such jobs. we need to manually check what went wrong for such jobs. this is critical, pls test this well
+- [x] can make static landing page (since it doesnt change right? dey?)
+- [x] make landing page, dashboard look better (dey)
+- [x] landing page should say how we are different from the competition (especially about the fact that we are not a keyword alert tool)
+- [x] need show pwd button in pwd input
+- [x] a11y fixes, proper tags
+- [x] widget not showing up upon first login
+- [x] theme toggle in settings
+- [x] types in separate files/folders, components should be broken down into smaller components, one page need not have everything, should not have everything
+- [x] export leads to csv for premium plan
+- [ ] remove console logs
+- [ ] prettier formatting in the backend
+- [ ] light/dark mode for logo as well
+- [ ] posthog and umami
+- [ ] need to build the backend and deploy for js files
+- [ ] policy pages
 - [ ] need leadly support email (can send email, but receiving is done on registrar ends, dey work.)
-- [ ] can make static landing page (since it doesnt change right? dey?)
-- [ ] make landing page, dashboard look better (dey)
-- [ ] export leads to csv for premium plan
-- [ ] toggle email alerts for pro/premium plan for warm leads
-- [ ] landing page should say how we are different from the competition (especially about the fact that we are not a keyword alert tool)
+- [ ] proof read all pages and their content
+- [ ] ask arsh to prepare the image screenshot + good looking mac border
+- [ ] check pricing link from landing page
+- [ ] fix pricing section constants
+- [ ] tracking based on cookies. disagreeing with cookies can lead to stuff
+- [ ] add something so that we can track the referrer of the user
+- [ ] leadly.helpdesk@leadly.live
+- [ ] cards are the same in the landing page, need another color, remove ai like emojis
+- [ ] upi payments
+- [ ] "better ai for semantic analysis" even tho we have just 1 model
+- [ ] link payment to landing pricing section
 
 * global rate limits ok, in memory
 
 ## Future scope
 
+- [ ] toggle email alerts for pro/premium plan for warm leads
 - [ ] on demand scrape jobs, with a 30min cooldown (we promised it)
 - [ ] most leads are warm, dont see cold/neutral leads yet -> needs finetuning
 - [ ] think about rotating the reddit credentials using a rotation strategy

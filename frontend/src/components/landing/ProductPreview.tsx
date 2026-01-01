@@ -15,10 +15,10 @@ export function ProductPreview() {
           transition={{ duration: 0.6 }}
           className="mx-auto mb-10 max-w-3xl text-center sm:mb-14"
         >
-          <h2 className="text-foreground mb-4 text-2xl font-bold tracking-tight sm:mb-5 sm:text-3xl md:text-4xl lg:text-5xl">
+          <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
             See exactly what's happening
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-sm leading-relaxed sm:max-w-2xl sm:px-0 sm:text-base md:text-lg lg:text-xl">
+          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
             No magic black boxes. Just a powerful dashboard that puts you in
             control.
           </p>
@@ -47,7 +47,7 @@ export function ProductPreview() {
               <TabsContent value="leads" className="m-0 h-full">
                 <Image
                   src="/assets/preview-leads.png"
-                  alt="Leads View"
+                  alt="Dashboard screenshot showing a list of qualified high-intent leads from Reddit"
                   fill
                   className="object-cover object-top"
                 />
@@ -55,7 +55,7 @@ export function ProductPreview() {
               <TabsContent value="monitors" className="m-0 h-full">
                 <Image
                   src="/assets/preview-monitors.png"
-                  alt="Monitors View"
+                  alt="Dashboard screenshot showing active subreddit monitors and keyword configuration"
                   fill
                   className="object-cover object-top"
                 />
@@ -63,7 +63,7 @@ export function ProductPreview() {
               <TabsContent value="icp" className="m-0 h-full">
                 <Image
                   src="/assets/preview-icp.png"
-                  alt="ICP View"
+                  alt="Dashboard screenshot showing Ideal Customer Profile settings and negative keywords"
                   fill
                   className="object-cover object-top"
                 />

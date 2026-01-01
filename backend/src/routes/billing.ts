@@ -96,14 +96,8 @@ router.post(
 
       // Allowed payment methods (fallback includes credit & debit)
       const allowed_payment_method_types: Array<
-        | "credit"
-        | "debit"
-        | "apple_pay"
-        | "google_pay"
-        | "paypal"
-        | "ach"
-        | "sepa"
-      > = ["credit", "debit"];
+        "credit" | "debit" | "apple_pay" | "google_pay" | "paypal" | "upi"
+      > = ["credit", "debit", "google_pay", "apple_pay", "paypal", "upi"];
 
       // Create hosted checkout session for a subscription product
       // Note: Checkout Sessions will handle subscription creation automatically

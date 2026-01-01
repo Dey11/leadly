@@ -90,12 +90,12 @@ export function Competitors() {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="bg-accent/8 border-accent/15 text-accent mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
+            className="from-primary/10 to-accent/10 border-primary/20 text-primary mb-4 inline-flex items-center gap-2 rounded-full border bg-gradient-to-r px-3 py-1.5 text-xs font-medium sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
           >
             <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
             Why We're Different
           </motion.div>
-          <h2 className="text-foreground mb-4 text-2xl font-bold tracking-tight sm:mb-6 sm:text-3xl md:text-4xl lg:text-5xl">
+          <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-6 sm:text-4xl md:text-5xl">
             Not just another{" "}
             <span className="relative inline-block">
               <span className="relative z-10">keyword tracker</span>
@@ -108,12 +108,11 @@ export function Competitors() {
               />
             </span>
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-sm leading-relaxed sm:max-w-2xl sm:px-0 sm:text-base md:text-lg lg:text-xl">
+          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
             Traditional tools rely on keyword matching — great for catching
             every mention, terrible for your sanity. Leadly uses AI to find
             people who are{" "}
-            <span className="text-foreground font-medium">actually buying</span>
-            .
+            <span className="highlight-word">actually buying</span>.
           </p>
         </motion.div>
 
@@ -127,16 +126,16 @@ export function Competitors() {
         >
           <div className="bg-card border-border/50 overflow-hidden rounded-xl border shadow-lg sm:rounded-2xl">
             {/* Table header */}
-            <div className="border-border/40 via-primary/[0.03] grid grid-cols-[1.2fr_1fr_1fr] gap-2 border-b bg-gradient-to-r from-transparent to-transparent px-3 py-3 sm:grid-cols-[1.5fr_1fr_1fr] sm:gap-4 sm:px-6 sm:py-5">
-              <div className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase sm:text-xs">
+            <div className="border-border/40 bg-muted/30 grid grid-cols-[1.2fr_1fr_1fr] items-center gap-2 border-b px-4 py-4 sm:grid-cols-[1.5fr_1fr_1fr] sm:gap-4 sm:px-6 sm:py-5">
+              <div className="text-foreground text-xs font-semibold tracking-wide uppercase sm:text-sm">
                 Feature
               </div>
-              <div className="bg-primary/[0.04] border-primary/10 -mx-1 rounded border-x px-2 py-1 text-center sm:-mx-2 sm:px-4 sm:py-2">
-                <span className="text-primary text-[10px] font-bold sm:text-sm">
+              <div className="text-center">
+                <span className="text-primary text-xs font-bold sm:text-sm">
                   Leadly
                 </span>
               </div>
-              <div className="text-muted-foreground text-center text-[10px] font-medium sm:text-sm">
+              <div className="text-muted-foreground text-center text-xs font-semibold sm:text-sm">
                 Others
               </div>
             </div>
@@ -145,22 +144,31 @@ export function Competitors() {
             {comparisonData.map((row, i) => (
               <div
                 key={row.feature}
-                className={`grid grid-cols-[1.2fr_1fr_1fr] gap-2 px-3 py-2.5 transition-colors duration-150 sm:grid-cols-[1.5fr_1fr_1fr] sm:gap-4 sm:px-6 sm:py-4 ${
+                className={`grid grid-cols-[1.2fr_1fr_1fr] items-center gap-2 px-4 py-3 transition-colors duration-150 sm:grid-cols-[1.5fr_1fr_1fr] sm:gap-4 sm:px-6 sm:py-4 ${
                   i !== comparisonData.length - 1
                     ? "border-border/30 border-b"
                     : ""
-                } ${i % 2 === 1 ? "bg-muted/20" : ""} hover:bg-muted/30`}
+                } hover:bg-muted/20`}
               >
-                <div className="text-foreground flex items-center text-xs font-medium sm:text-sm">
+                <div className="text-foreground text-xs font-medium sm:text-sm">
                   {row.feature}
                 </div>
-                <div className="bg-primary/[0.02] border-primary/5 -mx-1 flex items-center justify-center gap-1.5 border-x px-1 sm:-mx-2 sm:gap-2 sm:px-2">
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                   {row.leadlyHas === true ? (
-                    <Check className="h-4 w-4 flex-shrink-0 text-green-600 sm:h-5 sm:w-5" />
+                    <Check
+                      className="h-4 w-4 flex-shrink-0 text-green-600 sm:h-5 sm:w-5"
+                      aria-label="Included"
+                    />
                   ) : row.leadlyHas === "soon" ? (
-                    <Clock className="h-4 w-4 flex-shrink-0 text-amber-500 sm:h-5 sm:w-5" />
+                    <Clock
+                      className="h-4 w-4 flex-shrink-0 text-amber-500 sm:h-5 sm:w-5"
+                      aria-label="Coming Soon"
+                    />
                   ) : (
-                    <X className="h-4 w-4 flex-shrink-0 text-red-500 sm:h-5 sm:w-5" />
+                    <X
+                      className="h-4 w-4 flex-shrink-0 text-red-500 sm:h-5 sm:w-5"
+                      aria-label="Not Included"
+                    />
                   )}
                   <span className="text-foreground/80 hidden text-xs xl:inline">
                     {row.leadly}
@@ -168,9 +176,15 @@ export function Competitors() {
                 </div>
                 <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                   {row.othersHas ? (
-                    <Check className="text-muted-foreground/60 h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5" />
+                    <Check
+                      className="text-muted-foreground/60 h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5"
+                      aria-label="Included"
+                    />
                   ) : (
-                    <X className="h-4 w-4 flex-shrink-0 text-red-400/60 sm:h-5 sm:w-5" />
+                    <X
+                      className="h-4 w-4 flex-shrink-0 text-red-400/60 sm:h-5 sm:w-5"
+                      aria-label="Not Included"
+                    />
                   )}
                   <span className="text-muted-foreground hidden text-xs xl:inline">
                     {row.others}
@@ -190,10 +204,10 @@ export function Competitors() {
             transition={{ duration: 0.6 }}
             className="mb-10 text-center sm:mb-14"
           >
-            <h2 className="text-foreground mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-3xl md:text-4xl lg:text-5xl">
+            <h2 className="text-foreground font-display mb-3 text-3xl font-bold tracking-tight sm:mb-4 sm:text-4xl md:text-5xl">
               Why top founders choose Leadly
             </h2>
-            <p className="text-muted-foreground mx-auto max-w-xl px-2 text-sm leading-relaxed sm:max-w-2xl sm:px-0 sm:text-base md:text-lg lg:text-xl">
+            <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
               Stop wasting time on keyword noise. Get straight to the leads that
               convert.
             </p>

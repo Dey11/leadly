@@ -14,6 +14,10 @@ export const BILLING_PLANS: Record<
     onDemandLabel: string;
     features: string[];
     monthlyPriceInt: number;
+    ctaLabel: string;
+    href: string;
+    originalPrice?: string;
+    discountLabel?: string;
   }
 > = {
   FREE: {
@@ -31,6 +35,8 @@ export const BILLING_PLANS: Record<
       "Daily check cadence",
       "Basic summaries",
     ],
+    ctaLabel: "Start Free",
+    href: "/register",
   },
   PRO: {
     label: "Pro",
@@ -48,6 +54,10 @@ export const BILLING_PLANS: Record<
       "AI email drafting",
       "Priority support",
     ],
+    ctaLabel: "Start Trial",
+    href: "/register?plan=pro",
+    originalPrice: "$29",
+    discountLabel: "Early Adopter",
   },
   PREMIUM: {
     label: "Premium",
@@ -65,6 +75,8 @@ export const BILLING_PLANS: Record<
       "CSV exports",
       "Dedicated account manager",
     ],
+    ctaLabel: "Contact Sales",
+    href: "mailto:sales@leadly.live",
   },
 };
 

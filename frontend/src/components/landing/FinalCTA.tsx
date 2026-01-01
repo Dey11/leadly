@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export function FinalCTA() {
   return (
-    <section className="relative overflow-hidden px-4 py-20 text-center sm:py-24 md:py-28 lg:py-32">
+    <section className="relative overflow-hidden px-4 py-16 text-center sm:py-20 md:py-24 lg:py-28">
       {/* Subtle background gradient */}
       <div className="from-primary/[0.04] via-primary/[0.02] absolute inset-0 -z-10 bg-gradient-to-t to-transparent" />
 
@@ -18,10 +18,10 @@ export function FinalCTA() {
           transition={{ duration: 0.6 }}
           className="mx-auto max-w-3xl space-y-6 sm:space-y-8"
         >
-          <h2 className="text-foreground text-2xl font-bold tracking-tight text-balance sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+          <h2 className="text-foreground font-display text-3xl font-bold tracking-tight text-balance sm:text-4xl md:text-5xl lg:text-6xl">
             Stop missing high-intent leads on Reddit.
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-sm leading-relaxed text-balance sm:max-w-2xl sm:px-0 sm:text-base md:text-lg lg:text-xl">
+          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed text-balance sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
             Join our beta and be among the first to find customers where they're
             actively asking for solutions like yours.
           </p>

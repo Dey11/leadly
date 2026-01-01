@@ -76,13 +76,13 @@ export function BetaPerks() {
             <span>🎁</span>
             Limited Beta Access
           </motion.div>
-          <h2 className="text-foreground mb-4 text-2xl font-bold tracking-tight sm:mb-5 sm:text-3xl md:text-4xl lg:text-5xl">
+          <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
             Early adopters get{" "}
             <span className="from-primary to-accent bg-gradient-to-r bg-clip-text text-transparent">
               exclusive perks
             </span>
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-sm leading-relaxed sm:max-w-2xl sm:px-0 sm:text-base md:text-lg lg:text-xl">
+          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
             We're building Leadly with our first users. Join now and enjoy
             benefits that won't be available after launch.
           </p>
