@@ -96,8 +96,8 @@ router.post(
 
       // Allowed payment methods (fallback includes credit & debit)
       const allowed_payment_method_types: Array<
-        "credit" | "debit" | "apple_pay" | "google_pay" | "paypal" | "upi"
-      > = ["credit", "debit", "google_pay", "apple_pay", "paypal", "upi"];
+        "credit" | "debit" | "apple_pay" | "google_pay" | "paypal" | "upi_collect"
+      > = ["credit", "debit", "google_pay", "apple_pay", "paypal", "upi_collect"];
 
       // Create hosted checkout session for a subscription product
       // Note: Checkout Sessions will handle subscription creation automatically
@@ -113,7 +113,7 @@ router.post(
           email: user.email,
           name: user.name,
         },
-        billing_currency: "USD",
+        billing_currency: "INR",
         return_url: returnUrl,
         allowed_payment_method_types,
         show_saved_payment_methods: true,
