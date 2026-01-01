@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Platform {
@@ -67,11 +66,16 @@ model User {
   icps     Icp[]
   usage    Usage?
 
-  name          String
-  emailVerified Boolean   @default(false)
-  image         String?
-  sessions      Session[]
-  accounts      Account[]
+  name               String
+  emailVerified      Boolean   @default(false)
+  emailOtp           String?
+  emailOtpExpiresAt  DateTime?
+  resetToken         String?   @unique
+  resetTokenExpiresAt DateTime?
+  image              String?
+  sessions           Session[]
+  accounts           Account[]
+  hasSeenWalkthrough Boolean   @default(false)
 
   @@map("users")
 }
@@ -155,6 +159,7 @@ model Monitor {
   updatedAt DateTime @updatedAt
 
   scrapeJobs ScrapeJob[]
+  failedJobs FailedScrapeJob[]
 
   @@index([userId])
   @@index([icpId])
@@ -176,12 +181,35 @@ model ScrapeJob {
   startedAt   DateTime?
   completedAt DateTime?
 
+  retryCount  Int       @default(0)
+  nextRetryAt DateTime?
+
   createdAt DateTime @default(now())
 
   leads Lead[]
 
   @@index([monitorId])
+  @@index([status, retryCount, nextRetryAt])
+  @@index([createdAt])
   @@map("scrape_jobs")
+}
+
+model FailedScrapeJob {
+  id            String   @id @default(cuid())
+  monitorId     String
+  monitor       Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  originalJobId String   @unique
+  errorMessage  String   @db.Text
+  failedAt      DateTime @default(now())
+  metadata      Json?
+
+  reviewed    Boolean  @default(false)
+  reviewNotes String?  @db.Text
+
+  @@index([monitorId])
+  @@index([reviewed])
+  @@map("failed_scrape_jobs")
 }
 
 model Lead {
@@ -202,6 +230,9 @@ model Lead {
   updatedAt DateTime @updatedAt
 
   @@index([scrapeJobId])
+  @@index([status])
+  @@index([leadType])
+  @@index([createdAt])
   @@map("leads")
 }
 
@@ -217,25 +248,27 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
+  @@index([userId])
+  @@index([expiresAt])
   @@map("session")
 }
 
 model Usage {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Monthly window
-  periodStart     DateTime
-  periodEnd       DateTime
-  scrapesUsed     Int      @default(0)
+  periodStart DateTime
+  periodEnd   DateTime
+  scrapesUsed Int      @default(0)
 
   // Daily window (UTC day)
-  dailyDate       DateTime
-  dailyCount      Int      @default(0)
+  dailyDate  DateTime
+  dailyCount Int      @default(0)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("usage")

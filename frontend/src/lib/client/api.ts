@@ -86,6 +86,26 @@ export const clientApi = {
     request<{ message?: string }>(`${apiBaseUrl}/auth/logout`, {
       method: "POST",
     }),
+  verifyEmail: (body: { email: string; otp: string }) =>
+    request<{ message?: string }>(`${apiBaseUrl}/auth/verify-email`, {
+      method: "POST",
+      body,
+    }),
+  resendVerificationEmail: (body: { email: string }) =>
+    request<{ message?: string }>(`${apiBaseUrl}/auth/resend-verification-email`, {
+      method: "POST",
+      body,
+    }),
+  forgotPassword: (body: { email: string }) =>
+    request<{ message?: string }>(`${apiBaseUrl}/auth/forgot-password`, {
+      method: "POST",
+      body,
+    }),
+  resetPassword: (body: { token: string; password: string }) =>
+    request<{ message?: string }>(`${apiBaseUrl}/auth/reset-password`, {
+      method: "POST",
+      body,
+    }),
   createIcp: (body: {
     name: string;
     summary: string;
@@ -148,6 +168,29 @@ export const clientApi = {
   updateAccount: (body: { name: string }) =>
     request(`${apiBaseUrl}/account`, { method: "PATCH", body }),
   deleteAccount: () => request(`${apiBaseUrl}/account`, { method: "DELETE" }),
+  updateWalkthroughStatus: () =>
+    request(`${apiBaseUrl}/account/walkthrough`, { method: "PATCH" }),
+  suggestIcp: async (body: { description: string }) => {
+    const response = await request<{
+      message: string; payload: {
+        name: string;
+        summary: string;
+        targetPersona: string;
+        pains: string;
+        valueProposition: string;
+        qualifyingSignals: string;
+        disqualifyingSignals: string;
+      }
+    }>(`${apiBaseUrl}/icps/ai/suggest`, { method: "POST", body });
+    return response.payload;
+  },
+  suggestSubreddits: async (body: { icpId: string }) => {
+    const response = await request<{ message: string; payload: string[] }>(
+      `${apiBaseUrl}/monitors/ai/suggest-subreddits`,
+      { method: "POST", body }
+    );
+    return response.payload;
+  },
 
   // Billing
   subscribe: async (plan: "pro" | "premium") => {
@@ -167,14 +210,16 @@ export const clientApi = {
     });
   },
 
-  listLeads: async (params: {
-    monitorId?: string;
-    platform?: string;
-    leadType?: LeadType;
-    status?: LeadStatus;
-    page?: number;
-    limit?: number;
-  } = {}) => {
+  listLeads: async (
+    params: {
+      monitorId?: string;
+      platform?: string;
+      leadType?: LeadType;
+      status?: LeadStatus;
+      page?: number;
+      limit?: number;
+    } = {},
+  ) => {
     const query = buildQueryString(params);
     const response = await request<LeadListResponse>(
       `${apiBaseUrl}/leads${query}`,

@@ -18,12 +18,14 @@ import {
 import { getIcps } from "@/lib/backend-queries";
 import { formatDateTime, formatRelative } from "@/lib/format";
 
-const statusMap: Record<string, { label: string; variant: "default" | "outline" | "success" | "warning" }> =
-  {
-    ACTIVE: { label: "Active", variant: "success" },
-    PAUSED: { label: "Paused", variant: "warning" },
-    ARCHIVED: { label: "Archived", variant: "outline" },
-  };
+const statusMap: Record<
+  string,
+  { label: string; variant: "default" | "outline" | "success" | "warning" }
+> = {
+  ACTIVE: { label: "Active", variant: "success" },
+  PAUSED: { label: "Paused", variant: "warning" },
+  ARCHIVED: { label: "Archived", variant: "outline" },
+};
 
 export const metadata = {
   title: "Monitors · Leadly",
@@ -61,7 +63,7 @@ export default async function MonitorsPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <section className="space-y-6">
+        <section id="monitor-list" className="space-y-6">
           <div className="grid gap-6">
             {monitorList.length === 0 ? (
               <Card className="border-border/60 bg-background/85">
@@ -88,10 +90,13 @@ export default async function MonitorsPage() {
                 );
 
                 return (
-                  <Card key={monitor.id} className="border-border/60 bg-background/85">
+                  <Card
+                    key={monitor.id}
+                    className="border-border/60 bg-background/85"
+                  >
                     <CardHeader className="gap-2">
                       <div className="flex flex-wrap items-center gap-3">
-                        <CardTitle className="text-lg text-foreground">
+                        <CardTitle className="text-foreground text-lg">
                           {monitor.target}
                         </CardTitle>
                         <Badge variant={status.variant}>{status.label}</Badge>
@@ -104,24 +109,24 @@ export default async function MonitorsPage() {
                         </span>
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4 text-sm text-muted-foreground">
-                      <div className="grid gap-2 rounded-2xl bg-secondary/30 p-4">
+                    <CardContent className="text-muted-foreground space-y-4 text-sm">
+                      <div className="bg-secondary/30 grid gap-2 rounded-2xl p-4">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-foreground">
+                          <span className="text-foreground font-semibold">
                             Warm leads (lifetime)
                           </span>
-                          <span className="font-semibold text-primary">
+                          <span className="text-primary font-semibold">
                             {totalWarm}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-foreground">
+                          <span className="text-foreground font-semibold">
                             Total leads captured
                           </span>
                           <span>{totalLeads}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-foreground">
+                          <span className="text-foreground font-semibold">
                             Last scrape
                           </span>
                           <span>
@@ -133,7 +138,7 @@ export default async function MonitorsPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                           Recent jobs
                         </p>
                         {monitor.scrapeJobs.length === 0 ? (
@@ -143,10 +148,10 @@ export default async function MonitorsPage() {
                             {monitor.scrapeJobs.slice(0, 3).map((job) => (
                               <li
                                 key={job.id}
-                                className="flex items-center justify-between rounded-xl border border-border/60 bg-card/80 px-3 py-2 text-xs"
+                                className="border-border/60 bg-card/80 flex items-center justify-between rounded-xl border px-3 py-2 text-xs"
                               >
                                 <div className="flex flex-col">
-                                  <span className="font-medium text-foreground">
+                                  <span className="text-foreground font-medium">
                                     {job.status}
                                   </span>
                                   <span className="text-muted-foreground">
@@ -156,7 +161,7 @@ export default async function MonitorsPage() {
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <span className="font-semibold text-primary">
+                                  <span className="text-primary font-semibold">
                                     {job.warmLeads} warm
                                   </span>
                                   <span>{job.coldLeads} cold</span>
@@ -190,12 +195,15 @@ export default async function MonitorsPage() {
                       ) : null}
                     </CardFooter>
                   </Card>
-                )
+                );
               })
             )}
           </div>
         </section>
-        <aside className="lg:sticky lg:top-24 lg:h-fit">
+        <aside
+          id="create-monitor-form"
+          className="lg:sticky lg:top-24 lg:h-fit"
+        >
           <CreateMonitorForm
             icps={icpOptions.map(({ id, name, platform }) => ({
               id,

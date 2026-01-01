@@ -1,9 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, LogOut, Menu, PanelsTopLeft, Sparkles, X } from "lucide-react";
+import {
+  ArrowRight,
+  LogOut,
+  Menu,
+  PanelsTopLeft,
+  Sparkles,
+  X,
+  Settings,
+  User,
+  CreditCard,
+} from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +40,9 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -39,7 +51,18 @@ export function DashboardShell({
 
   useEffect(() => {
     setIsMobileNavOpen(false);
+    setIsProfileOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const resolvedName = accountName?.trim() || "Leadly workspace";
   const resolvedEmail = accountEmail || "member@leadly.app";
@@ -49,20 +72,24 @@ export function DashboardShell({
     <div className="flex h-full flex-col">
       <Link
         href="/dashboard"
-        className="group flex items-center gap-3 px-6 pt-8 text-sidebar-foreground transition-colors hover:text-primary"
+        className="group text-sidebar-foreground hover:text-primary flex items-center gap-3 px-6 pt-8 transition-colors"
       >
-        <span className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-lg font-semibold text-primary shadow-sm">
-          <PanelsTopLeft className="size-5" aria-hidden />
-        </span>
+        <div className="relative size-11 overflow-hidden">
+          <img
+            src="/assets/logo-mark.png"
+            alt="Leadly Logo"
+            className="size-full object-contain"
+          />
+        </div>
         <div className="flex flex-col">
-          <span className="text-sm font-semibold leading-tight">Leadly</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm leading-tight font-semibold">Leadly</span>
+          <span className="text-muted-foreground text-xs">
             Growth intelligence
           </span>
         </div>
       </Link>
 
-      <div className="px-4 pb-6 pt-8">
+      <div className="px-4 pt-8 pb-6">
         <DashboardNav
           items={navItems}
           orientation="vertical"
@@ -72,26 +99,26 @@ export function DashboardShell({
       </div>
 
       <div className="mt-auto space-y-4 px-5 pb-8">
-        <section className="rounded-2xl border border-sidebar-border bg-sidebar/80 p-4 text-sm shadow-sm backdrop-blur">
+        <section className="border-sidebar-border bg-sidebar/80 rounded-2xl border p-4 text-sm shadow-sm backdrop-blur">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              <p className="text-muted-foreground text-xs tracking-wide uppercase">
                 Current plan
               </p>
-              <p className="text-sm font-semibold text-sidebar-foreground">
+              <p className="text-sidebar-foreground text-sm font-semibold">
                 {tierLabel} tier
               </p>
             </div>
             <Badge className="bg-primary/15 text-primary">Beta</Badge>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">
+          <p className="text-muted-foreground mt-3 text-xs">
             {limitsDescription}
           </p>
         </section>
 
-        <section className="rounded-2xl border border-sidebar-border bg-sidebar/70 p-4 text-xs leading-relaxed text-muted-foreground shadow-sm backdrop-blur">
-          <div className="flex items-center gap-2 text-sm font-semibold text-sidebar-foreground">
-            <Sparkles className="size-4 text-primary" aria-hidden />
+        <section className="border-sidebar-border bg-sidebar/70 text-muted-foreground rounded-2xl border p-4 text-xs leading-relaxed shadow-sm backdrop-blur">
+          <div className="text-sidebar-foreground flex items-center gap-2 text-sm font-semibold">
+            <Sparkles className="text-primary size-4" aria-hidden />
             Workspace tips
           </div>
           <p className="mt-2">
@@ -100,32 +127,47 @@ export function DashboardShell({
           </p>
           <Link
             href="/dashboard/monitors"
-            className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary transition hover:text-primary/80"
+            className="text-primary hover:text-primary/80 mt-3 inline-flex items-center gap-1 text-xs font-semibold transition"
           >
             Optimize monitors
             <ArrowRight className="size-3.5" aria-hidden />
           </Link>
         </section>
+        <LogoutButton
+          variant="outline"
+          size="lg"
+          className="hidden w-full sm:inline-flex"
+        >
+          Sign out
+        </LogoutButton>
       </div>
     </div>
   );
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-background via-background to-secondary/20 lg:flex">
-      <aside className="hidden w-72 shrink-0 border-r border-sidebar-border bg-sidebar/90 shadow-[inset_-1px_0px_rgba(119,51,68,0.05)] backdrop-blur lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden">
+    <div className="from-background via-background to-secondary/20 relative min-h-screen bg-gradient-to-b lg:flex">
+      <aside
+        id="dashboard-sidebar"
+        className="border-sidebar-border bg-sidebar/90 hidden w-72 shrink-0 border-r shadow-[inset_-1px_0px_rgba(119,51,68,0.05)] backdrop-blur lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden"
+      >
         {sidebarContent}
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
-        <header className="sticky top-0 z-30 border-b border-border/60 bg-background/90 px-4 py-4 backdrop-blur md:px-6 lg:px-10">
+        <header
+          id="dashboard-header"
+          className="border-border/60 bg-background/90 sticky top-0 z-30 border-b px-4 py-4 backdrop-blur md:px-6 lg:px-10"
+        >
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-1 items-center gap-3">
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full border border-border/70 bg-card/70 text-foreground shadow-sm hover:bg-primary/10 hover:text-primary lg:hidden"
+                className="border-border/70 bg-card/70 text-foreground hover:bg-primary/10 hover:text-primary rounded-full border shadow-sm lg:hidden"
                 onClick={() => setIsMobileNavOpen((state) => !state)}
-                aria-label={isMobileNavOpen ? "Close navigation" : "Open navigation"}
+                aria-label={
+                  isMobileNavOpen ? "Close navigation" : "Open navigation"
+                }
               >
                 {isMobileNavOpen ? (
                   <X className="size-5" aria-hidden />
@@ -133,32 +175,70 @@ export function DashboardShell({
                   <Menu className="size-5" aria-hidden />
                 )}
               </Button>
-              <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
+              {/* <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
                 Dashboard
-              </h1>
+              </h1> */}
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <Badge
                 variant="outline"
-                className="hidden border-primary/30 text-primary sm:inline-flex"
+                className="border-primary/30 text-primary hidden sm:inline-flex"
               >
                 {tierLabel} tier
               </Badge>
-              <div className="hidden size-10 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-primary shadow-sm sm:flex sm:size-11">
-                {avatarInitial}
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-full text-sm font-semibold shadow-sm transition-all hover:bg-primary/25 hover:scale-105 sm:size-11 cursor-pointer"
+                  aria-label="Open profile menu"
+                  aria-expanded={isProfileOpen}
+                >
+                  {avatarInitial}
+                </button>
+                {isProfileOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-3 border-b border-border">
+                      <p className="text-sm font-semibold text-foreground truncate">{resolvedName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{resolvedEmail}</p>
+                    </div>
+                    <div className="py-1">
+                      <Link
+                        href="/dashboard/account"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <User className="size-4 text-muted-foreground" />
+                        Account settings
+                      </Link>
+                      <Link
+                        href="/dashboard/billing"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <CreditCard className="size-4 text-muted-foreground" />
+                        Billing & plans
+                      </Link>
+                    </div>
+                    <div className="border-t border-border pt-1">
+                      <LogoutButton
+                        variant="ghost"
+                        className="w-full justify-start gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-destructive/10 hover:text-destructive rounded-none"
+                      >
+                        <LogOut className="size-4" />
+                        Sign out
+                      </LogoutButton>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:hidden">
                 <LogoutButton
                   variant="outline"
                   size="icon-sm"
-                  className="sm:hidden"
                   aria-label="Sign out"
                 >
                   <LogOut className="size-4" aria-hidden />
                   <span className="sr-only">Sign out</span>
-                </LogoutButton>
-                <LogoutButton variant="outline" size="sm" className="hidden sm:inline-flex">
-                  Sign out
                 </LogoutButton>
               </div>
             </div>
@@ -187,7 +267,7 @@ export function DashboardShell({
 
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 border-r border-sidebar-border bg-sidebar/95 shadow-xl transition-transform duration-300 lg:hidden",
+          "border-sidebar-border bg-sidebar/95 fixed inset-y-0 left-0 z-50 w-72 border-r shadow-xl transition-transform duration-300 lg:hidden",
           isMobileNavOpen ? "translate-x-0" : "-translate-x-full",
         )}
         role="dialog"
@@ -198,17 +278,21 @@ export function DashboardShell({
           <div className="flex items-center justify-between px-5 pt-6">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-sidebar-foreground"
+              className="text-sidebar-foreground flex items-center gap-2"
             >
-              <span className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-base font-semibold text-primary shadow-sm">
-                <PanelsTopLeft className="size-5" aria-hidden />
-              </span>
+              <div className="relative size-10 overflow-hidden">
+                <img
+                  src="/assets/logo-mark.png"
+                  alt="Leadly Logo"
+                  className="size-full object-contain"
+                />
+              </div>
               <span className="text-sm font-semibold">Leadly</span>
             </Link>
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full text-foreground hover:bg-primary/10 hover:text-primary"
+              className="text-foreground hover:bg-primary/10 hover:text-primary rounded-full"
               onClick={() => setIsMobileNavOpen(false)}
               aria-label="Close navigation"
             >
@@ -226,14 +310,14 @@ export function DashboardShell({
           </div>
 
           <div className="space-y-4 px-5 pb-6 text-sm">
-            <div className="rounded-2xl border border-sidebar-border bg-sidebar/80 p-4 shadow-sm">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            <div className="border-sidebar-border bg-sidebar/80 rounded-2xl border p-4 shadow-sm">
+              <p className="text-muted-foreground text-xs tracking-wide uppercase">
                 Signed in
               </p>
-              <p className="mt-1 text-sm font-semibold text-sidebar-foreground">
+              <p className="text-sidebar-foreground mt-1 text-sm font-semibold">
                 {resolvedName}
               </p>
-              <p className="text-xs text-muted-foreground">{resolvedEmail}</p>
+              <p className="text-muted-foreground text-xs">{resolvedEmail}</p>
             </div>
             <LogoutButton className="w-full" variant="outline">
               Sign out

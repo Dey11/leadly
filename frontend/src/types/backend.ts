@@ -16,6 +16,7 @@ export interface AccountSummary {
   emailVerified: boolean;
   image: string | null;
   createdAt: string;
+  hasSeenWalkthrough: boolean;
 }
 
 export interface AccountResponse {

@@ -92,23 +92,30 @@ export const getLead = async (req: Request, res: Response) => {
 
     const { id } = idResult.data;
 
-    const lead = await db.lead.findUnique({
-      where: { id },
-      include: {
+    const lead = await db.lead.findFirst({
+      where: {
+        id,
         scrapeJob: {
-          include: {
-            monitor: true,
+          monitor: {
+            userId: req.userId!,
           },
         },
+      },
+      select: {
+        id: true,
+        platform: true,
+        leadType: true,
+        content: true,
+        url: true,
+        author: true,
+        status: true,
+        reasoning: true,
+        createdAt: true,
       },
     });
 
     if (!lead) {
       return res.status(404).json({ error: "Lead not found" });
-    }
-
-    if (lead.scrapeJob.monitor.userId !== req.userId!) {
-      return res.status(403).json({ error: "Not authorized" });
     }
 
     let status = lead.status;
@@ -122,21 +129,9 @@ export const getLead = async (req: Request, res: Response) => {
       status = updated.status;
     }
 
-    const leadData = {
-      id: lead.id,
-      platform: lead.platform,
-      leadType: lead.leadType,
-      content: lead.content,
-      url: lead.url,
-      author: lead.author,
-      status,
-      reasoning: lead.reasoning,
-      createdAt: lead.createdAt,
-    };
-
     res.json({
       message: "Lead details retrieved successfully.",
-      payload: leadData,
+      payload: { ...lead, status },
     });
   } catch (err) {
     console.error(err);
@@ -157,40 +152,27 @@ export const updateLead = async (req: Request, res: Response) => {
     }
 
     const { id } = idResult.data;
-
-    const lead = await db.lead.findUnique({
-      where: { id },
-      include: {
+    const updatedLead = await db.lead.updateMany({
+      where: {
+        id,
         scrapeJob: {
-          include: {
-            monitor: true,
+          monitor: {
+            userId: req.userId!,
           },
         },
       },
-    });
-
-    if (!lead) {
-      return res.status(404).json({ error: "Lead not found" });
-    }
-
-    if (lead.scrapeJob.monitor.userId !== req.userId!) {
-      return res.status(403).json({ error: "Not authorized" });
-    }
-
-    const updatedLead = await db.lead.update({
-      where: { id },
       data: {
         status: payload.data.status,
       },
-      select: {
-        id: true,
-        status: true,
-      },
     });
+
+    if (updatedLead.count === 0) {
+      return res.status(404).json({ error: "Lead not found" });
+    }
 
     res.json({
       message: "Lead updated successfully.",
-      payload: updatedLead,
+      payload: { id, status: payload.data.status },
     });
   } catch (err) {
     console.error(err);
@@ -207,26 +189,20 @@ export const deleteLead = async (req: Request, res: Response) => {
 
     const { id } = idResult.data;
 
-    const lead = await db.lead.findUnique({
-      where: { id },
-      include: {
+    const deleted = await db.lead.deleteMany({
+      where: {
+        id,
         scrapeJob: {
-          include: {
-            monitor: true,
+          monitor: {
+            userId: req.userId!,
           },
         },
       },
     });
 
-    if (!lead) {
+    if (deleted.count === 0) {
       return res.status(404).json({ error: "Lead not found" });
     }
-
-    if (lead.scrapeJob.monitor.userId !== req.userId!) {
-      return res.status(403).json({ error: "Not authorized" });
-    }
-
-    await db.lead.delete({ where: { id } });
 
     res.json({
       message: "Lead deleted successfully.",

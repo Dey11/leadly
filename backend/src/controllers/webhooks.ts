@@ -167,33 +167,40 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
         if (userId) {
           const tier = mapPlanToTier(planCode) ?? SubscriptionTier.PRO;
           const periodEnd = parsePeriodEnd()!;
-          await db.subscription.upsert({
-            where: { userId },
-            create: {
+
+          // Wrap subscription + usage update in transaction
+          await db.$transaction(async (tx) => {
+            await tx.subscription.upsert({
+              where: { userId },
+              create: {
+                userId,
+                subscriptionId: subscriptionId ?? undefined,
+                status: SubscriptionStatus.ACTIVE,
+                tier,
+                currentPeriodEnd: periodEnd,
+                subscriptionCustomerId: customerId ?? undefined,
+                ...billingDetails,
+              },
+              update: {
+                subscriptionId: subscriptionId ?? undefined,
+                status: SubscriptionStatus.ACTIVE,
+                tier,
+                currentPeriodEnd: periodEnd,
+                subscriptionCustomerId: customerId ?? undefined,
+                ...billingDetails,
+              },
+            });
+
+            // Initialize/reset usage window on activation
+            await initializeOrResetUsagePeriod(
+              tx,
               userId,
-              subscriptionId: subscriptionId ?? undefined,
-              status: SubscriptionStatus.ACTIVE,
               tier,
-              currentPeriodEnd: periodEnd,
-              subscriptionCustomerId: customerId ?? undefined,
-              ...billingDetails,
-            },
-            update: {
-              subscriptionId: subscriptionId ?? undefined,
-              status: SubscriptionStatus.ACTIVE,
-              tier,
-              currentPeriodEnd: periodEnd,
-              subscriptionCustomerId: customerId ?? undefined,
-              ...billingDetails,
-            },
+              undefined,
+              periodEnd
+            );
           });
-          // Initialize/reset usage window on activation
-          await initializeOrResetUsagePeriod(
-            userId,
-            tier,
-            undefined,
-            periodEnd
-          );
+
           console.log(
             JSON.stringify({
               evt: "subscription.active.persisted",
@@ -217,6 +224,8 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
         if (userId) {
           const periodEnd = parsePeriodEnd()!;
           let tierForReset: SubscriptionTier = SubscriptionTier.PRO;
+
+          // Get existing tier first
           try {
             const existing = await db.subscription.findUnique({
               where: { userId },
@@ -225,17 +234,21 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               tierForReset = existing.tier;
             }
           } catch {}
-          await db.subscription
-            .update({
-              where: { userId },
-              data: {
-                status: SubscriptionStatus.ACTIVE,
-                currentPeriodEnd: periodEnd,
-                ...billingDetails,
-              },
-            })
-            .catch(async () => {
-              await db.subscription.create({
+
+          // Wrap subscription + usage update in transaction
+          await db.$transaction(async (tx) => {
+            // Try update, create if doesn't exist
+            try {
+              await tx.subscription.update({
+                where: { userId },
+                data: {
+                  status: SubscriptionStatus.ACTIVE,
+                  currentPeriodEnd: periodEnd,
+                  ...billingDetails,
+                },
+              });
+            } catch {
+              await tx.subscription.create({
                 data: {
                   userId,
                   status: SubscriptionStatus.ACTIVE,
@@ -245,13 +258,17 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                   ...billingDetails,
                 },
               });
-            });
-          await initializeOrResetUsagePeriod(
-            userId,
-            tierForReset,
-            undefined,
-            periodEnd
-          );
+            }
+
+            await initializeOrResetUsagePeriod(
+              tx,
+              userId,
+              tierForReset,
+              undefined,
+              periodEnd
+            );
+          });
+
           console.log(
             JSON.stringify({
               evt: "subscription.renewed.persisted",
@@ -276,40 +293,50 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
         if (userId) {
           const tier = mapPlanToTier(planCode);
           if (tier) {
-            // Update tier
-            await db.subscription
-              .update({
-                where: { userId },
-                data: { tier },
-              })
-              .catch(async () => {
-                await db.subscription.create({
+            const end = parsePeriodEnd();
+
+            // Wrap subscription + usage update in transaction
+            await db.$transaction(async (tx) => {
+              // Try update, create if doesn't exist
+              try {
+                await tx.subscription.update({
+                  where: { userId },
+                  data: { tier },
+                });
+              } catch {
+                await tx.subscription.create({
                   data: {
                     userId,
                     status: SubscriptionStatus.ACTIVE,
                     tier,
                     subscriptionId: subscriptionId ?? undefined,
-                    currentPeriodEnd: parsePeriodEnd()!,
+                    currentPeriodEnd: end!,
                     ...billingDetails,
                   },
                 });
-              });
+              }
 
-            // Reset usage counters on plan change and align to current cycle end if present
-            const end = parsePeriodEnd();
-            await initializeOrResetUsagePeriod(userId, tier, undefined, end);
+              // Reset usage counters on plan change and align to current cycle end if present
+              await initializeOrResetUsagePeriod(
+                tx,
+                userId,
+                tier,
+                undefined,
+                end
+              );
+            });
 
-          console.log(
-            JSON.stringify({
-              evt: "subscription.plan_changed.persisted",
-              userId,
-              tier,
-              subscriptionId,
-              periodEnd: end,
-            })
-          );
-          await attachCustomerId(userId, customerId);
-        } else {
+            console.log(
+              JSON.stringify({
+                evt: "subscription.plan_changed.persisted",
+                userId,
+                tier,
+                subscriptionId,
+                periodEnd: end,
+              })
+            );
+            await attachCustomerId(userId, customerId);
+          } else {
             console.warn(
               JSON.stringify({
                 warn: "subscription.plan_changed.unknown_plan",

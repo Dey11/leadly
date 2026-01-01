@@ -1,6 +1,18 @@
 import { NextFunction, Request, Response } from "express";
 import db from "../lib/db";
 
+function getClearCookieOptions() {
+  const isProduction = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    domain: isProduction ? ".leadly.live" : undefined,
+    maxAge: 0,
+    path: "/",
+  } as const;
+}
+
 export async function authMiddleware(
   req: Request,
   res: Response,
@@ -29,16 +41,22 @@ export async function authMiddleware(
         token: sessionToken,
       },
     });
-    res
-      .cookie("session_token", "", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 0,
-        path: "/",
-      })
+    return res
+      .cookie("session_token", "", getClearCookieOptions())
       .status(401)
       .json({ error: "User is deleted" });
+  }
+
+  if (!session.user.emailVerified) {
+    await db.session.delete({
+      where: {
+        token: sessionToken,
+      },
+    });
+    return res
+      .cookie("session_token", "", getClearCookieOptions())
+      .status(403)
+      .json({ error: "Email not verified", requiresVerification: true });
   }
 
   if (session.expiresAt < new Date()) {
@@ -54,3 +72,4 @@ export async function authMiddleware(
 
   next();
 }
+

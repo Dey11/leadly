@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { Download, X } from "lucide-react";
 
 import { clientApi } from "@/lib/client/api";
 import { formatDateTime, formatRelative } from "@/lib/format";
@@ -11,6 +11,7 @@ import type {
   LeadStatus,
   LeadSummary,
   LeadType,
+  SubscriptionTier,
 } from "@/types/backend";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -64,10 +65,40 @@ type MonitorOption = {
 
 type LeadsViewProps = {
   monitors: MonitorOption[];
+  tier: SubscriptionTier;
 };
 
-export function LeadsView({ monitors }: LeadsViewProps) {
+function exportLeadsToCsv(leads: LeadSummary[], filename: string) {
+  const headers = ["Type", "Status", "Content", "URL", "Author", "Created At"];
+  const escapeField = (field: string) => {
+    if (field.includes('"') || field.includes(",") || field.includes("\n")) {
+      return `"${field.replace(/"/g, '""')}"`;
+    }
+    return field;
+  };
+
+  const rows = leads.map((lead) => [
+    lead.leadType,
+    lead.status,
+    escapeField(lead.content),
+    lead.url,
+    lead.author || "",
+    new Date(lead.createdAt).toISOString(),
+  ]);
+
+  const csv = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+export function LeadsView({ monitors, tier }: LeadsViewProps) {
   const queryClient = useQueryClient();
+  const [exportError, setExportError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     monitorId: "",
     status: "",
@@ -215,12 +246,12 @@ export function LeadsView({ monitors }: LeadsViewProps) {
               uncovers.
             </p>
           </div>
-          <div className="text-muted-foreground flex flex-col gap-2 text-sm sm:text-right">
-            <span>Total leads: {pagination?.total ?? "–"}</span>
-            <span>
+          <div className="text-muted-foreground text-sm sm:text-right">
+            <div>Total leads: {pagination?.total ?? "–"}</div>
+            <div>
               Showing {leadsQuery.data?.data.length ?? 0} of {filters.limit} per
               page
-            </span>
+            </div>
           </div>
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-4">
@@ -307,6 +338,31 @@ export function LeadsView({ monitors }: LeadsViewProps) {
                 }));
               }}
             />
+          </div>
+        </div>
+        <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (tier !== "PREMIUM") {
+                  setExportError("Export to CSV is available for Premium users only.");
+                  return;
+                }
+                setExportError(null);
+                const filename = `leads-${new Date().toISOString().split("T")[0]}.csv`;
+                exportLeadsToCsv(leads, filename);
+              }}
+              disabled={leads.length === 0 || leadsQuery.isLoading}
+              className="flex items-center gap-1.5"
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+            {exportError && (
+              <span className="text-destructive text-sm">{exportError}</span>
+            )}
           </div>
         </div>
       </section>

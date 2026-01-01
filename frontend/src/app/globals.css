@@ -45,8 +45,9 @@
 
 :root {
   --radius: 0.625rem;
-  --font-geist-sans: "Inter", "Segoe UI", system-ui, -apple-system,
-    BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --font-geist-sans:
+    "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+    "Helvetica Neue", sans-serif;
   --font-geist-mono: "JetBrains Mono", "SFMono-Regular", "Menlo", monospace;
   --wine: #773344;
   --pale-dogwood: #e3b5a4;
@@ -123,6 +124,9 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground antialiased;

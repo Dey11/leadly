@@ -12,7 +12,7 @@ const envSchema = z.object({
   FRONTEND_URL: z.string(),
 
   NITTER_URL: z.string(),
-  REDIS_URL: z.string().default("redis://localhost:6380"),
+  REDIS_URL: z.string().default("redis://localhost:6379"),
 
   REDDIT_CLIENT_ID: z.string(),
   REDDIT_CLIENT_SECRET: z.string(),
@@ -23,7 +23,9 @@ const envSchema = z.object({
   DODO_ENVIRONMENT: z.enum(["test_mode", "live_mode"]).default("test_mode"),
   DODO_WEBHOOK_SECRET: z.string().min(1, "DODO_WEBHOOK_SECRET is required"),
   DODO_PRO_PRODUCT_ID: z.string().min(1, "DODO_PRO_PRODUCT_ID is required"),
-  DODO_PREMIUM_PRODUCT_ID: z.string().min(1, "DODO_PREMIUM_PRODUCT_ID is required"),
+  DODO_PREMIUM_PRODUCT_ID: z
+    .string()
+    .min(1, "DODO_PREMIUM_PRODUCT_ID is required"),
 
   // URLs
   APP_BASE_URL: z.string().url().optional(),
@@ -31,6 +33,9 @@ const envSchema = z.object({
 
   // Feature flags
   FEATURE_BILLING_ENFORCEMENT: z.enum(["off", "log", "on"]).default("off"),
+
+  // Resend
+  RESEND_API_KEY: z.string().min(1, "RESEND_API_KEY is required"),
 });
 
 export const env = envSchema.parse(process.env);
