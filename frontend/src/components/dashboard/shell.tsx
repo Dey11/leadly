@@ -81,7 +81,7 @@ export function DashboardShell({
       >
         <div className="relative size-11 overflow-hidden">
           <img
-            src="/assets/logo-mark.png"
+            src="/assets/logo.svg"
             alt="Leadly Logo"
             className="size-full object-contain"
           />
@@ -323,7 +323,7 @@ export function DashboardShell({
             >
               <div className="relative size-10 overflow-hidden">
                 <img
-                  src="/assets/logo-mark.png"
+                  src="/assets/logo.svg"
                   alt="Leadly Logo"
                   className="size-full object-contain"
                 />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { SEO_CONFIG } from "@/constants/seo";
 import { SUPPORT_EMAIL } from "@/constants/config";
 
@@ -11,6 +12,13 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-12 px-5 py-16 md:px-8">
+      <Link
+        href="/"
+        className="text-muted-foreground hover:text-foreground flex items-center text-sm transition-colors"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Home
+      </Link>
       <header>
         <h1 className="text-foreground text-3xl font-bold md:text-4xl">
           Terms of Service

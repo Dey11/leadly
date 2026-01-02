@@ -62,29 +62,27 @@ export default function HomePage() {
         }}
       />
 
-      {/* Header */}
-      <div className="border-border/40 bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur-xl">
-        <header className="relative mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-4 text-sm md:px-8">
-          {/* Left: Logo */}
-          <div className="flex items-center">
-            <Link
-              href="/"
-              className="text-foreground font-display flex shrink-0 items-center gap-2 text-lg font-bold transition hover:opacity-80"
-            >
-              <span className="relative mr-1 size-8">
-                <Image
-                  src="/assets/logo-mark.png"
-                  alt="Leadly"
-                  fill
-                  className="object-contain"
-                />
-              </span>
-              Leadly
-            </Link>
-          </div>
+      {/* Floating Navbar */}
+      <div className="fixed top-7 right-0 left-0 z-50 flex justify-center px-4 sm:top-10">
+        <header className="bg-background/90 border-border/40 grid w-full max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-6 rounded-full border py-3 pr-3 pl-6 shadow-lg backdrop-blur-xl">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="text-foreground font-display flex shrink-0 items-center gap-2 text-base font-medium transition hover:opacity-80 sm:text-lg"
+          >
+            <span className="relative size-7 sm:size-8">
+              <Image
+                src="/assets/logo.svg"
+                alt="Leadly"
+                fill
+                className="object-contain"
+              />
+            </span>
+            <span>Leadly</span>
+          </Link>
 
-          {/* Center: Nav Links - Absolutely positioned */}
-          <nav className="text-muted-foreground absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-8 font-medium md:flex">
+          {/* Nav Links - Centered */}
+          <nav className="text-muted-foreground hidden items-center justify-center gap-8 text-sm font-medium lg:flex">
             {navLinks.map((item) => (
               <a
                 key={item.href}
@@ -96,8 +94,8 @@ export default function HomePage() {
             ))}
           </nav>
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-4">
+          {/* Actions (Login + Mode Toggle) */}
+          <div className="flex items-center justify-end gap-3">
             <LandingNav />
           </div>
         </header>

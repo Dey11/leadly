@@ -3,37 +3,31 @@
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Lightbulb, Radar, Inbox } from "lucide-react";
 
 const steps = [
   {
-    number: "01",
-    icon: Lightbulb,
+    number: "1",
     title: "Describe your offer",
     description:
-      "Create a service explaining who you help, what pain you solve, and how to recognize real buying signals.",
+      "Tell us who you help and what problems you solve. We'll identify the buying signals that matter.",
   },
   {
-    number: "02",
-    icon: Radar,
-    title: "Launch precision monitors",
+    number: "2",
+    title: "Launch monitors",
     description:
-      "Pick subreddits or keywords, apply filters, and let Leadly watch every new thread for qualified intent.",
+      "Pick subreddits and keywords to watch. Leadly scans every new post for qualified buyer intent.",
   },
   {
-    number: "03",
-    icon: Inbox,
-    title: "Work the warm inbox",
-    description: "Review prioritized leads and export for outreach.",
+    number: "3",
+    title: "Work the inbox",
+    description:
+      "Review prioritized leads in one place. Export contacts and start your outreach instantly.",
   },
 ];
 
 export function ThreeSteps() {
   return (
-    <section className="border-border/30 relative border-y px-4 py-16 sm:py-20 md:py-24 lg:py-28">
-      {/* Background */}
-      <div className="from-muted/40 via-muted/20 to-muted/40 absolute inset-0 -z-10 bg-gradient-to-b" />
-
+    <section className="relative overflow-hidden bg-[#4a1e28] px-4 py-12 sm:py-14 md:py-16 lg:py-20">
       <div className="container mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -42,25 +36,19 @@ export function ThreeSteps() {
           transition={{ duration: 0.6 }}
           className="mx-auto mb-10 max-w-3xl text-center sm:mb-14"
         >
-          <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
+          {/* Section label */}
+          <p className="mb-3 text-xs font-medium tracking-[0.2em] text-[#e3b5a4] uppercase sm:mb-4 sm:text-sm">
+            STEP
+          </p>
+          <h2 className="font-display mb-4 text-3xl font-bold tracking-tight text-white sm:mb-5 sm:text-4xl md:text-5xl">
             Three steps to revenue
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
+          <p className="mx-auto max-w-xl px-2 text-base leading-relaxed text-white/70 sm:px-0 sm:text-lg md:text-lg lg:text-xl">
             Launch your first monitor in under 2 minutes.
           </p>
-          <Button
-            size="lg"
-            className="mt-6 h-11 px-6 text-sm font-semibold shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl sm:mt-8 sm:h-12 sm:px-8 sm:text-base"
-            asChild
-          >
-            <Link href="/register">
-              Start now
-              <span className="ml-2">→</span>
-            </Link>
-          </Button>
         </motion.div>
 
-        <div className="mx-auto grid max-w-5xl gap-4 sm:gap-6 md:grid-cols-3">
+        <div className="mx-auto grid max-w-6xl gap-4 sm:gap-5 md:grid-cols-3">
           {steps.map((step, i) => (
             <motion.div
               key={step.number}
@@ -72,29 +60,31 @@ export function ThreeSteps() {
                 y: -4,
                 transition: { duration: 0.2, ease: "easeOut" },
               }}
-              className="group bg-card border-border/50 hover:border-border relative overflow-hidden rounded-2xl border p-5 shadow-sm transition-all duration-200 hover:shadow-lg sm:p-6"
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#5c2836] px-6 py-4 transition-all duration-200 hover:border-white/20 hover:bg-[#6a2e3e] sm:px-8 sm:py-5"
             >
-              {/* Gradient overlay on hover */}
-              <div className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
               <div className="relative">
-                {/* Step number */}
-                <div className="mb-4 flex items-center justify-between">
-                  <span className="text-primary/30 text-3xl font-bold sm:text-4xl">
+                {/* Large step number with progressive fade */}
+                <div className="mb-1 h-16 overflow-hidden sm:h-20 md:h-24">
+                  <span
+                    className="font-display block text-7xl leading-none font-bold text-white/40 sm:text-8xl md:text-9xl"
+                    style={{
+                      maskImage:
+                        "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 25%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0) 90%)",
+                      WebkitMaskImage:
+                        "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 25%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0) 90%)",
+                    }}
+                  >
                     {step.number}
                   </span>
-                  <div className="bg-primary/8 text-primary group-hover:bg-primary/12 flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-200 sm:h-12 sm:w-12">
-                    <step.icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                  </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-foreground mb-2 text-base font-semibold sm:mb-3 sm:text-lg">
+                <h3 className="mb-2 text-base font-semibold text-white sm:mb-3 sm:text-lg">
                   {step.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
+                <p className="text-xs leading-relaxed text-white/60 sm:text-sm">
                   {step.description}
                 </p>
               </div>

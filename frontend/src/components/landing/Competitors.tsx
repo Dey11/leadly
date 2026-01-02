@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Brain, Target, Zap, TrendingUp, Check, X, Clock } from "lucide-react";
+import { Brain, Target, Zap, Check, X, Clock } from "lucide-react";
+import Image from "next/image";
 
 const comparisonData = [
   {
@@ -13,8 +14,8 @@ const comparisonData = [
   },
   {
     feature: "False Positives",
-    leadly: "Low — AI filters noise automatically",
-    others: "High — every mention triggers alerts",
+    leadly: "Low — AI filters noise",
+    others: "High — every mention triggers",
     leadlyHas: true,
     othersHas: false,
   },
@@ -42,20 +43,20 @@ const comparisonData = [
   {
     feature: "Keyword Tracking",
     leadly: "Coming soon (AI-enhanced)",
-    others: "Basic keyword matching only",
+    others: "Basic matching only",
     leadlyHas: "soon",
     othersHas: true,
   },
   {
     feature: "Email Notifications",
-    leadly: "Coming soon (AI-enhanced)",
+    leadly: "Coming soon",
     others: "Available",
     leadlyHas: "soon",
     othersHas: true,
   },
   {
-    feature: "Outreach generaator",
-    leadly: "Coming soon (AI-enhanced)",
+    feature: "Outreach Generator",
+    leadly: "Coming soon",
     others: "Not reliable",
     leadlyHas: "soon",
     othersHas: true,
@@ -86,11 +87,6 @@ const advantages = [
 export function Competitors() {
   return (
     <section className="relative overflow-hidden px-4 py-16 sm:py-20 md:py-24 lg:py-28">
-      {/* Subtle background gradient */}
-      <div className="absolute inset-0 -z-10">
-        <div className="from-primary/[0.02] to-accent/[0.02] absolute inset-0 bg-gradient-to-br via-transparent" />
-      </div>
-
       <div className="container mx-auto">
         {/* Header */}
         <motion.div
@@ -98,114 +94,122 @@ export function Competitors() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mx-auto mb-10 max-w-3xl text-center sm:mb-14 lg:mb-16"
+          className="mx-auto mb-10 max-w-4xl text-center sm:mb-14 lg:mb-16"
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="from-primary/10 to-accent/10 border-primary/20 text-primary mb-4 inline-flex items-center gap-2 rounded-full border bg-gradient-to-r px-3 py-1.5 text-xs font-medium sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
-          >
-            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
-            Why We're Different
-          </motion.div>
-          <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-6 sm:text-4xl md:text-5xl">
-            Not just another{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10">keyword tracker</span>
-              <motion.span
-                initial={{ scaleX: 0 }}
-                whileInView={{ scaleX: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5, duration: 0.4, ease: "easeOut" }}
-                className="bg-primary/15 absolute bottom-1 left-0 -z-10 h-2 w-full origin-left sm:bottom-2 sm:h-3"
-              />
-            </span>
+          <h2 className="font-display text-foreground mb-4 text-3xl font-bold tracking-tight sm:mb-6 sm:text-4xl md:text-5xl">
+            Leadly – <span className="text-primary">Your Best Choice</span> for
+            <br className="hidden sm:block" /> Intent-Based Lead Discovery
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-            Traditional tools rely on keyword matching — great for catching
-            every mention, terrible for your sanity. Leadly uses AI to find
-            people who are{" "}
-            <span className="highlight-word">actually buying</span>.
-          </p>
         </motion.div>
 
-        {/* Redesigned Comparison Table */}
+        {/* Comparison - Pixelmatters Style (Theme Aware) */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mx-auto mb-16 max-w-4xl sm:mb-20 lg:mb-28"
+          className="mx-auto mb-16 max-w-5xl sm:mb-20 lg:mb-28"
         >
-          <div className="bg-card border-border/50 overflow-hidden rounded-xl border shadow-lg sm:rounded-2xl">
-            {/* Table header */}
-            <div className="border-border/40 bg-muted/30 grid grid-cols-[1.2fr_1fr_1fr] items-center gap-2 border-b px-4 py-4 sm:grid-cols-[1.5fr_1fr_1fr] sm:gap-4 sm:px-6 sm:py-5">
-              <div className="text-foreground text-xs font-semibold tracking-wide uppercase sm:text-sm">
-                Feature
-              </div>
-              <div className="text-center">
-                <span className="text-primary text-xs font-bold sm:text-sm">
-                  Leadly
+          {/* Two-section layout grid */}
+          <div className="grid items-start gap-0 md:grid-cols-[1.5fr_1.8fr]">
+            {/* Left section - Features & Traditional */}
+            <div className="hidden pt-8 pr-8 md:block">
+              {/* Header row */}
+              <div className="flex items-center justify-between px-4 pb-6">
+                <span className="text-foreground/60 text-xs font-bold tracking-widest uppercase">
+                  Features
+                </span>
+                <span className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
+                  Traditional Tools
                 </span>
               </div>
-              <div className="text-muted-foreground text-center text-xs font-semibold sm:text-sm">
-                Others
-              </div>
-            </div>
 
-            {/* Table rows */}
-            {comparisonData.map((row, i) => (
-              <div
-                key={row.feature}
-                className={`grid grid-cols-[1.2fr_1fr_1fr] items-center gap-2 px-4 py-3 transition-colors duration-150 sm:grid-cols-[1.5fr_1fr_1fr] sm:gap-4 sm:px-6 sm:py-4 ${
-                  i !== comparisonData.length - 1
-                    ? "border-border/30 border-b"
-                    : ""
-                } hover:bg-muted/20`}
-              >
-                <div className="text-foreground text-xs font-medium sm:text-sm">
-                  {row.feature}
-                </div>
-                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                  {row.leadlyHas === true ? (
-                    <Check
-                      className="h-4 w-4 flex-shrink-0 text-green-600 sm:h-5 sm:w-5"
-                      aria-label="Included"
-                    />
-                  ) : row.leadlyHas === "soon" ? (
-                    <Clock
-                      className="h-4 w-4 flex-shrink-0 text-amber-500 sm:h-5 sm:w-5"
-                      aria-label="Coming Soon"
-                    />
-                  ) : (
-                    <X
-                      className="h-4 w-4 flex-shrink-0 text-red-500 sm:h-5 sm:w-5"
-                      aria-label="Not Included"
-                    />
-                  )}
-                  <span className="text-foreground/80 hidden text-xs xl:inline">
-                    {row.leadly}
+              {/* Data Rows */}
+              {comparisonData.map((row, i) => (
+                <div
+                  key={`trad-${row.feature}`}
+                  className={`grid grid-cols-[1fr_1fr] px-4 py-4 ${
+                    i !== comparisonData.length - 1
+                      ? "border-border/40 border-b"
+                      : ""
+                  }`}
+                >
+                  <span className="text-foreground/80 pr-4 text-sm font-semibold">
+                    {row.feature}
                   </span>
-                </div>
-                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                  {row.othersHas ? (
-                    <Check
-                      className="text-muted-foreground/60 h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5"
-                      aria-label="Included"
-                    />
-                  ) : (
-                    <X
-                      className="h-4 w-4 flex-shrink-0 text-red-400/60 sm:h-5 sm:w-5"
-                      aria-label="Not Included"
-                    />
-                  )}
-                  <span className="text-muted-foreground hidden text-xs xl:inline">
+                  <span className="text-muted-foreground text-sm">
                     {row.others}
                   </span>
                 </div>
+              ))}
+            </div>
+
+            {/* Right section - Leadly (Popped out card) */}
+            <div className="relative">
+              <div className="border-primary/20 bg-card shadow-primary/10 relative z-10 overflow-hidden rounded-2xl border shadow-2xl sm:rounded-3xl md:-my-6 dark:bg-[#1a0f12]">
+                {/* Header with logo */}
+                <div className="border-primary/10 bg-primary/5 dark:bg-primary/10 flex items-center justify-center border-b px-6 py-6 sm:px-8">
+                  <Image
+                    src="/assets/logo.svg"
+                    alt="Leadly"
+                    width={120}
+                    height={32}
+                    className="h-8 w-auto"
+                  />
+                </div>
+
+                {/* Rows */}
+                {comparisonData.map((row, i) => (
+                  <div
+                    key={`leadly-${row.feature}`}
+                    className={`bg-card flex items-center gap-4 px-6 py-4 sm:px-8 dark:bg-[#1a0f12] ${
+                      i !== comparisonData.length - 1
+                        ? "border-primary/5 border-b dark:border-white/5"
+                        : ""
+                    }`}
+                  >
+                    {/* Checkmark */}
+                    {row.leadlyHas === true ? (
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500 shadow-sm">
+                        <Check
+                          className="h-3.5 w-3.5 text-white"
+                          strokeWidth={3}
+                        />
+                      </div>
+                    ) : row.leadlyHas === "soon" ? (
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500 shadow-sm">
+                        <Clock
+                          className="h-3.5 w-3.5 text-white"
+                          strokeWidth={2.5}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-500 shadow-sm">
+                        <X className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+                      </div>
+                    )}
+
+                    {/* Feature label for mobile only */}
+                    <div className="flex flex-col md:hidden">
+                      <span className="text-foreground/50 mb-0.5 text-xs tracking-wide uppercase">
+                        {row.feature}
+                      </span>
+                      <span className="text-foreground text-sm font-medium">
+                        {row.leadly}
+                      </span>
+                    </div>
+
+                    {/* Desktop text */}
+                    <span className="text-foreground hidden text-sm font-medium md:block">
+                      {row.leadly}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
+
+              {/* Decorative glow behind the card */}
+              <div className="bg-primary/20 absolute inset-0 -z-10 scale-95 transform rounded-3xl opacity-50 blur-3xl dark:opacity-30" />
+            </div>
           </div>
         </motion.div>
 
@@ -218,7 +222,7 @@ export function Competitors() {
             transition={{ duration: 0.6 }}
             className="mb-10 text-center sm:mb-14"
           >
-            <h2 className="text-foreground font-display mb-3 text-3xl font-bold tracking-tight sm:mb-4 sm:text-4xl md:text-5xl">
+            <h2 className="font-display text-foreground mb-3 text-3xl font-bold tracking-tight sm:mb-4 sm:text-4xl md:text-5xl">
               Why top founders choose Leadly
             </h2>
             <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
@@ -243,9 +247,9 @@ export function Competitors() {
                   y: -6,
                   transition: { duration: 0.2, ease: "easeOut" },
                 }}
-                className="group bg-card border-border/60 hover:border-border relative rounded-xl p-5 shadow-sm transition-shadow duration-200 hover:shadow-md sm:rounded-2xl sm:p-6"
+                className="group border-border/60 bg-card hover:border-border relative rounded-xl border p-5 transition-all duration-200 hover:shadow-md sm:rounded-2xl sm:p-6"
               >
-                <div className="bg-primary/8 text-primary group-hover:bg-primary/12 mb-4 flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200 sm:mb-5 sm:h-12 sm:w-12 sm:rounded-xl">
+                <div className="bg-primary/10 text-primary group-hover:bg-primary/15 mb-4 flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200 sm:mb-5 sm:h-12 sm:w-12 sm:rounded-xl">
                   <item.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <h3 className="text-foreground mb-2 text-base font-semibold sm:text-lg">

@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Outfit, DM_Sans, JetBrains_Mono } from "next/font/google";
+import {
+  Outfit,
+  DM_Sans,
+  JetBrains_Mono,
+  Plus_Jakarta_Sans,
+} from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
 import { SEO_CONFIG } from "@/constants/seo";
@@ -29,6 +34,13 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
   variable: "--font-mono",
+  display: "swap",
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -93,7 +105,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${dmSans.variable} ${jetbrainsMono.variable} bg-background text-foreground`}
+      className={`${outfit.variable} ${dmSans.variable} ${jetbrainsMono.variable} ${plusJakartaSans.variable} bg-background text-foreground`}
       suppressHydrationWarning
     >
       <body

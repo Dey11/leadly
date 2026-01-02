@@ -42,18 +42,16 @@ export function LandingNav() {
   return (
     <>
       {/* Desktop nav */}
-      <div className="hidden items-center gap-4 md:flex">
+      <div className="hidden items-center gap-6 md:flex">
         <ModeToggle />
-        <Button variant="ghost" asChild className="text-sm font-medium">
-          <Link href={signInHref}>
-            {isLoading ? "Sign in" : isAuthenticated ? "Dashboard" : "Sign in"}
-          </Link>
-        </Button>
         <Button
+          variant="outline"
           asChild
-          className="shadow-primary/20 text-sm font-medium shadow-md"
+          className="rounded-full px-5 text-sm font-medium"
         >
-          <Link href="/register">Start free</Link>
+          <Link href={signInHref}>
+            {isLoading ? "Login" : isAuthenticated ? "Dashboard" : "Login"}
+          </Link>
         </Button>
       </div>
 

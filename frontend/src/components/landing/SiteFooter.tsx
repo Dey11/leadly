@@ -17,7 +17,7 @@ export function SiteFooter() {
             >
               <div className="relative size-6 sm:size-7">
                 <Image
-                  src="/assets/logo-mark.png"
+                  src="/assets/logo.svg"
                   alt="Leadly"
                   fill
                   className="object-contain"
