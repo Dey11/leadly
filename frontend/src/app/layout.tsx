@@ -6,6 +6,10 @@ import { SEO_CONFIG } from "@/constants/seo";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { CookieConsent } from "@/components/ui/cookie-consent";
+import {
+  UmamiScript,
+  GoogleAnalytics,
+} from "@/components/analytics/UmamiScript";
 import NextTopLoader from "nextjs-toploader";
 
 // Display font for headings
@@ -108,6 +112,12 @@ export default function RootLayout({
         >
           <QueryProvider>
             <NextTopLoader color="#734" />
+            <UmamiScript />
+            {process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
+              <GoogleAnalytics
+                gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}
+              />
+            )}
             {children}
             <CookieConsent />
           </QueryProvider>

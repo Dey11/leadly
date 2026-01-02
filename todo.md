@@ -18,40 +18,47 @@
 - [x] prettier formatting in the backend
 - [x] need to build the backend and deploy for js files
 - [x] need leadly support email (can send email, but receiving is done on registrar ends, dey work.)
+- [x] upi payments
+- [x] leadly.helpdesk@leadly.live
+- [x] posthog and umami
+- [x] policy pages proofread
+- [x] add something so that we can track the referrer of the user (umami does that + we have hook to track that but not needed)
+- [x] proof read and fix pricing section
+- [x] check pricing link from landing page
+- [x] fix pricing section constants
+- [x] link landing pricing section w payment link
+- [x] beta users get lifetime beta price
+- [x] bug found by arsh on discord channel
 
-probably done/need not do. need to test
+## Probably done/need not do. Need to test though
+
+'-' -> Not needed
+'?' -> Need to test
 
 - [-] remove console logs
-- [?] upi payments
-- [x] leadly.helpdesk@leadly.live
-- [x] image screenshot + good looking mac border (mac window border not done, krish will do)
+- [ ] image screenshot + good looking mac border (mac window border not done, krish will do)
+- [?] tracking based on cookies. disagreeing with cookies can lead to stuff (not so imp tho)
+- [ ] ensure smooth scrolling is on. CURRENTLY ON, HOPE KRISH DOESNT MESS THIS UP, just check it before pushing
 
-dey's work
+## Todo
 
+- [ ] policy pages should have back btns
 - [ ] light/dark mode for logo as well
-- [ ] posthog and umami
-- [ ] policy pages
-- [ ] proof read all pages and their content
-- [ ] check pricing link from landing page
-- [ ] fix pricing section constants
-- [ ] tracking based on cookies. disagreeing with cookies can lead to stuff
-- [ ] add something so that we can track the referrer of the user
 - [ ] cards are the same in the landing page, need another color, remove ai like emojis
-- [ ] "better ai for semantic analysis" even tho we have just 1 model
-- [ ] link landing pricing section w payment link
-- [ ] beta users get lifetime beta price
+- [ ] demo video in landing page section
+- [ ] favicon not present, fix this
 
 * global rate limits ok, in memory
 
 ## Future scope
 
+- [ ] some sort of retry mechanisms. currently if the redis got fucked, the job stays pending. we need a cron that checks for pending/failed jobs and processes them at the end of the day anyways
 - [ ] toggle email alerts for pro/premium plan for warm leads
 - [ ] on demand scrape jobs, with a 30min cooldown (we promised it)
-- [ ] most leads are warm, dont see cold/neutral leads yet -> needs finetuning
 - [ ] think about rotating the reddit credentials using a rotation strategy
 - [ ] maybe post levels of filtering. aggressive, moderate, mild. aggressive can bring out false positives but thats okay. mild will be more accurate but will miss some leads. moderate will be a balance between the two
 
-## when scaling is needed
+## When scaling is needed
 
 - [ ] implement redis cache layer on rarely changing things like (user account/profile, icps, monitors list, schedule settings, usage stats/dashboard stats (30sec or something)), cache session (auth middleware hits db on every request)
 - [ ] batch db queries (using include)
@@ -59,5 +66,4 @@ dey's work
 ## Random q
 
 - [ ] are scheduled jobs checked by the exact minute or checked by the last hour vs db value?
-- [ ] have to add paginations to everything to prevent misuse (need to test if done)
 - [ ] Find out the upper constraints before it breaks (scraper mostly)

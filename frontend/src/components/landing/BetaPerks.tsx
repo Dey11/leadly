@@ -30,7 +30,7 @@ const perks = [
     icon: Gift,
     title: "Extended Free Usage",
     description:
-      "Beta users get extra scrapes and monitors beyond normal limits while we refine the product.",
+      "Beta users get extra scrapes and monitors beyond normal limits while we refine the product (soon).",
   },
   {
     icon: Crown,

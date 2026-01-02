@@ -16,7 +16,7 @@ export default function CookiesPage() {
           Cookie Policy
         </h1>
         <p className="text-muted-foreground mt-3 text-sm">
-          Last updated: December 31, 2024
+          Last updated: January 3, 2026
         </p>
       </header>
 
@@ -125,18 +125,24 @@ export default function CookiesPage() {
               </thead>
               <tbody className="text-muted-foreground">
                 <tr className="border-border/50 border-b">
-                  <td className="py-2 font-mono text-xs">ph_*</td>
-                  <td className="py-2">PostHog</td>
-                  <td className="py-2">
-                    Product analytics - tracks feature usage
-                  </td>
-                  <td className="py-2">1 year</td>
+                  <td className="py-2 font-mono text-xs">__cf_bm</td>
+                  <td className="py-2">Cloudflare</td>
+                  <td className="py-2">Bot management and security</td>
+                  <td className="py-2">30 minutes</td>
                 </tr>
                 <tr className="border-border/50 border-b">
                   <td className="py-2 font-mono text-xs">_ga, _gid</td>
                   <td className="py-2">Google Analytics</td>
                   <td className="py-2">Website analytics - traffic analysis</td>
                   <td className="py-2">2 years / 24 hours</td>
+                </tr>
+                <tr className="border-border/50 border-b">
+                  <td className="py-2 font-mono text-xs">umami.disabled</td>
+                  <td className="py-2">Umami</td>
+                  <td className="py-2">
+                    Stores preference if you opt-out of tracking
+                  </td>
+                  <td className="py-2">Persistent</td>
                 </tr>
               </tbody>
             </table>
@@ -244,15 +250,9 @@ export default function CookiesPage() {
           </p>
           <ul className="text-muted-foreground list-disc space-y-2 pl-6">
             <li>
-              <strong>PostHog:</strong> Product analytics platform. See their{" "}
-              <a
-                href="https://posthog.com/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:text-primary/80"
-              >
-                Privacy Policy
-              </a>
+              <strong>Umami Analytics:</strong> Privacy-focused analytics. We
+              use Umami in a way that respects your privacy and avoids using
+              tracking cookies for personal identification.
             </li>
             <li>
               <strong>Google Analytics:</strong> Website analytics. See their{" "}
