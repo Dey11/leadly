@@ -30,7 +30,7 @@ export class Reddit {
         auth: { username: this.clientId, password: this.clientSecret },
         headers: { "User-Agent": `leadly by u/${env.REDDIT_USERNAME}` },
         timeout: 10000,
-      }
+      },
     );
 
     this.token = response.data.access_token;
@@ -50,7 +50,7 @@ export class Reddit {
             "User-Agent": `leadly by u/${env.REDDIT_USERNAME}`,
           },
           timeout: this.timeout,
-        }
+        },
       );
 
       return response.data.names && response.data.names.length > 0;
@@ -62,7 +62,7 @@ export class Reddit {
   async fetchPosts(
     subreddit: string,
     limit: number = 10,
-    after: string | null = null
+    after: string | null = null,
   ) {
     const token = await this.getToken();
     const url = `${this.baseUrl}/r/${subreddit}/new?limit=${limit}${
@@ -116,7 +116,7 @@ export class Reddit {
 
         if (commentsRes?.status !== 200 || !commentsRes)
           throw new Error(
-            `Failed to fetch comments for post ${post.id}: ${commentsRes?.status}`
+            `Failed to fetch comments for post ${post.id}: ${commentsRes?.status}`,
           );
 
         const commentsJson: any = commentsRes.data;

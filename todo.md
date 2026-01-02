@@ -14,24 +14,32 @@
 - [x] theme toggle in settings
 - [x] types in separate files/folders, components should be broken down into smaller components, one page need not have everything, should not have everything
 - [x] export leads to csv for premium plan
-- [ ] remove console logs
-- [ ] prettier formatting in the backend
+- [x] add a question mark to rerun the quickstart widget
+- [x] prettier formatting in the backend
+- [x] need to build the backend and deploy for js files
+- [x] need leadly support email (can send email, but receiving is done on registrar ends, dey work.)
+
+probably done/need not do. need to test
+
+- [-] remove console logs
+- [?] upi payments
+- [x] leadly.helpdesk@leadly.live
+- [x] image screenshot + good looking mac border (mac window border not done, krish will do)
+
+dey's work
+
 - [ ] light/dark mode for logo as well
 - [ ] posthog and umami
-- [ ] need to build the backend and deploy for js files
 - [ ] policy pages
-- [ ] need leadly support email (can send email, but receiving is done on registrar ends, dey work.)
 - [ ] proof read all pages and their content
-- [ ] ask arsh to prepare the image screenshot + good looking mac border
 - [ ] check pricing link from landing page
 - [ ] fix pricing section constants
 - [ ] tracking based on cookies. disagreeing with cookies can lead to stuff
 - [ ] add something so that we can track the referrer of the user
-- [ ] leadly.helpdesk@leadly.live
 - [ ] cards are the same in the landing page, need another color, remove ai like emojis
-- [ ] upi payments
 - [ ] "better ai for semantic analysis" even tho we have just 1 model
-- [ ] link payment to landing pricing section
+- [ ] link landing pricing section w payment link
+- [ ] beta users get lifetime beta price
 
 * global rate limits ok, in memory
 

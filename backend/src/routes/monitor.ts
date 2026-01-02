@@ -8,7 +8,7 @@ const router = Router();
 router.post(
   "/ai/suggest-subreddits",
   authMiddleware,
-  monitorAiController.suggestSubreddits
+  monitorAiController.suggestSubreddits,
 );
 router.post("/", authMiddleware, monitorController.createMonitor);
 router.get("/", authMiddleware, monitorController.getMonitors);

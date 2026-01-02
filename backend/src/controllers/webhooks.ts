@@ -88,7 +88,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
         type,
         subscriptionId,
         planCode,
-      })
+      }),
     );
 
     const userId = (data?.metadata?.user_id as string | undefined) ?? undefined;
@@ -197,7 +197,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               userId,
               tier,
               undefined,
-              periodEnd
+              periodEnd,
             );
           });
 
@@ -208,14 +208,14 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               tier,
               subscriptionId,
               periodEnd,
-            })
+            }),
           );
         } else {
           console.warn(
             JSON.stringify({
               warn: "subscription.active.no_user_id",
               subscriptionId,
-            })
+            }),
           );
         }
         break;
@@ -265,7 +265,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               userId,
               tierForReset,
               undefined,
-              periodEnd
+              periodEnd,
             );
           });
 
@@ -276,7 +276,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               subscriptionId,
               periodEnd,
               tierForReset,
-            })
+            }),
           );
           await attachCustomerId(userId, customerId);
         } else {
@@ -284,7 +284,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
             JSON.stringify({
               warn: "subscription.renewed.no_user_id",
               subscriptionId,
-            })
+            }),
           );
         }
         break;
@@ -322,7 +322,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 userId,
                 tier,
                 undefined,
-                end
+                end,
               );
             });
 
@@ -333,7 +333,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 tier,
                 subscriptionId,
                 periodEnd: end,
-              })
+              }),
             );
             await attachCustomerId(userId, customerId);
           } else {
@@ -342,7 +342,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 warn: "subscription.plan_changed.unknown_plan",
                 userId,
                 planCode,
-              })
+              }),
             );
           }
         } else {
@@ -351,7 +351,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               warn: "subscription.plan_changed.no_user_id",
               subscriptionId,
               planCode,
-            })
+            }),
           );
         }
         break;
@@ -369,7 +369,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               evt: "subscription.on_hold.persisted",
               userId,
               subscriptionId,
-            })
+            }),
           );
         }
         break;
@@ -390,7 +390,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               evt: "subscription.cancelled.persisted",
               userId,
               subscriptionId,
-            })
+            }),
           );
         }
         break;
@@ -408,7 +408,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               evt: "subscription.failed.persisted",
               userId,
               subscriptionId,
-            })
+            }),
           );
         }
         break;

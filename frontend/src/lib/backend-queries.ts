@@ -96,14 +96,16 @@ export async function getUsageSummary() {
   }
 }
 
-export async function getLeads(params: {
-  monitorId?: string;
-  platform?: string;
-  leadType?: string;
-  status?: string;
-  page?: number;
-  limit?: number;
-} = {}) {
+export async function getLeads(
+  params: {
+    monitorId?: string;
+    platform?: string;
+    leadType?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  } = {},
+) {
   try {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {

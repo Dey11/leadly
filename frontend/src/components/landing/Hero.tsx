@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 // Animated word cycling component
 function AnimatedWord({
@@ -40,6 +41,18 @@ function AnimatedWord({
 }
 
 export function Hero() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const dashboardImg =
+    mounted && resolvedTheme === "dark"
+      ? "/dashboard-dark.png"
+      : "/dashboard.png";
+
   return (
     <section className="relative overflow-hidden px-4 pt-16 pb-16 sm:pt-20 sm:pb-20 md:pt-28 md:pb-28 lg:pt-36 lg:pb-36">
       {/* Subtle background gradient */}
@@ -154,7 +167,7 @@ export function Hero() {
           </motion.div>
         </div>
 
-        {/* Dashboard Preview - Hidden on very small screens for cleaner mobile experience */}
+        {/* Dashboard Preview */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -163,97 +176,14 @@ export function Hero() {
             delay: 0.4,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
-          className="mx-auto mt-12 max-w-5xl sm:mt-16 md:mt-20"
+          className="mx-auto mt-12 max-w-5xl px-4 sm:mt-16 md:mt-20"
         >
-          <div className="bg-card border-border/60 relative overflow-hidden rounded-xl border shadow-xl sm:rounded-2xl sm:shadow-2xl">
-            {/* Browser chrome */}
-            <div className="border-border/40 bg-muted/40 flex items-center gap-2 border-b px-3 py-2 sm:px-4 sm:py-3">
-              <div className="flex gap-1">
-                <div className="h-2 w-2 rounded-full bg-red-400/80 sm:h-3 sm:w-3" />
-                <div className="h-2 w-2 rounded-full bg-yellow-400/80 sm:h-3 sm:w-3" />
-                <div className="h-2 w-2 rounded-full bg-green-400/80 sm:h-3 sm:w-3" />
-              </div>
-              <div className="flex-1 text-center">
-                <span className="text-muted-foreground text-[10px] font-medium sm:text-xs">
-                  Leadly Dashboard
-                </span>
-              </div>
-            </div>
-
-            {/* Dashboard content */}
-            <div className="bg-background/50 p-3 sm:p-6 md:p-8">
-              {/* Stats row */}
-              <div className="mb-4 grid grid-cols-3 gap-2 sm:mb-6 sm:gap-4">
-                {[
-                  { label: "Leads", value: "47", icon: "🎯" },
-                  { label: "High Intent", value: "23", icon: "🔥" },
-                  { label: "Relevance", value: "89%", icon: "✨" },
-                ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="bg-card border-border/40 rounded-lg border p-2 text-center sm:rounded-xl sm:p-4"
-                  >
-                    <span className="text-sm sm:text-xl">{stat.icon}</span>
-                    <p className="text-foreground mt-1 text-lg font-bold sm:mt-2 sm:text-2xl md:text-3xl">
-                      {stat.value}
-                    </p>
-                    <p className="text-muted-foreground text-[10px] sm:text-xs md:text-sm">
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Lead cards */}
-              <div className="space-y-2 sm:space-y-3">
-                {[
-                  {
-                    subreddit: "r/startups",
-                    title: "Looking for a CRM that works...",
-                    score: 92,
-                    time: "2h ago",
-                  },
-                  {
-                    subreddit: "r/SaaS",
-                    title: "Need lead gen tool recommendations",
-                    score: 87,
-                    time: "4h ago",
-                  },
-                  {
-                    subreddit: "r/entrepreneur",
-                    title: "Best way to find B2B customers?",
-                    score: 94,
-                    time: "6h ago",
-                  },
-                ].map((lead) => (
-                  <div
-                    key={lead.title}
-                    className="bg-card border-border/40 flex items-center justify-between gap-2 rounded-lg border p-2.5 sm:gap-4 sm:rounded-xl sm:p-4"
-                  >
-                    <div className="min-w-0 flex-1 space-y-0.5 sm:space-y-1">
-                      <p className="text-primary text-[10px] font-medium sm:text-xs">
-                        {lead.subreddit}
-                      </p>
-                      <p className="text-foreground truncate text-xs font-medium sm:text-sm md:text-base">
-                        {lead.title}
-                      </p>
-                      <p className="text-muted-foreground text-[10px] sm:text-xs">
-                        {lead.time}
-                      </p>
-                    </div>
-                    <div
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold sm:px-3 sm:py-1 sm:text-xs ${
-                        lead.score >= 90
-                          ? "bg-green-500/15 text-green-600"
-                          : "bg-yellow-500/15 text-yellow-600"
-                      }`}
-                    >
-                      {lead.score}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="bg-card border-border/60 relative overflow-hidden rounded-xl border shadow-2xl sm:rounded-2xl">
+            <img
+              src={dashboardImg}
+              alt="Leadly Dashboard Preview"
+              className="block h-auto w-full transition-opacity duration-300"
+            />
           </div>
         </motion.div>
       </div>

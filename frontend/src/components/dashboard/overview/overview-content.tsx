@@ -23,20 +23,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   getAccountSessions,
   getIcps,
   getLeads,
   getSchedule,
 } from "@/lib/backend-queries";
 import { formatDateTime, formatRelative } from "@/lib/format";
-import type {
-  Icp,
-  LeadSummary,
-  Monitor,
-  ScrapeJob,
-  Schedule,
-  Session,
-} from "@/types/backend";
+import type { Icp, LeadSummary, Monitor, ScrapeJob } from "@/types/backend";
 import {
   numberFormatter,
   LEAD_TYPE_STYLES,
@@ -92,14 +93,23 @@ export async function OverviewContent() {
   ]);
 
   const monitors = collectMonitors(icps);
-  const jobs = collectJobs(monitors)
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
-    .slice(0, 6);
-  const leadSummary = summarizeLeads(jobs);
-  const recentLeads: LeadSummary[] = leadsPayload?.data ?? [];
+  const allJobs = collectJobs(monitors).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+
+  // Stats should reflect a true 7-day window
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const statsJobs = allJobs.filter(
+    (job) => new Date(job.createdAt) >= sevenDaysAgo,
+  );
+  const leadSummary = summarizeLeads(statsJobs);
+
+  // Table stays concise with only the last 6 entries
+  const recentJobs = allJobs.slice(0, 6);
+
+  const leadsPayloadData = leadsPayload?.data ?? [];
   const totalLeads = leadsPayload?.pagination.total ?? 0;
 
   const activeMonitorCount = monitors.filter(
@@ -113,7 +123,7 @@ export async function OverviewContent() {
     icps.length > 0 ? (monitors.length / icps.length).toFixed(1) : "0.0";
 
   const lastCompletedJob =
-    jobs.find((job) => job.completedAt) ?? jobs.at(0) ?? null;
+    allJobs.find((job) => job.completedAt) ?? allJobs.at(0) ?? null;
   const lastCompletedLabel = lastCompletedJob?.completedAt
     ? formatRelative(lastCompletedJob.completedAt)
     : "Awaiting first completion";
@@ -121,17 +131,17 @@ export async function OverviewContent() {
     ? `${lastCompletedJob.warmLeads} warm · ${lastCompletedJob.neutralLeads} neutral`
     : "No job volume yet.";
 
-  const latestWarmLeads = jobs[0]?.warmLeads ?? 0;
-  const previousWarmLeads = jobs[1]?.warmLeads ?? 0;
+  const latestWarmLeads = allJobs[0]?.warmLeads ?? 0;
+  const previousWarmLeads = allJobs[1]?.warmLeads ?? 0;
   const warmDelta = latestWarmLeads - previousWarmLeads;
   const warmTrendLabel =
-    jobs.length > 1
+    allJobs.length > 1
       ? `${warmDelta >= 0 ? "+" : ""}${warmDelta} vs last run`
       : "Baseline run";
   const warmTrendTone: "positive" | "negative" | "neutral" =
     warmDelta > 0 ? "positive" : warmDelta < 0 ? "negative" : "neutral";
 
-  const newLeadsCount = recentLeads.length;
+  const newLeadsCount = leadsPayloadData.length;
   const totalTrendLabel =
     newLeadsCount > 0
       ? `+${newLeadsCount} surfaced recently`
@@ -182,7 +192,7 @@ export async function OverviewContent() {
     {
       label: "Warm leads (7d)",
       value: numberFormatter.format(leadSummary.warm),
-      hint: "Qualified conversations surfaced this week.",
+      hint: "Qualified conversations in the recent past.",
       icon: Flame,
       trendLabel: warmTrendLabel,
       trendTone: warmTrendTone,
@@ -274,25 +284,37 @@ export async function OverviewContent() {
               <Link href="/dashboard/monitors">Manage monitors</Link>
             </Button>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="text-muted-foreground">
-                <tr className="border-border/60 border-b text-xs tracking-wide uppercase">
-                  <th className="py-3 pr-3 font-semibold">Monitor</th>
-                  <th className="py-3 pr-3 font-semibold">ICP</th>
-                  <th className="py-3 pr-3 font-semibold">Status</th>
-                  <th className="py-3 pr-3 text-center font-semibold">Warm</th>
-                  <th className="py-3 pr-3 text-center font-semibold">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border/60 text-xs tracking-wide uppercase hover:bg-transparent">
+                  <TableHead className="text-muted-foreground font-semibold">
+                    Monitor
+                  </TableHead>
+                  <TableHead className="text-muted-foreground font-semibold">
+                    ICP
+                  </TableHead>
+                  <TableHead className="text-muted-foreground font-semibold">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-muted-foreground text-center font-semibold">
+                    Warm
+                  </TableHead>
+                  <TableHead className="text-muted-foreground text-center font-semibold">
                     Neutral
-                  </th>
-                  <th className="py-3 pr-3 text-center font-semibold">Cold</th>
-                  <th className="py-3 text-right font-semibold">Completed</th>
-                </tr>
-              </thead>
-              <tbody>
-                {jobs.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-12">
+                  </TableHead>
+                  <TableHead className="text-muted-foreground text-center font-semibold">
+                    Cold
+                  </TableHead>
+                  <TableHead className="text-muted-foreground text-right font-semibold">
+                    Completed
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentJobs.length === 0 ? (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={7} className="py-12">
                       <div className="flex flex-col items-center justify-center text-center">
                         <div className="bg-muted mb-3 flex h-12 w-12 items-center justify-center rounded-full">
                           <ListChecks className="text-muted-foreground/50 h-6 w-6" />
@@ -305,46 +327,43 @@ export async function OverviewContent() {
                           their results will appear here.
                         </p>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
-                  jobs.map((job) => (
-                    <tr
-                      key={job.id}
-                      className="border-border/40 border-b text-sm last:border-b-0"
-                    >
-                      <td className="text-foreground py-4 pr-3 font-medium">
+                  recentJobs.map((job) => (
+                    <TableRow key={job.id} className="border-border/40">
+                      <TableCell className="text-foreground font-medium">
                         {job.monitorTarget}
-                      </td>
-                      <td className="text-muted-foreground py-4 pr-3">
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
                         {job.icpName}
-                      </td>
-                      <td className="py-4 pr-3">
+                      </TableCell>
+                      <TableCell>
                         <Badge
                           className={`${JOB_STATUS_STYLES[job.status]} capitalize`}
                         >
                           {job.status.toLowerCase()}
                         </Badge>
-                      </td>
-                      <td className="text-primary py-4 pr-3 text-center font-semibold">
+                      </TableCell>
+                      <TableCell className="text-primary text-center font-semibold">
                         {job.warmLeads}
-                      </td>
-                      <td className="text-muted-foreground py-4 pr-3 text-center">
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-center">
                         {job.neutralLeads}
-                      </td>
-                      <td className="text-muted-foreground py-4 pr-3 text-center">
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-center">
                         {job.coldLeads}
-                      </td>
-                      <td className="text-muted-foreground py-4 text-right">
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-right">
                         {job.completedAt
                           ? formatRelative(job.completedAt)
                           : "Pending"}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
 
@@ -430,13 +449,13 @@ export async function OverviewContent() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentLeads.length === 0 ? (
+            {leadsPayloadData.length === 0 ? (
               <div className="border-border/60 bg-background/80 text-muted-foreground rounded-2xl border p-6 text-center text-sm">
                 No leads yet. Once your monitors finish scraping, new leads will
                 appear here.
               </div>
             ) : (
-              recentLeads.map((lead) => (
+              leadsPayloadData.map((lead) => (
                 <div
                   key={lead.id}
                   className="border-border/60 bg-background/85 rounded-2xl border p-4 shadow-sm"

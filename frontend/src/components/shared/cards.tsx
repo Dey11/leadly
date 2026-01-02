@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
-  Card as BaseCard,
+  Card,
   CardHeader,
   CardContent,
   CardFooter,
@@ -28,7 +28,7 @@ export function DashboardCard({
 }: DashboardCardProps) {
   return (
     <FadeInItem className="h-full">
-      <BaseCard
+      <Card
         className={cn(
           "border-border/40 h-full shadow-sm transition-shadow duration-300 hover:shadow-md",
           className,
@@ -49,7 +49,7 @@ export function DashboardCard({
         )}
         <CardContent>{children}</CardContent>
         {footer && <CardFooter>{footer}</CardFooter>}
-      </BaseCard>
+      </Card>
     </FadeInItem>
   );
 }

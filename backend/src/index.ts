@@ -25,14 +25,14 @@ app.use(
     origin: env.FRONTEND_URL,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
-  })
+  }),
 );
 
 // Important: register webhook raw-body route BEFORE json parser
 app.post(
   "/api/v1/webhooks/dodo",
   express.raw({ type: "application/json" }),
-  dodoWebhookHandler
+  dodoWebhookHandler,
 );
 
 app.use(express.json());

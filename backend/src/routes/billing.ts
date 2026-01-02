@@ -22,7 +22,7 @@ async function getUserWithSubscription(userId: string) {
 }
 
 async function ensureCustomerId(
-  user: Awaited<ReturnType<typeof getUserWithSubscription>>
+  user: Awaited<ReturnType<typeof getUserWithSubscription>>,
 ) {
   if (!user?.subscription) {
     throw new Error("Subscription not found");
@@ -96,8 +96,20 @@ router.post(
 
       // Allowed payment methods (fallback includes credit & debit)
       const allowed_payment_method_types: Array<
-        "credit" | "debit" | "apple_pay" | "google_pay" | "paypal" | "upi_collect"
-      > = ["credit", "debit", "google_pay", "apple_pay", "paypal", "upi_collect"];
+        | "credit"
+        | "debit"
+        | "apple_pay"
+        | "google_pay"
+        | "paypal"
+        | "upi_collect"
+      > = [
+        "credit",
+        "debit",
+        "google_pay",
+        "apple_pay",
+        "paypal",
+        "upi_collect",
+      ];
 
       // Create hosted checkout session for a subscription product
       // Note: Checkout Sessions will handle subscription creation automatically
@@ -150,7 +162,7 @@ router.post(
       console.error("Failed to create subscription link:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 async function createCustomerPortalUrl(userId: string) {
@@ -184,7 +196,7 @@ router.post(
       console.error("Failed to create portal link:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 router.post(
@@ -199,7 +211,7 @@ router.post(
       console.error("Failed to create cancel link:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 export default router;

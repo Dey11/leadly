@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { siteConfig } from "@/config/site";
 import { SEO_CONFIG } from "@/constants/seo";
+import { SUPPORT_EMAIL } from "@/constants/config";
 
 export const metadata: Metadata = {
   title: SEO_CONFIG.legal.cookies.title,
@@ -310,10 +310,10 @@ export default function CookiesPage() {
             <li>
               Email:{" "}
               <a
-                href="mailto:privacy@leadly.live"
+                href={`mailto:${SUPPORT_EMAIL}`}
                 className="text-primary hover:text-primary/80 font-medium"
               >
-                privacy@leadly.live
+                {SUPPORT_EMAIL}
               </a>
             </li>
           </ul>

@@ -91,14 +91,16 @@ export function MonitorTargetInput({
           <p className="text-muted-foreground mb-1.5 text-xs">Click to use:</p>
           <div className="flex flex-wrap gap-1.5">
             {suggestions.map((subreddit) => (
-              <button
+              <Button
                 key={subreddit}
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => onSelectSuggestion(subreddit)}
-                className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
+                className="bg-primary/10 text-primary hover:bg-primary/20 h-auto rounded-full px-2.5 py-1 text-xs font-medium"
               >
                 {subreddit}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

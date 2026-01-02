@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SearchX } from "lucide-react";
 
 import { clientApi } from "@/lib/client/api";
-import type { LeadDetail, LeadStatus, LeadSummary } from "@/types/backend";
+import type { LeadStatus, LeadSummary } from "@/types/backend";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -221,7 +221,7 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
       )}
 
       <section className="space-y-4" aria-label="Leads list">
-        {leadsQuery.isLoading && !leadsQuery.isFetching ? (
+        {leadsQuery.isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <div
@@ -229,6 +229,13 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
                 className="bg-muted/70 h-32 animate-pulse rounded-2xl"
               />
             ))}
+          </div>
+        ) : leadsQuery.isFetching ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="border-primary/30 border-t-primary h-10 w-10 animate-spin rounded-full border-4" />
+            <p className="text-muted-foreground mt-4 text-sm">
+              Loading leads...
+            </p>
           </div>
         ) : leads.length === 0 ? (
           <Card className="bg-muted/10 flex flex-col items-center justify-center border-2 border-dashed p-12">

@@ -37,7 +37,7 @@ export async function processScrapeJob(job: Job) {
   try {
     const redditClient = new Reddit(
       env.REDDIT_CLIENT_ID,
-      env.REDDIT_CLIENT_SECRET
+      env.REDDIT_CLIENT_SECRET,
     );
     await db.scrapeJob.update({
       where: { id: job.data.jobId },
@@ -52,7 +52,7 @@ export async function processScrapeJob(job: Job) {
     const posts = await redditClient.fetchPosts(
       target,
       MAX_SCRAPE_POSTS_LIMIT,
-      monitor.cursor
+      monitor.cursor,
     );
 
     if (!monitor.icp) {
@@ -118,7 +118,7 @@ export async function processScrapeJob(job: Job) {
       error instanceof Error ? error.message : "Unknown error";
 
     console.log(
-      `Job ${job.data.jobId} failed. Retry count: ${currentRetryCount}/${MAX_SCRAPE_RETRY_COUNT}`
+      `Job ${job.data.jobId} failed. Retry count: ${currentRetryCount}/${MAX_SCRAPE_RETRY_COUNT}`,
     );
 
     try {
@@ -126,7 +126,7 @@ export async function processScrapeJob(job: Job) {
         // Schedule for retry
         const nextRetryAt = new Date(Date.now() + SCRAPE_RETRY_DELAY_MS);
         console.log(
-          `Scheduling retry for job ${job.data.jobId} at ${nextRetryAt.toISOString()}`
+          `Scheduling retry for job ${job.data.jobId} at ${nextRetryAt.toISOString()}`,
         );
 
         await db.scrapeJob.update({
@@ -141,7 +141,7 @@ export async function processScrapeJob(job: Job) {
       } else {
         // Permanently failed - move to FailedScrapeJob
         console.log(
-          `Job ${job.data.jobId} permanently failed after ${MAX_SCRAPE_RETRY_COUNT} retries`
+          `Job ${job.data.jobId} permanently failed after ${MAX_SCRAPE_RETRY_COUNT} retries`,
         );
 
         await db.$transaction([

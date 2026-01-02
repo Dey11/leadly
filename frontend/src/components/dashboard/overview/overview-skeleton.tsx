@@ -1,5 +1,3 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";

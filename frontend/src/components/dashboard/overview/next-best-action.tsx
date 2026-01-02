@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, BellRing, Search, Zap } from "lucide-react";
+import { ArrowRight, Search, Zap } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";

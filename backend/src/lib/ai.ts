@@ -29,7 +29,7 @@ export const modelFlash = google(MODEL);
 
 export function handleAiError(
   error: unknown,
-  context: string
+  context: string,
 ): { status: number; body: { error: string } } {
   console.error(`AI ${context} error:`, error);
 

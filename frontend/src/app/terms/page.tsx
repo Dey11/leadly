@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { siteConfig } from "@/config/site";
 import { SEO_CONFIG } from "@/constants/seo";
+import { SUPPORT_EMAIL } from "@/constants/config";
 
 export const metadata: Metadata = {
   title: SEO_CONFIG.legal.terms.title,
@@ -310,10 +310,10 @@ export default function TermsPage() {
             Before filing any legal claim, you agree to attempt to resolve the
             dispute informally by contacting us at{" "}
             <a
-              href="mailto:legal@leadly.live"
+              href={`mailto:${SUPPORT_EMAIL}`}
               className="text-primary hover:text-primary/80 font-medium"
             >
-              legal@leadly.live
+              {SUPPORT_EMAIL}
             </a>
             . We will attempt to resolve the dispute within 60 days.
           </p>
@@ -364,10 +364,10 @@ export default function TermsPage() {
             <li>
               Email:{" "}
               <a
-                href="mailto:legal@leadly.live"
+                href={`mailto:${SUPPORT_EMAIL}`}
                 className="text-primary hover:text-primary/80 font-medium"
               >
-                legal@leadly.live
+                {SUPPORT_EMAIL}
               </a>
             </li>
           </ul>

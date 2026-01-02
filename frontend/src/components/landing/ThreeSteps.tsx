@@ -24,8 +24,7 @@ const steps = [
     number: "03",
     icon: Inbox,
     title: "Work the warm inbox",
-    description:
-      "Review prioritized leads, export for outreach, and track follow-up status from the same workspace.",
+    description: "Review prioritized leads and export for outreach.",
   },
 ];
 

@@ -46,6 +46,20 @@ const comparisonData = [
     leadlyHas: "soon",
     othersHas: true,
   },
+  {
+    feature: "Email Notifications",
+    leadly: "Coming soon (AI-enhanced)",
+    others: "Available",
+    leadlyHas: "soon",
+    othersHas: true,
+  },
+  {
+    feature: "Outreach generaator",
+    leadly: "Coming soon (AI-enhanced)",
+    others: "Not reliable",
+    leadlyHas: "soon",
+    othersHas: true,
+  },
 ];
 
 const advantages = [

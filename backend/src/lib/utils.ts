@@ -28,7 +28,7 @@ export async function fetchWithRetry(
   url: string,
   options: any,
   retries = 3,
-  timeout = 10000
+  timeout = 10000,
 ) {
   let retryDelay = 1000;
   for (let i = 0; i < retries; i++) {

@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
-import { siteConfig } from "@/config/site";
 import { SEO_CONFIG } from "@/constants/seo";
 import { cookies } from "next/headers";
 import { getAccountSummary } from "@/lib/backend-queries";

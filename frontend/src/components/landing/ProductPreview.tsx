@@ -3,8 +3,19 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export function ProductPreview() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && resolvedTheme === "dark";
+
   return (
     <section className="border-border/30 border-y px-4 py-16 sm:py-20 md:py-24 lg:py-28">
       <div className="container mx-auto">
@@ -43,29 +54,29 @@ export function ProductPreview() {
               </TabsTrigger>
             </TabsList>
 
-            <div className="border-border/50 bg-card relative aspect-[16/10] overflow-hidden rounded-xl border shadow-lg sm:rounded-2xl sm:shadow-xl">
+            <div className="border-border/50 bg-card relative aspect-[16/8] overflow-hidden rounded-xl border shadow-lg sm:rounded-2xl sm:shadow-xl">
               <TabsContent value="leads" className="m-0 h-full">
                 <Image
-                  src="/assets/preview-leads.png"
+                  src={isDark ? "/leads-dark.png" : "/leads.png"}
                   alt="Dashboard screenshot showing a list of qualified high-intent leads from Reddit"
                   fill
-                  className="object-cover object-top"
+                  className="object-cover object-top transition-opacity duration-300"
                 />
               </TabsContent>
               <TabsContent value="monitors" className="m-0 h-full">
                 <Image
-                  src="/assets/preview-monitors.png"
+                  src={isDark ? "/monitors-dark.png" : "/monitors.png"}
                   alt="Dashboard screenshot showing active subreddit monitors and keyword configuration"
                   fill
-                  className="object-cover object-top"
+                  className="object-cover object-top transition-opacity duration-300"
                 />
               </TabsContent>
               <TabsContent value="icp" className="m-0 h-full">
                 <Image
-                  src="/assets/preview-icp.png"
+                  src={isDark ? "/icp-dark.png" : "/icp.png"}
                   alt="Dashboard screenshot showing Ideal Customer Profile settings and negative keywords"
                   fill
-                  className="object-cover object-top"
+                  className="object-cover object-top transition-opacity duration-300"
                 />
               </TabsContent>
             </div>

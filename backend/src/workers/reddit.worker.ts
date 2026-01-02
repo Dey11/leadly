@@ -13,7 +13,7 @@ const worker = new Worker(
     console.log("Processing job:", job.data);
     await processScrapeJob(job);
   },
-  { connection }
+  { connection },
 );
 
 worker.on("completed", (job) => {

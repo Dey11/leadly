@@ -3,7 +3,7 @@ import type { nitterTweet, nitterScrapeInput } from "../types/nitter";
 import { env } from "../env";
 
 export async function scrapeNitter(
-  input: nitterScrapeInput
+  input: nitterScrapeInput,
 ): Promise<nitterTweet[]> {
   const { query, daysAgo } = input;
 
@@ -33,7 +33,7 @@ export async function scrapeNitter(
     });
     if (!response || !response.ok()) {
       throw new Error(
-        `Failed to load page: ${response?.status()} ${response?.statusText()}`
+        `Failed to load page: ${response?.status()} ${response?.statusText()}`,
       );
     }
     try {
@@ -81,13 +81,13 @@ export async function scrapeNitter(
       error.message.includes("net::ERR_CONNECTION_REFUSED")
     ) {
       throw new Error(
-        "Failed to connect to Nitter. Please ensure Nitter is running on localhost:8080"
+        "Failed to connect to Nitter. Please ensure Nitter is running on localhost:8080",
       );
     }
     throw new Error(
       `Failed to scrape Nitter: ${
         error instanceof Error ? error.message : String(error)
-      }`
+      }`,
     );
   } finally {
     if (page) {

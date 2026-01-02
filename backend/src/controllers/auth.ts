@@ -239,7 +239,7 @@ export async function login(req: Request, res: Response) {
     if (!userInDb) {
       await bcrypt.compare(
         payload.data.password,
-        "$2b$10$dummyhashtopreventtimingattacks"
+        "$2b$10$dummyhashtopreventtimingattacks",
       );
       return res.status(400).json({ error: "Invalid email or password" });
     }
@@ -249,7 +249,7 @@ export async function login(req: Request, res: Response) {
 
     const isPasswordValid = await bcrypt.compare(
       payload.data.password,
-      userInDb.passwordHash
+      userInDb.passwordHash,
     );
 
     if (!isPasswordValid) {
@@ -512,7 +512,7 @@ export async function resetPassword(req: Request, res: Response) {
 
     const isSamePassword = await bcrypt.compare(
       payload.data.password,
-      user.passwordHash
+      user.passwordHash,
     );
     if (isSamePassword) {
       return res

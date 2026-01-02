@@ -49,7 +49,7 @@ export const rateLimitConfigs: Record<string, RateLimitConfig> = {
 
 export async function checkRateLimit(
   req: Request,
-  action: keyof typeof rateLimitConfigs
+  action: keyof typeof rateLimitConfigs,
 ) {
   const config = rateLimitConfigs[action];
   const redis = getRedis();
@@ -73,7 +73,7 @@ export async function checkRateLimit(
 
 export async function incrementRateLimit(
   req: Request,
-  action: keyof typeof rateLimitConfigs
+  action: keyof typeof rateLimitConfigs,
 ) {
   const config = rateLimitConfigs[action];
   const redis = getRedis();
@@ -107,7 +107,7 @@ export function rateLimit(action: keyof typeof rateLimitConfigs) {
       res.setHeader("X-RateLimit-Limit", config.maxRequests);
       res.setHeader(
         "X-RateLimit-Remaining",
-        Math.max(0, config.maxRequests - current)
+        Math.max(0, config.maxRequests - current),
       );
       res.setHeader("X-RateLimit-Reset", Math.ceil(Date.now() + ttl));
 
@@ -161,7 +161,7 @@ export type InMemoryRateLimitResult = {
 
 export function checkInMemoryRateLimit(
   key: string,
-  config: InMemoryRateLimitConfig
+  config: InMemoryRateLimitConfig,
 ): InMemoryRateLimitResult {
   const now = Date.now();
 
@@ -190,7 +190,7 @@ export function checkInMemoryRateLimit(
 
 export function createRateLimitResponse(
   retryAfterSeconds: number,
-  message?: string
+  message?: string,
 ) {
   return {
     error:

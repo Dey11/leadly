@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { SUPPORT_EMAIL } from "@/constants/config";
 
 export function SiteFooter() {
   return (
@@ -71,7 +72,7 @@ export function SiteFooter() {
             <ul className="text-muted-foreground space-y-1 text-xs sm:space-y-1.5 sm:text-sm">
               <li>
                 <a
-                  href="mailto:hello@leadly.live"
+                  href={`mailto:${SUPPORT_EMAIL}`}
                   className="hover:text-foreground transition-colors"
                 >
                   Contact
@@ -115,7 +116,7 @@ export function SiteFooter() {
 
         {/* Bottom bar */}
         <div className="border-border/40 text-muted-foreground mt-6 flex flex-col items-center justify-between gap-2 border-t pt-4 text-[10px] sm:mt-8 sm:flex-row sm:gap-3 sm:pt-6 sm:text-xs">
-          <p>© 2025 Leadly Inc. All rights reserved.</p>
+          <p>© 2026 Leadly Inc. All rights reserved.</p>
           <Link
             href="/cookies"
             className="hover:text-foreground transition-colors"

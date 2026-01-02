@@ -3,6 +3,7 @@
 import { Download, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -60,9 +61,9 @@ export function LeadsFilterBar({
       </div>
       <div className="mt-6 grid gap-4 md:grid-cols-4">
         <div className="space-y-1">
-          <label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
             Monitor
-          </label>
+          </Label>
           <Select
             value={filters.monitorId || "all"}
             onValueChange={(value) => {
@@ -86,9 +87,9 @@ export function LeadsFilterBar({
           </Select>
         </div>
         <div className="space-y-1">
-          <label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
             Lead type
-          </label>
+          </Label>
           <Select
             value={filters.leadType || "all"}
             onValueChange={(value) => {
@@ -110,9 +111,9 @@ export function LeadsFilterBar({
           </Select>
         </div>
         <div className="space-y-1">
-          <label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
             Status
-          </label>
+          </Label>
           <Select
             value={filters.status || "all"}
             onValueChange={(value) => {
@@ -136,9 +137,9 @@ export function LeadsFilterBar({
           </Select>
         </div>
         <div className="space-y-1">
-          <label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
             Search content
-          </label>
+          </Label>
           <Input
             placeholder="Filter by keywords"
             value={filters.search}

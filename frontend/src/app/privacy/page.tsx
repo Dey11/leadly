@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { siteConfig } from "@/config/site";
 import { SEO_CONFIG } from "@/constants/seo";
+import { SUPPORT_EMAIL } from "@/constants/config";
 
 export const metadata: Metadata = {
   title: SEO_CONFIG.legal.privacy.title,
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           Privacy Policy
         </h1>
         <p className="text-muted-foreground mt-3 text-sm">
-          Effective date: January 2025 — Last updated: December 31, 2024
+          Effective date: January 2026 — Last updated: January 1, 2026
         </p>
       </header>
 
@@ -190,10 +190,10 @@ export default function PrivacyPage() {
             To exercise these rights, use the account settings in the app or
             email us at{" "}
             <a
-              href="mailto:privacy@leadly.live"
+              href={`mailto:${SUPPORT_EMAIL}`}
               className="text-primary hover:text-primary/80 font-medium"
             >
-              privacy@leadly.live
+              {SUPPORT_EMAIL}
             </a>
             . We respond within 72 hours.
           </p>
@@ -266,10 +266,10 @@ export default function PrivacyPage() {
             <li>
               Email:{" "}
               <a
-                href="mailto:privacy@leadly.live"
+                href={`mailto:${SUPPORT_EMAIL}`}
                 className="text-primary hover:text-primary/80 font-medium"
               >
-                privacy@leadly.live
+                {SUPPORT_EMAIL}
               </a>
             </li>
           </ul>

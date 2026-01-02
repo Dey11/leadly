@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 
 import { clientApi } from "@/lib/client/api";
 import { formatDateTime } from "@/lib/format";
-import type { LeadDetail, LeadStatus, LeadType } from "@/types/backend";
+import type { LeadDetail, LeadStatus } from "@/types/backend";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -82,7 +82,10 @@ export function LeadDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden p-0">
+      <DialogContent
+        showCloseButton={false}
+        className="flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0"
+      >
         <DialogHeader className="border-0 px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
@@ -133,7 +136,7 @@ export function LeadDetailDialog({
                 <h3 className="text-foreground text-lg font-semibold">
                   Lead content
                 </h3>
-                <p className="border-border/60 bg-card/80 text-foreground rounded-2xl border p-4 text-sm leading-relaxed">
+                <p className="border-border/60 bg-card/80 text-foreground rounded-lg border p-4 text-sm leading-relaxed">
                   {lead.content}
                 </p>
               </section>
@@ -143,7 +146,7 @@ export function LeadDetailDialog({
                   <h4 className="text-foreground text-sm font-semibold">
                     Why this matters
                   </h4>
-                  <p className="border-border/40 bg-secondary/40 text-muted-foreground rounded-2xl border p-4 text-sm leading-relaxed">
+                  <p className="border-border/40 bg-secondary/40 text-muted-foreground rounded-lg border p-4 text-sm leading-relaxed">
                     {lead.reasoning}
                   </p>
                 </section>
@@ -157,7 +160,7 @@ export function LeadDetailDialog({
         </div>
 
         {lead ? (
-          <DialogFooter className="bg-card/90">
+          <DialogFooter className="bg-card/90 p-2">
             <Select
               value={lead.status}
               onValueChange={(value) =>

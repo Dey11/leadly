@@ -33,24 +33,20 @@ export function MonitorIcpDialog({ monitorName, icp }: MonitorIcpDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="ml-auto"
-        >
+        <Button type="button" size="sm" variant="outline" className="ml-auto">
           View ICP
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader className="px-6 py-5">
           <DialogTitle>{icp.name}</DialogTitle>
-          <p className="text-sm text-muted-foreground">
-            Monitor <span className="font-medium text-foreground">{monitorName}</span>{" "}
+          <p className="text-muted-foreground text-sm">
+            Monitor{" "}
+            <span className="text-foreground font-medium">{monitorName}</span>{" "}
             references this ICP. Platform · {icp.platform}
           </p>
         </DialogHeader>
-        <div className="space-y-6 px-6 pb-6 text-sm text-muted-foreground">
+        <div className="text-muted-foreground space-y-6 px-6 pb-6 text-sm">
           <Section label="Summary">{icp.summary}</Section>
           <Section label="Target persona">{icp.targetPersona}</Section>
           <Section label="Pain points">{icp.pains}</Section>
@@ -60,7 +56,7 @@ export function MonitorIcpDialog({ monitorName, icp }: MonitorIcpDialogProps) {
             {icp.disqualifyingSignals}
           </Section>
         </div>
-        <DialogFooter className="border-t border-border/40 px-6 py-4">
+        <DialogFooter className="border-border/40 border-t px-6 py-4">
           <Button
             type="button"
             variant="outline"
@@ -78,10 +74,10 @@ export function MonitorIcpDialog({ monitorName, icp }: MonitorIcpDialogProps) {
 function Section({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="space-y-1">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
         {label}
       </p>
-      <p className="leading-relaxed text-foreground">{children}</p>
+      <p className="text-foreground leading-relaxed">{children}</p>
     </div>
   );
 }

@@ -1,27 +1,37 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   ArrowRight,
+  CreditCard,
+  HelpCircle,
+  LifeBuoy,
   LogOut,
   Menu,
-  PanelsTopLeft,
   Sparkles,
-  X,
-  Settings,
   User,
-  CreditCard,
+  X,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { cn } from "@/lib/utils";
 
 import { DashboardNav, type DashboardNavItem } from "./nav";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { SUPPORT_EMAIL } from "@/constants/config";
 
 type DashboardShellProps = {
   navItems: DashboardNavItem[];
@@ -41,9 +51,7 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
-  const profileRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -52,25 +60,18 @@ export function DashboardShell({
 
   useEffect(() => {
     setIsMobileNavOpen(false);
-    setIsProfileOpen(false);
   }, [pathname]);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(event.target as Node)
-      ) {
-        setIsProfileOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const resolvedName = accountName?.trim() || "Leadly workspace";
   const resolvedEmail = accountEmail || "member@leadly.app";
-  const avatarInitial = resolvedName.charAt(0).toUpperCase();
+
+  const restartWalkthrough = () => {
+    // Clear walkthrough completion flags
+    window.localStorage.removeItem("leadly-walkthrough-completed");
+    window.sessionStorage.removeItem("leadly-walkthrough-step");
+    // Redirect with query param to force walkthrough restart
+    window.location.href = "/dashboard?walkthrough=restart";
+  };
 
   const sidebarContent = (
     <div className="flex h-full flex-col">
@@ -137,6 +138,26 @@ export function DashboardShell({
             <ArrowRight className="size-3.5" aria-hidden />
           </Link>
         </section>
+
+        <section className="border-sidebar-border bg-sidebar/50 group hover:bg-primary/5 rounded-2xl border p-1 text-xs shadow-sm backdrop-blur transition-colors">
+          <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="flex items-center gap-3 px-3 py-2 font-medium transition-colors"
+          >
+            <div className="bg-primary/10 group-hover:bg-primary/20 flex size-8 items-center justify-center rounded-xl transition-colors">
+              <LifeBuoy className="text-primary size-4" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sidebar-foreground text-sm">
+                Help & Support
+              </span>
+              <span className="text-muted-foreground text-[10px]">
+                {SUPPORT_EMAIL}
+              </span>
+            </div>
+          </a>
+        </section>
+
         <LogoutButton
           variant="outline"
           size="lg"
@@ -184,74 +205,83 @@ export function DashboardShell({
               </h1> */}
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="hidden sm:block">
-                <ModeToggle />
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={restartWalkthrough}
+                    className="text-muted-foreground hover:text-primary hover:bg-primary/10 size-9 rounded-full"
+                    aria-label="Show walkthrough guide"
+                  >
+                    <HelpCircle className="size-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Show walkthrough guide</p>
+                </TooltipContent>
+              </Tooltip>
+              <ModeToggle />
               <Badge
                 variant="outline"
                 className="border-primary/30 text-primary hidden sm:inline-flex"
               >
                 {tierLabel} tier
               </Badge>
-              <div className="relative" ref={profileRef}>
-                <button
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="bg-primary/15 text-primary hover:bg-primary/25 flex size-10 cursor-pointer items-center justify-center rounded-full text-sm font-semibold shadow-sm transition-all hover:scale-105 sm:size-11"
-                  aria-label="Open profile menu"
-                  aria-expanded={isProfileOpen}
-                >
-                  {avatarInitial}
-                </button>
-                {isProfileOpen && (
-                  <div className="border-border bg-card animate-in fade-in slide-in-from-top-2 absolute top-full right-0 z-50 mt-2 w-64 rounded-xl border py-2 shadow-lg duration-200">
-                    <div className="border-border border-b px-4 py-3">
-                      <p className="text-foreground truncate text-sm font-semibold">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-primary hover:bg-primary/10 size-9 rounded-full"
+                    aria-label="Open profile menu"
+                  >
+                    <User className="size-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm leading-none font-medium">
                         {resolvedName}
                       </p>
-                      <p className="text-muted-foreground truncate text-xs">
+                      <p className="text-muted-foreground text-xs leading-none">
                         {resolvedEmail}
                       </p>
                     </div>
-                    <div className="py-1">
-                      <Link
-                        href="/dashboard/account"
-                        className="text-foreground hover:bg-primary/10 flex items-center gap-3 px-4 py-2.5 text-sm transition-colors"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <User className="text-muted-foreground size-4" />
-                        Account settings
-                      </Link>
-                      <Link
-                        href="/dashboard/billing"
-                        className="text-foreground hover:bg-primary/10 flex items-center gap-3 px-4 py-2.5 text-sm transition-colors"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <CreditCard className="text-muted-foreground size-4" />
-                        Billing & plans
-                      </Link>
-                    </div>
-                    <div className="border-border border-t pt-1">
-                      <LogoutButton
-                        variant="ghost"
-                        className="text-foreground hover:bg-destructive/10 hover:text-destructive w-full justify-start gap-3 rounded-none px-4 py-2.5 text-sm"
-                      >
-                        <LogOut className="size-4" />
-                        Sign out
-                      </LogoutButton>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-2 sm:hidden">
-                <LogoutButton
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label="Sign out"
-                >
-                  <LogOut className="size-4" aria-hidden />
-                  <span className="sr-only">Sign out</span>
-                </LogoutButton>
-              </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <a href={`mailto:${SUPPORT_EMAIL}`}>
+                      <LifeBuoy className="size-4" />
+                      Help & Support
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/account">
+                      <User className="size-4" />
+                      Account settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/billing">
+                      <CreditCard className="size-4" />
+                      Billing & plans
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild variant="destructive">
+                    <LogoutButton
+                      variant="ghost"
+                      className="h-auto w-full justify-start p-1 font-normal"
+                    >
+                      <LogOut className="size-4" />
+                      Sign out
+                    </LogoutButton>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>

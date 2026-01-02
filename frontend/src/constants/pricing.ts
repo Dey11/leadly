@@ -1,4 +1,5 @@
 import type { UsageSummaryResponse } from "@/types/backend";
+import { SUPPORT_EMAIL } from "@/constants/config";
 
 export type BillingTier = UsageSummaryResponse["payload"]["tier"];
 
@@ -76,7 +77,7 @@ export const BILLING_PLANS: Record<
       "Dedicated account manager",
     ],
     ctaLabel: "Contact Sales",
-    href: "mailto:sales@leadly.live",
+    href: `mailto:${SUPPORT_EMAIL}`,
   },
 };
 

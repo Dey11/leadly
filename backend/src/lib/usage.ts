@@ -6,7 +6,7 @@ type Enforcement = "off" | "log" | "on";
 
 function startOfUtcDay(d: Date = new Date()): Date {
   return new Date(
-    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0)
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0),
   );
 }
 
@@ -34,7 +34,7 @@ export async function initializeOrResetUsagePeriod(
   userId: string,
   tier: SubscriptionTier,
   periodStart?: Date,
-  periodEnd?: Date
+  periodEnd?: Date,
 ) {
   let start = periodStart;
   let end = periodEnd;
@@ -78,7 +78,7 @@ export async function initializeOrResetUsagePeriod(
 async function getOrCreateUsage(
   userId: string,
   tier: SubscriptionTier,
-  currentPeriodEnd?: Date | null
+  currentPeriodEnd?: Date | null,
 ) {
   let usage = await db.usage.findUnique({ where: { userId } });
   if (!usage) {
@@ -127,7 +127,7 @@ function computeLimits(tier: SubscriptionTier) {
 export async function previewUsage(
   userId: string,
   tier: SubscriptionTier,
-  currentPeriodEnd?: Date | null
+  currentPeriodEnd?: Date | null,
 ): Promise<{
   dailyUsed: number;
   dailyLimit: number;
@@ -185,7 +185,7 @@ export async function tryConsumeScrapeCredit(
   userId: string,
   tier: SubscriptionTier,
   currentPeriodEnd?: Date | null,
-  enforcement: Enforcement = "off"
+  enforcement: Enforcement = "off",
 ): Promise<{
   allowed: boolean;
   reason?: string;

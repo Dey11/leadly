@@ -24,7 +24,7 @@ export const updateIcpSchema = icpCoreSchema
   .strict()
   .refine(
     (data) => Object.keys(data).length > 0,
-    "At least one field must be provided to update the ICP."
+    "At least one field must be provided to update the ICP.",
   );
 
 export const icpIdParamSchema = z

@@ -76,7 +76,7 @@ const icpFieldsSchema = z.object({
     .string()
     .max(100)
     .describe(
-      "A short, memorable name for this ICP (e.g., 'E-commerce SMB Owners')"
+      "A short, memorable name for this ICP (e.g., 'E-commerce SMB Owners')",
     ),
   summary: z
     .string()
@@ -90,19 +90,19 @@ const icpFieldsSchema = z.object({
     .string()
     .max(2000)
     .describe(
-      "Specific problems, frustrations, and triggers that drive them to seek solutions"
+      "Specific problems, frustrations, and triggers that drive them to seek solutions",
     ),
   valueProposition: z
     .string()
     .max(2000)
     .describe(
-      "How this product/service solves their problems and the outcomes they can expect"
+      "How this product/service solves their problems and the outcomes they can expect",
     ),
   qualifyingSignals: z
     .string()
     .max(2000)
     .describe(
-      "Keywords, phrases, and behaviors that indicate high buying intent"
+      "Keywords, phrases, and behaviors that indicate high buying intent",
     ),
   disqualifyingSignals: z
     .string()
@@ -144,7 +144,7 @@ export async function suggestIcp(req: Request, res: Response) {
 
     const rateLimit = checkInMemoryRateLimit(
       `ai:icp:${userId}`,
-      AI_RATE_LIMIT_CONFIG
+      AI_RATE_LIMIT_CONFIG,
     );
     if (!rateLimit.allowed) {
       return res

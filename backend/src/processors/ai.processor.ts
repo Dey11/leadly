@@ -44,7 +44,7 @@ function buildIcpBrief(
     | "valueProposition"
     | "qualifyingSignals"
     | "disqualifyingSignals"
-  >
+  >,
 ) {
   return [
     `Name: ${icp.name}`,
@@ -68,7 +68,7 @@ export async function processLeads(
     | "valueProposition"
     | "qualifyingSignals"
     | "disqualifyingSignals"
-  >
+  >,
 ): Promise<LeadData[]> {
   const leads: LeadData[] = [];
   const icpBrief = buildIcpBrief(icp);
@@ -83,7 +83,7 @@ export async function processLeads(
           title: z
             .string()
             .describe(
-              "title of the post, or a matching title if the post is a comment"
+              "title of the post, or a matching title if the post is a comment",
             ),
           leadType: z
             .enum(["WARM", "COLD", "NEUTRAL"])
@@ -100,7 +100,7 @@ export async function processLeads(
           relevanceScore: z
             .number()
             .describe("0-1 (how confident you are in the match)"),
-        })
+        }),
       ),
       prompt: leadGenerationPrompt
         .replace("{icp_profile}", icpBrief)

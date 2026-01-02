@@ -41,7 +41,7 @@ const DISPOSABLE_DOMAINS = new Set([
 ]);
 
 export async function validateEmail(
-  email: string
+  email: string,
 ): Promise<{ valid: boolean; reason?: string }> {
   const domain = email.split("@")[1]?.toLowerCase();
 

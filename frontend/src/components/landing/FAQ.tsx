@@ -7,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { SUPPORT_EMAIL } from "@/constants/config";
 
 const faqs = [
   {
@@ -112,7 +113,7 @@ export function FAQ() {
           <p className="text-muted-foreground text-xs sm:text-sm">
             Still have questions?{" "}
             <a
-              href="mailto:support@leadly.live"
+              href={`mailto:${SUPPORT_EMAIL}`}
               className="text-primary hover:text-primary/80 font-medium transition-colors"
             >
               Reach out to us

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { formatRelative } from "@/lib/format";
 import { LeadSummary, LeadStatus } from "@/types/backend";
 import { Badge } from "@/components/ui/badge";
@@ -9,17 +9,24 @@ import {
   ChevronDown,
   ChevronRight,
   ExternalLink,
-  MoreHorizontal,
   Trash2,
   Eye,
 } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Select } from "@/components/ui/select";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface LeadsTableProps {
   leads: LeadSummary[];
@@ -63,77 +70,90 @@ export function LeadsTable({
   };
 
   return (
-    <div className="border-border/60 bg-card/40 w-full overflow-hidden rounded-3xl border shadow-sm backdrop-blur-sm">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-muted/30 text-muted-foreground">
-          <tr className="border-border/60 border-b text-xs tracking-wide uppercase">
-            <th className="w-12 px-6 py-4 font-semibold"></th>
-            <th className="px-6 py-4 font-semibold">Warmth</th>
-            <th className="px-6 py-4 font-semibold">Status</th>
-            <th className="w-[40%] px-6 py-4 font-semibold">Content Preview</th>
-            <th className="px-6 py-4 font-semibold">Posted</th>
-            <th className="px-6 py-4 text-right font-semibold">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-border/40 divide-y">
+    <div className="border-border/60 bg-card/40 w-full overflow-hidden rounded-lg border shadow-sm backdrop-blur-sm">
+      <Table>
+        <TableHeader className="bg-muted/30">
+          <TableRow className="border-border/60 text-xs tracking-wide uppercase hover:bg-transparent">
+            <TableHead className="text-muted-foreground w-12 px-4 font-semibold"></TableHead>
+            <TableHead className="text-muted-foreground px-4 font-semibold">
+              Warmth
+            </TableHead>
+            <TableHead className="text-muted-foreground px-4 font-semibold">
+              Status
+            </TableHead>
+            <TableHead className="text-muted-foreground w-[40%] px-4 font-semibold">
+              Content Preview
+            </TableHead>
+            <TableHead className="text-muted-foreground px-4 font-semibold">
+              Posted
+            </TableHead>
+            <TableHead className="text-muted-foreground px-4 text-right font-semibold">
+              Actions
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody className="divide-border/40 divide-y">
           {leads.map((lead) => {
             const isExpanded = expandedRows.has(lead.id);
             const isUpdating = updatingLeadId === lead.id;
 
             return (
-              <>
-                <tr
-                  key={lead.id}
-                  className={`group hover:bg-muted/40 cursor-pointer transition-colors ${isExpanded ? "bg-muted/30" : ""}`}
+              <React.Fragment key={lead.id}>
+                <TableRow
+                  className={`group cursor-pointer transition-colors ${isExpanded ? "bg-muted/30" : ""}`}
                   onClick={() => toggleRow(lead.id)}
                 >
-                  <td className="text-muted-foreground px-6 py-4">
+                  <TableCell className="text-muted-foreground px-4">
                     {isExpanded ? (
                       <ChevronDown className="h-4 w-4" />
                     ) : (
                       <ChevronRight className="h-4 w-4" />
                     )}
-                  </td>
-                  <td className="px-6 py-4">
+                  </TableCell>
+                  <TableCell className="px-4">
                     <Badge
                       variant="outline"
                       className={`${leadTypeStyles[lead.leadType]} border px-2 py-0.5 shadow-none`}
                     >
                       {lead.leadType}
                     </Badge>
-                  </td>
-                  <td
-                    className="px-6 py-4"
+                  </TableCell>
+                  <TableCell
+                    className="px-4"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <select
-                      className="hover:bg-muted cursor-pointer rounded bg-transparent p-1 text-xs font-medium focus:outline-none"
+                    <Select
                       value={lead.status}
-                      onChange={(e) =>
-                        onStatusChange(lead.id, e.target.value as LeadStatus)
+                      onValueChange={(value) =>
+                        onStatusChange(lead.id, value as LeadStatus)
                       }
                       disabled={isUpdating}
                     >
-                      {leadStatusOptions.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-6 py-4">
+                      <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {leadStatusOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell className="px-4">
                     <div className="text-foreground line-clamp-1 max-w-md font-medium">
                       {lead.content}
                     </div>
-                  </td>
-                  <td className="text-muted-foreground px-6 py-4 whitespace-nowrap">
+                  </TableCell>
+                  <TableCell className="text-muted-foreground px-4">
                     {formatRelative(lead.createdAt)}
-                  </td>
-                  <td
-                    className="px-6 py-4 text-right"
+                  </TableCell>
+                  <TableCell
+                    className="px-4 text-right"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -167,12 +187,12 @@ export function LeadsTable({
                         </a>
                       </Button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
                 {isExpanded && (
-                  <tr className="bg-muted/30">
-                    <td colSpan={6} className="px-6 pt-0 pb-6">
-                      <div className="border-border/60 ml-12 space-y-3 border-l-2 pl-6">
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableCell colSpan={6} className="px-4 pt-0 pb-4">
+                      <div className="border-border/60 ml-8 space-y-3 border-l-2 pl-6">
                         <div className="text-foreground text-sm leading-relaxed">
                           {lead.content}
                         </div>
@@ -187,14 +207,14 @@ export function LeadsTable({
                           <span>Detected via {lead.platform}</span>
                         </div>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </>
+              </React.Fragment>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

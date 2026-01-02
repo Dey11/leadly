@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/card";
 import { getIcps } from "@/lib/backend-queries";
 import { formatDate, formatRelative } from "@/lib/format";
-import type { MonitorStatus } from "@/types/backend";
 import { Plus } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MONITOR_STATUS_CONFIG } from "@/constants/dashboard";

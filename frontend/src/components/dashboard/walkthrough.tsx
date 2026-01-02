@@ -199,11 +199,19 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
     }
 
     // Check backend prop AND local storage to prevent optimistic restart loop
-    if (
+    // BUT allow restart if query param is present
+    const urlParams = new URLSearchParams(window.location.search);
+    const forceRestart = urlParams.get("walkthrough") === "restart";
+
+    if (forceRestart) {
+      // Clear the query param from URL without reload
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (
       hasSeenWalkthrough ||
       window.localStorage.getItem("leadly-walkthrough-completed") === "true"
-    )
+    ) {
       return;
+    }
 
     // Retrieve storage state
     const storageKey = "leadly-walkthrough-step";

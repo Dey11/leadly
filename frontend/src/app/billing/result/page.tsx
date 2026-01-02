@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAccountSummary, getUsageSummary } from "@/lib/backend-queries";
 import type { AccountSummary } from "@/types/backend";
+import { SUPPORT_EMAIL } from "@/constants/config";
 
 const SUCCESS_STATUSES = new Set(["active", "subscription.active"]);
 
@@ -53,9 +54,9 @@ export default async function BillingResultPage({
   };
 
   const statusIcon = isSuccessful ? (
-    <CheckCircle2 className="size-5 text-foreground/90" aria-hidden />
+    <CheckCircle2 className="text-foreground/90 size-5" aria-hidden />
   ) : (
-    <AlertTriangle className="size-5 text-destructive" aria-hidden />
+    <AlertTriangle className="text-destructive size-5" aria-hidden />
   );
 
   const statusCopy = isSuccessful
@@ -64,15 +65,15 @@ export default async function BillingResultPage({
   const contact = usagePayload?.billingContact ?? null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="bg-background text-foreground min-h-screen">
       <main className="mx-auto max-w-5xl space-y-8 px-5 py-16">
-        <section className="rounded-3xl border border-border/60 bg-card/90 p-8 shadow-sm">
+        <section className="border-border/60 bg-card/90 rounded-3xl border p-8 shadow-sm">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
-              <Badge className="rounded-full bg-primary/10 text-primary">
+              <Badge className="bg-primary/10 text-primary rounded-full">
                 Billing result
               </Badge>
-              <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+              <div className="text-muted-foreground inline-flex items-center gap-2 text-sm font-semibold tracking-[0.3em] uppercase">
                 {statusLabel}
               </div>
             </div>
@@ -80,34 +81,40 @@ export default async function BillingResultPage({
               <div className="flex items-center gap-2">
                 {statusIcon}
                 <h1 className="text-3xl font-semibold">
-                  {isSuccessful ? "Payment confirmed" : "Payment needs attention"}
+                  {isSuccessful
+                    ? "Payment confirmed"
+                    : "Payment needs attention"}
                 </h1>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">{statusCopy}</p>
+            <p className="text-muted-foreground text-sm">{statusCopy}</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <Card className="border-border/40 bg-background/80">
                 <CardHeader className="pb-0">
-                  <CardTitle className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                  <CardTitle className="text-muted-foreground text-xs tracking-[0.3em] uppercase">
                     Workspace
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-1 p-4">
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="text-foreground text-sm font-semibold">
                     {account?.name ?? "Leadly workspace"}
                   </p>
-                  <p className="text-xs text-muted-foreground">{account?.email}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {account?.email}
+                  </p>
                 </CardContent>
               </Card>
               <Card className="border-border/40 bg-background/80">
                 <CardHeader className="pb-0">
-                  <CardTitle className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                  <CardTitle className="text-muted-foreground text-xs tracking-[0.3em] uppercase">
                     Plan
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-1 p-4">
-                  <p className="text-sm font-semibold text-foreground">{planName}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-foreground text-sm font-semibold">
+                    {planName}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
                     {searchParams.subscription_id
                       ? `Subscription ID: ${searchParams.subscription_id}`
                       : "Subscription details will appear shortly."}
@@ -119,28 +126,28 @@ export default async function BillingResultPage({
               <div className="mt-4">
                 <Card className="border-border/40 bg-background/80">
                   <CardHeader className="pb-0">
-                    <CardTitle className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                    <CardTitle className="text-muted-foreground text-xs tracking-[0.3em] uppercase">
                       Billing contact
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-1 p-4">
                     {contact.name ? (
-                      <p className="text-sm font-semibold text-foreground">
+                      <p className="text-foreground text-sm font-semibold">
                         {contact.name}
                       </p>
                     ) : null}
                     {contact.email ? (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         {contact.email}
                       </p>
                     ) : null}
                     {contact.phone ? (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         {contact.phone}
                       </p>
                     ) : null}
                     {contact.address ? (
-                      <p className="text-xs text-muted-foreground break-words">
+                      <p className="text-muted-foreground text-xs break-words">
                         {contact.address}
                       </p>
                     ) : null}
@@ -163,23 +170,23 @@ export default async function BillingResultPage({
           <Card className="border-border/60 bg-card/90">
             <CardHeader>
               <CardTitle>Usage snapshot</CardTitle>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Daily & monthly consumed scrapes
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">Daily</p>
-                  <p className="text-2xl font-semibold text-foreground">
+                  <p className="text-muted-foreground text-xs">Daily</p>
+                  <p className="text-foreground text-2xl font-semibold">
                     {usageSnapshot.dailyUsed} / {usageSnapshot.dailyLimit}
                   </p>
                 </div>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">Monthly</p>
-                  <p className="text-2xl font-semibold text-foreground">
+                  <p className="text-muted-foreground text-xs">Monthly</p>
+                  <p className="text-foreground text-2xl font-semibold">
                     {usageSnapshot.monthlyUsed} / {usageSnapshot.monthlyLimit}
                   </p>
                 </div>
@@ -189,18 +196,18 @@ export default async function BillingResultPage({
           <Card className="border-border/60 bg-card/90">
             <CardHeader>
               <CardTitle>Need help?</CardTitle>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Reach out if something doesn’t look right
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 If your status is not “Active”, revisit the checkout or contact
                 <a
-                  href="mailto:hello@leadly.live"
+                  href={`mailto:${SUPPORT_EMAIL}`}
                   className="text-primary underline-offset-2 hover:underline"
                 >
-                  &nbsp;hello@leadly.live
+                  &nbsp;{SUPPORT_EMAIL}
                 </a>
                 .
               </p>

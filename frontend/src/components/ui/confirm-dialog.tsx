@@ -1,6 +1,13 @@
 "use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./dialog";
 import { Button } from "./button";
 
 type ConfirmDialogProps = {
@@ -52,7 +59,7 @@ export function ConfirmDialog({
             disabled={loading}
             className={
               tone === "destructive"
-                ? "bg-destructive text-white hover:bg-destructive/90"
+                ? "bg-destructive hover:bg-destructive/90 text-white"
                 : undefined
             }
           >
@@ -63,4 +70,3 @@ export function ConfirmDialog({
     </Dialog>
   );
 }
-

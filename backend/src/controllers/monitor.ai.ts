@@ -17,7 +17,7 @@ const subredditsSchema = z.object({
   subreddits: z
     .array(z.string())
     .describe(
-      "List of relevant subreddit names (e.g., 'r/SaaS', 'r/marketing')"
+      "List of relevant subreddit names (e.g., 'r/SaaS', 'r/marketing')",
     ),
 });
 
@@ -51,7 +51,7 @@ export async function suggestSubreddits(req: Request, res: Response) {
 
     const rateLimit = checkInMemoryRateLimit(
       `ai:subreddit:${userId}`,
-      AI_RATE_LIMIT_CONFIG
+      AI_RATE_LIMIT_CONFIG,
     );
     if (!rateLimit.allowed) {
       return res
