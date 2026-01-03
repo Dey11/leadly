@@ -11,13 +11,12 @@ import { ThreeSteps } from "@/components/landing/ThreeSteps";
 import { Problem } from "@/components/landing/Problem";
 import { Solution } from "@/components/landing/Solution";
 import { Competitors } from "@/components/landing/Competitors";
-import { ProductPreview } from "@/components/landing/ProductPreview";
 import { UseCases } from "@/components/landing/UseCases";
 import { BetaPerks } from "@/components/landing/BetaPerks";
-import { Pricing } from "@/components/landing/Pricing";
+import { PricingRedesigned as Pricing } from "@/components/landing/PricingRedesigned"; // Using newly redesigned pricing
 import { FAQ } from "@/components/landing/FAQ";
 import { TrustSafety } from "@/components/landing/TrustSafety";
-import { FinalCTA } from "@/components/landing/FinalCTA";
+import { FinalCTA } from "@/components/landing/FinalCTA"; // REMOVED: CTA moved to footer
 import { LandingNav } from "@/components/landing/LandingNav";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 
@@ -63,26 +62,32 @@ export default function HomePage() {
       />
 
       {/* Floating Navbar */}
-      <div className="fixed top-7 right-0 left-0 z-50 flex justify-center px-4 sm:top-10">
-        <header className="bg-background/90 border-border/40 grid w-full max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-6 rounded-full border py-3 pr-3 pl-6 shadow-lg backdrop-blur-xl">
+      <div className="fixed top-3 right-0 left-0 z-50 flex justify-center px-4 sm:top-7 sm:px-6 md:top-10 md:px-10 lg:px-12">
+        <header className="bg-background/90 border-border/40 grid w-full max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-2 rounded-full border py-2 pr-2 pl-4 shadow-lg backdrop-blur-xl sm:gap-4 sm:py-3 sm:pr-3 sm:pl-5 md:gap-6 md:pr-4 md:pl-6">
           {/* Logo */}
           <Link
             href="/"
-            className="text-foreground font-display flex shrink-0 items-center gap-2 text-base font-medium transition hover:opacity-80 sm:text-lg"
+            className="text-foreground font-display flex shrink-0 items-center gap-1.5 text-sm font-medium transition hover:opacity-80 sm:gap-2 sm:text-base md:text-lg"
           >
-            <span className="relative size-7 sm:size-8">
+            <span className="relative size-5 sm:size-6 md:size-7 lg:size-8">
               <Image
                 src="/assets/logo.svg"
                 alt="Leadly"
                 fill
-                className="object-contain"
+                className="object-contain dark:hidden"
+              />
+              <Image
+                src="/assets/logo-dark.svg"
+                alt="Leadly"
+                fill
+                className="hidden object-contain dark:block"
               />
             </span>
-            <span>Leadly</span>
+            <span className="xs:inline hidden">Leadly</span>
           </Link>
 
           {/* Nav Links - Centered */}
-          <nav className="text-muted-foreground hidden items-center justify-center gap-8 text-sm font-medium lg:flex">
+          <nav className="text-muted-foreground hidden items-center justify-center gap-6 text-sm font-medium lg:flex lg:gap-8">
             {navLinks.map((item) => (
               <a
                 key={item.href}
@@ -95,7 +100,7 @@ export default function HomePage() {
           </nav>
 
           {/* Actions (Login + Mode Toggle) */}
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2 md:gap-3">
             <LandingNav />
           </div>
         </header>
@@ -108,13 +113,11 @@ export default function HomePage() {
         <Problem />
         <Solution />
         <Competitors />
-        <ProductPreview />
         <UseCases />
         <BetaPerks />
         <Pricing />
         <FAQ />
         <TrustSafety />
-        <FinalCTA />
       </main>
 
       <SiteFooter />

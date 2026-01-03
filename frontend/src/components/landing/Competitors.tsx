@@ -154,7 +154,14 @@ export function Competitors() {
                     alt="Leadly"
                     width={120}
                     height={32}
-                    className="h-8 w-auto"
+                    className="h-8 w-auto dark:hidden"
+                  />
+                  <Image
+                    src="/assets/logo-dark.svg"
+                    alt="Leadly"
+                    width={120}
+                    height={32}
+                    className="hidden h-8 w-auto dark:block"
                   />
                 </div>
 
@@ -231,6 +238,28 @@ export function Competitors() {
             </p>
           </motion.div>
 
+          {/* Video Embed */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="border-border/60 mx-auto mb-8 max-w-5xl overflow-hidden rounded-2xl border shadow-2xl sm:rounded-3xl"
+          >
+            <div className="relative aspect-video w-full bg-black/5 dark:bg-black/20">
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=7B5qX8Z8Z8Z8Z8Z8"
+                title="Leadly Demo"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="absolute inset-0 h-full w-full"
+              />
+            </div>
+          </motion.div>
+
           <div className="mx-auto grid max-w-5xl gap-4 sm:gap-6 md:grid-cols-3">
             {advantages.map((item, i) => (
               <motion.div
@@ -247,17 +276,22 @@ export function Competitors() {
                   y: -6,
                   transition: { duration: 0.2, ease: "easeOut" },
                 }}
-                className="group border-border/60 bg-card hover:border-border relative rounded-xl border p-5 transition-all duration-200 hover:shadow-md sm:rounded-2xl sm:p-6"
+                className="group border-border/40 bg-card hover:border-primary/20 relative overflow-hidden rounded-2xl border p-6 shadow-sm transition-all duration-300 hover:shadow-lg dark:bg-[#1a0f12]/50"
               >
-                <div className="bg-primary/10 text-primary group-hover:bg-primary/15 mb-4 flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200 sm:mb-5 sm:h-12 sm:w-12 sm:rounded-xl">
-                  <item.icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                {/* Hover Gradient */}
+                <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                <div className="relative z-10">
+                  <div className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground mb-5 flex h-12 w-12 items-center justify-center rounded-xl transition-colors duration-200 group-hover:scale-110">
+                    <item.icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-foreground mb-3 text-xl font-bold">
+                    {item.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
-                <h3 className="text-foreground mb-2 text-base font-semibold sm:text-lg">
-                  {item.title}
-                </h3>
-                <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
-                  {item.description}
-                </p>
               </motion.div>
             ))}
           </div>

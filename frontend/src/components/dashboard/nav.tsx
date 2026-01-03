@@ -90,15 +90,6 @@ export function DashboardNav({
                 : "text-muted-foreground",
             )}
           >
-            {variant === "sidebar" ? (
-              <span
-                className={cn(
-                  "bg-primary/70 absolute top-1/2 left-2 hidden h-7 w-1.5 -translate-y-1/2 rounded-full transition-opacity lg:block",
-                  isActive ? "opacity-100" : "opacity-0",
-                )}
-                aria-hidden
-              />
-            ) : null}
             <Icon
               className={cn(
                 "size-4 transition-transform",

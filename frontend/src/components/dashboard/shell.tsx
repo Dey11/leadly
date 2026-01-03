@@ -83,7 +83,12 @@ export function DashboardShell({
           <img
             src="/assets/logo.svg"
             alt="Leadly Logo"
-            className="size-full object-contain"
+            className="size-full object-contain dark:hidden"
+          />
+          <img
+            src="/assets/logo-dark.svg"
+            alt="Leadly Logo"
+            className="hidden size-full object-contain dark:block"
           />
         </div>
         <div className="flex flex-col">
@@ -325,7 +330,12 @@ export function DashboardShell({
                 <img
                   src="/assets/logo.svg"
                   alt="Leadly Logo"
-                  className="size-full object-contain"
+                  className="size-full object-contain dark:hidden"
+                />
+                <img
+                  src="/assets/logo-dark.svg"
+                  alt="Leadly Logo"
+                  className="hidden size-full object-contain dark:block"
                 />
               </div>
               <span className="text-sm font-semibold">Leadly</span>

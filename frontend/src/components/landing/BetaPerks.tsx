@@ -2,61 +2,54 @@
 
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
-import {
-  Sparkles,
-  Lock,
-  MessageSquare,
-  Gift,
-  Crown,
-  Rocket,
-} from "lucide-react";
+import { Lock, MessageSquare, Gift, Crown, Rocket } from "lucide-react";
 import Link from "next/link";
 
 const perks = [
   {
-    icon: Lock,
-    title: "Locked-In Pricing Forever",
-    description:
-      "Beta users keep their current rate even after we launch. Prices will increase — yours won't.",
-    highlight: true,
-  },
-  {
     icon: MessageSquare,
-    title: "Direct Access to Founders",
-    description:
-      "Shape the roadmap. Your feedback goes straight to the team building Leadly.",
+    title: "Direct Founder Access",
+    description: "Shape the product roadmap with your feedback.",
   },
   {
     icon: Gift,
     title: "Extended Free Usage",
+    description: "Extra scrapes and monitors beyond limits.",
+  },
+  {
+    icon: Lock,
+    title: "Locked-in Pricing Forever",
     description:
-      "Beta users get extra scrapes and monitors beyond normal limits while we refine the product (soon).",
+      "Beta users keep their current rate. Prices will increase — yours won't.",
+    highlight: true,
   },
   {
     icon: Crown,
     title: "Founding Member Badge",
-    description:
-      "Be recognized as an early believer. Exclusive status in our community.",
+    description: "Exclusive status in our community forever.",
   },
   {
     icon: Rocket,
     title: "Priority Feature Access",
-    description:
-      "Get new features first. Help us test and perfect them before public release.",
-  },
-  {
-    icon: Sparkles,
-    title: "White-Glove Onboarding",
-    description:
-      "Personal setup assistance. We'll help you configure monitors for your exact ICP.",
+    description: "Get new features first before public release.",
   },
 ];
 
 export function BetaPerks() {
   return (
-    <section className="border-border/30 relative overflow-hidden border-y px-4 py-16 sm:py-20 md:py-24 lg:py-28">
-      {/* Subtle background gradient */}
-      <div className="from-muted/50 via-muted/30 to-muted/50 absolute inset-0 -z-10 bg-gradient-to-b" />
+    <section className="relative overflow-hidden px-4 py-16 sm:py-20 md:py-24 lg:py-28">
+      {/* Background Gradient */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#faf8f7] to-[#f5ebe5] dark:from-[#18181b] dark:to-[#09090b]" />
+        <div className="absolute top-0 left-1/4 h-[500px] w-[500px] rounded-full bg-[#773344]/15 blur-[80px] dark:bg-[#773344]/30" />
+        <div className="absolute right-1/4 bottom-0 h-[400px] w-[400px] rounded-full bg-[#1e40af]/10 blur-[80px] dark:bg-[#1e40af]/20" />
+        <div
+          className="absolute inset-0 opacity-20 dark:opacity-10"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          }}
+        />
+      </div>
 
       <div className="container mx-auto">
         {/* Header */}
@@ -65,20 +58,19 @@ export function BetaPerks() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mx-auto mb-10 max-w-3xl text-center sm:mb-14"
+          className="mx-auto mb-12 max-w-3xl text-center sm:mb-16"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="from-primary/10 to-accent/10 border-primary/20 text-primary mb-4 inline-flex items-center gap-2 rounded-full border bg-gradient-to-r px-3 py-1.5 text-xs font-medium sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
+            className="border-primary/20 from-primary/10 to-accent/10 text-primary mb-4 inline-flex items-center gap-2 rounded-full border bg-gradient-to-r px-3 py-1.5 text-xs font-medium sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
           >
-            <span>🎁</span>
             Limited Beta Access
           </motion.div>
-          <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
+          <h2 className="font-display text-foreground mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
             Early adopters get{" "}
-            <span className="from-primary to-accent bg-gradient-to-r bg-clip-text text-transparent">
+            <span className="from-primary to-accent inline-block bg-gradient-to-r bg-clip-text text-transparent dark:from-[#e3b5a4] dark:to-[#ff6b7d]">
               exclusive perks
             </span>
           </h2>
@@ -88,74 +80,108 @@ export function BetaPerks() {
           </p>
         </motion.div>
 
-        {/* Perks grid */}
-        <div className="mx-auto mb-10 grid max-w-6xl grid-cols-1 gap-3 sm:mb-14 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-          {perks.map((perk, i) => (
-            <motion.div
-              key={perk.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 0.5,
-                delay: i * 0.08,
-              }}
-              whileHover={{
-                y: -4,
-                transition: { duration: 0.2, ease: "easeOut" },
-              }}
-              className={`group bg-card relative rounded-xl p-4 shadow-sm transition-shadow duration-200 hover:shadow-md sm:rounded-2xl sm:p-6 ${
-                perk.highlight
-                  ? "border-primary/30 border"
-                  : "border-border/50 hover:border-border border"
-              }`}
-            >
-              {perk.highlight && (
-                <div className="bg-primary text-primary-foreground absolute -top-2.5 left-3 rounded-full px-2 py-0.5 text-[10px] font-medium sm:-top-3 sm:left-4 sm:px-3 sm:py-1 sm:text-xs">
-                  Most Popular
-                </div>
-              )}
-              <div
-                className={`mb-3 flex h-9 w-9 items-center justify-center rounded-lg transition-colors duration-200 sm:mb-4 sm:h-11 sm:w-11 sm:rounded-xl ${
-                  perk.highlight
-                    ? "bg-primary/12 text-primary"
-                    : "bg-primary/8 text-primary group-hover:bg-primary/12"
-                }`}
-              >
-                <perk.icon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <h3 className="text-foreground mb-1.5 text-sm font-semibold sm:mb-2 sm:text-base">
-                {perk.title}
-              </h3>
-              <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
-                {perk.description}
-              </p>
-            </motion.div>
-          ))}
-        </div>
+        {/* Cards Grid: 3 columns - left (2 cards), center (1 tall), right (2 cards) */}
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
+            {/* Left Column - 2 stacked cards */}
+            <div className="flex flex-col gap-4 sm:gap-6">
+              {perks.slice(0, 2).map((perk, i) => (
+                <motion.div
+                  key={perk.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="group border-border/50 hover:border-primary/20 dark:bg-card relative flex flex-col rounded-2xl border bg-white p-5 shadow-sm transition-all hover:shadow-md sm:p-6"
+                >
+                  <div className="bg-primary/10 text-primary group-hover:bg-primary/20 mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg transition-colors">
+                    <perk.icon className="h-5 w-5" />
+                  </div>
+                  <h4 className="text-foreground mb-2 text-base font-bold">
+                    {perk.title}
+                  </h4>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {perk.description}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
 
-        {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
-          className="text-center"
-        >
-          <Button
-            size="lg"
-            className="h-12 w-full max-w-xs px-8 text-sm font-semibold shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl sm:h-14 sm:w-auto sm:px-10 sm:text-base"
-            asChild
+            {/* Center Column - Featured tall card with gradient */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="group relative overflow-hidden rounded-3xl shadow-2xl"
+            >
+              {/* Light mode gradient - warm rose/peach */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#c9a0a0] via-[#e8c4c0] to-[#faf0ed] dark:hidden" />
+
+              {/* Dark mode gradient - richer burgundy/rose with better contrast */}
+              <div className="absolute inset-0 hidden bg-gradient-to-br from-[#5a2838] via-[#8a4558] to-[#6a3545] dark:block" />
+
+              {/* Content - bottom aligned, left aligned */}
+              <div className="relative flex h-full min-h-[280px] flex-col justify-end p-6 sm:min-h-[320px] sm:p-8">
+                {/* Title */}
+                <h3 className="text-2xl font-bold tracking-tight text-[#4a2030] sm:text-3xl dark:text-white">
+                  Locked-In
+                </h3>
+                <h3 className="mb-4 text-2xl font-bold tracking-tight text-[#773344] sm:text-3xl dark:text-[#f5d5dd]">
+                  Pricing
+                </h3>
+
+                {/* Description */}
+                <p className="max-w-[220px] text-sm leading-relaxed font-medium text-[#5a3540] dark:text-white/90">
+                  Your rate stays the same forever, even when prices go up.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Right Column - 2 stacked cards */}
+            <div className="flex flex-col gap-4 sm:gap-6">
+              {perks.slice(3, 5).map((perk, i) => (
+                <motion.div
+                  key={perk.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: (i + 2) * 0.1 }}
+                  className="group border-border/50 hover:border-primary/20 dark:bg-card relative flex flex-col rounded-2xl border bg-white p-5 shadow-sm transition-all hover:shadow-md sm:p-6"
+                >
+                  <div className="bg-primary/10 text-primary group-hover:bg-primary/20 mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg transition-colors">
+                    <perk.icon className="h-5 w-5" />
+                  </div>
+                  <h4 className="text-foreground mb-2 text-base font-bold">
+                    {perk.title}
+                  </h4>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {perk.description}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Full Width CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-10 sm:mt-12"
           >
-            <Link href="/register">
-              Claim Your Beta Spot
-              <span className="ml-2">→</span>
-            </Link>
-          </Button>
-          <p className="text-muted-foreground mt-3 text-xs sm:mt-4 sm:text-sm">
-            Free to start · No credit card required
-          </p>
-        </motion.div>
+            <Button
+              size="lg"
+              className="h-12 w-full text-base font-semibold shadow-lg sm:h-14 sm:text-lg"
+              asChild
+            >
+              <Link href="/register">
+                Join the beta and lock in pricing forever →
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
       </div>
     </section>
   );

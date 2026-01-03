@@ -81,7 +81,7 @@ export function Solution() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="bg-card/60 border-border/50 relative aspect-square overflow-hidden rounded-2xl border shadow-lg sm:rounded-3xl"
+            className="bg-card/60 border-border/50 relative min-h-[320px] overflow-hidden rounded-2xl border shadow-lg sm:min-h-[400px] sm:rounded-3xl lg:aspect-square lg:min-h-0"
           >
             <WorkflowVisual />
           </motion.div>

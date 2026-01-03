@@ -288,25 +288,25 @@ export async function OverviewContent() {
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 text-xs tracking-wide uppercase hover:bg-transparent">
-                  <TableHead className="text-muted-foreground font-semibold">
+                  <TableHead className="text-muted-foreground py-3 pr-4 pl-6 font-semibold">
                     Monitor
                   </TableHead>
-                  <TableHead className="text-muted-foreground font-semibold">
+                  <TableHead className="text-muted-foreground px-4 py-3 text-center font-semibold">
                     ICP
                   </TableHead>
-                  <TableHead className="text-muted-foreground font-semibold">
+                  <TableHead className="text-muted-foreground px-4 py-3 text-center font-semibold">
                     Status
                   </TableHead>
-                  <TableHead className="text-muted-foreground text-center font-semibold">
+                  <TableHead className="text-muted-foreground px-4 py-3 text-center font-semibold">
                     Warm
                   </TableHead>
-                  <TableHead className="text-muted-foreground text-center font-semibold">
+                  <TableHead className="text-muted-foreground px-4 py-3 text-center font-semibold">
                     Neutral
                   </TableHead>
-                  <TableHead className="text-muted-foreground text-center font-semibold">
+                  <TableHead className="text-muted-foreground px-4 py-3 text-center font-semibold">
                     Cold
                   </TableHead>
-                  <TableHead className="text-muted-foreground text-right font-semibold">
+                  <TableHead className="text-muted-foreground py-3 pr-6 pl-4 text-right font-semibold">
                     Completed
                   </TableHead>
                 </TableRow>
@@ -314,7 +314,7 @@ export async function OverviewContent() {
               <TableBody>
                 {recentJobs.length === 0 ? (
                   <TableRow className="hover:bg-transparent">
-                    <TableCell colSpan={7} className="py-12">
+                    <TableCell colSpan={7} className="py-16">
                       <div className="flex flex-col items-center justify-center text-center">
                         <div className="bg-muted mb-3 flex h-12 w-12 items-center justify-center rounded-full">
                           <ListChecks className="text-muted-foreground/50 h-6 w-6" />
@@ -332,29 +332,29 @@ export async function OverviewContent() {
                 ) : (
                   recentJobs.map((job) => (
                     <TableRow key={job.id} className="border-border/40">
-                      <TableCell className="text-foreground font-medium">
+                      <TableCell className="text-foreground py-4 pr-4 pl-6 font-medium">
                         {job.monitorTarget}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-muted-foreground px-4 py-4 text-center">
                         {job.icpName}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-4 py-4 text-center">
                         <Badge
                           className={`${JOB_STATUS_STYLES[job.status]} capitalize`}
                         >
                           {job.status.toLowerCase()}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-primary text-center font-semibold">
+                      <TableCell className="text-primary px-4 py-4 text-center font-semibold">
                         {job.warmLeads}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-center">
+                      <TableCell className="text-muted-foreground px-4 py-4 text-center">
                         {job.neutralLeads}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-center">
+                      <TableCell className="text-muted-foreground px-4 py-4 text-center">
                         {job.coldLeads}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-right">
+                      <TableCell className="text-muted-foreground py-4 pr-6 pl-4 text-right">
                         {job.completedAt
                           ? formatRelative(job.completedAt)
                           : "Pending"}

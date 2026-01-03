@@ -34,7 +34,8 @@ export function BillingPanel(props: {
     } catch (e: any) {
       console.error("Subscribe failed", e);
       setLoading(null);
-      const errorMsg = e?.message || e?.error || "Failed to start checkout. Please try again.";
+      const errorMsg =
+        e?.message || e?.error || "Failed to start checkout. Please try again.";
       alert(errorMsg);
     }
   }
@@ -101,7 +102,9 @@ export function BillingPanel(props: {
                 disabled={loading !== null}
                 onClick={() => handleSubscribe("pro")}
               >
-                {loading === "pro" ? "Redirecting…" : "Upgrade to Pro ($4.5/mo)"}
+                {loading === "pro"
+                  ? "Redirecting…"
+                  : "Upgrade to Pro ($4.5/mo)"}
               </Button>
               <Button
                 variant="secondary"
@@ -131,7 +134,9 @@ export function BillingPanel(props: {
               disabled={loading !== null}
               onClick={() => handleSubscribe("pro")}
             >
-              {loading === "pro" ? "Changing plan…" : "Downgrade to Pro ($4.5/mo)"}
+              {loading === "pro"
+                ? "Changing plan…"
+                : "Downgrade to Pro ($4.5/mo)"}
             </Button>
           )}
         </section>

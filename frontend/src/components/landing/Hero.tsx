@@ -143,28 +143,9 @@ export function Hero() {
                 <Link href="/register">Get Started</Link>
               </Button>
             </motion.div>
-
-            {/* Stats Section - no box, just inline */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="mb-8 flex items-center justify-center gap-6 sm:mb-10 sm:gap-10"
-            >
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <span className="text-foreground text-lg font-bold sm:text-xl md:text-2xl">
-                    {stat.value}
-                  </span>
-                  <span className="text-muted-foreground ml-1.5 text-xs sm:text-sm">
-                    {stat.label}
-                  </span>
-                </div>
-              ))}
-            </motion.div>
           </div>
 
-          {/* Dashboard Preview - higher up */}
+          {/* Dashboard Preview - with glassy border */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -175,31 +156,56 @@ export function Hero() {
             }}
             className="relative mx-auto max-w-4xl"
           >
-            <div className="bg-card border-border/60 relative overflow-hidden rounded-t-xl border border-b-0 shadow-2xl sm:rounded-t-2xl">
-              <div className="relative w-full">
-                <img
-                  src="/dashboard.png"
-                  alt="Leadly Dashboard Light"
-                  className={`-mt-[5px] block h-auto w-full transition-opacity duration-500 ${
-                    mounted && resolvedTheme === "dark"
-                      ? "absolute inset-0 opacity-0"
-                      : "relative opacity-100"
-                  }`}
-                />
-                <img
-                  src="/dashboard-dark.png"
-                  alt="Leadly Dashboard Dark"
-                  className={`-mt-[5px] block h-auto w-full transition-opacity duration-500 ${
-                    mounted && resolvedTheme === "dark"
-                      ? "relative opacity-100"
-                      : "absolute inset-0 opacity-0"
-                  }`}
-                />
+            {/* Glassy border container */}
+            <div className="rounded-t-xl border border-b-0 border-white/40 bg-white/20 p-2 pb-0 shadow-2xl backdrop-blur-sm sm:rounded-t-2xl sm:p-3 sm:pb-0 dark:border-white/10 dark:bg-white/5">
+              <div className="bg-card relative overflow-hidden rounded-t-lg sm:rounded-t-xl">
+                <div className="relative w-full">
+                  <img
+                    src="/dashboard.png"
+                    alt="Leadly Dashboard Light"
+                    className={`-mt-[5px] block h-auto w-full transition-opacity duration-500 ${
+                      mounted && resolvedTheme === "dark"
+                        ? "absolute inset-0 opacity-0"
+                        : "relative opacity-100"
+                    }`}
+                  />
+                  <img
+                    src="/dashboard-dark.png"
+                    alt="Leadly Dashboard Dark"
+                    className={`-mt-[5px] block h-auto w-full transition-opacity duration-500 ${
+                      mounted && resolvedTheme === "dark"
+                        ? "relative opacity-100"
+                        : "absolute inset-0 opacity-0"
+                    }`}
+                  />
+                </div>
               </div>
             </div>
           </motion.div>
         </div>
       </div>
+
+      {/* Stats Section - Outside container, below */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.6 }}
+        className="flex items-center justify-center gap-6 py-8 sm:gap-10 sm:py-10"
+      >
+        {stats.map((stat, index) => (
+          <div
+            key={index}
+            className="flex flex-col items-center text-center sm:flex-row sm:items-baseline"
+          >
+            <span className="text-foreground text-lg font-bold sm:text-xl md:text-2xl">
+              {stat.value}
+            </span>
+            <span className="text-muted-foreground text-xs sm:ml-1.5 sm:text-sm">
+              {stat.label}
+            </span>
+          </div>
+        ))}
+      </motion.div>
     </section>
   );
 }

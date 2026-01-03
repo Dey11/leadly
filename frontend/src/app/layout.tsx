@@ -10,6 +10,7 @@ import { siteConfig } from "@/config/site";
 import { SEO_CONFIG } from "@/constants/seo";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ThemeFavicon } from "@/components/providers/ThemeFavicon";
 import { CookieConsent } from "@/components/ui/cookie-consent";
 import {
   UmamiScript,
@@ -55,7 +56,7 @@ export const metadata: Metadata = {
     template: `%s · ${siteConfig.name}`,
   },
   description: SEO_CONFIG.default.description,
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/favicon-light.ico" }],
   alternates: {
     canonical: siteConfig.url,
   },
@@ -123,6 +124,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
+            <ThemeFavicon />
             <NextTopLoader color="#734" />
             <UmamiScript />
             {process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (

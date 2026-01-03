@@ -42,10 +42,10 @@
 
 ## Todo
 
-- [ ] policy pages should have back btns
-- [ ] light/dark mode for logo as well
-- [ ] cards are the same in the landing page, need another color, remove ai like emojis
-- [ ] demo video in landing page section
+- [x] policy pages should have back btns
+- [x] light/dark mode for logo as well
+- [x] cards are the same in the landing page, need another color, remove ai like emojis
+- [x] demo video in landing page section
 - [ ] favicon not present, fix this
 
 * global rate limits ok, in memory
