@@ -76,7 +76,14 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     const type: string = payload?.type || payload?.event_type || "";
     // Common fields we may use
     const data = payload?.data ?? payload?.object ?? {};
-    const customerId = (data?.customer_id as string | undefined) ?? undefined;
+    
+    // Extract customer_id from multiple possible paths in Dodo payload
+    const customerId: string | undefined = 
+      (data?.customer_id as string | undefined) ??
+      (data?.customer?.customer_id as string | undefined) ??
+      (payload?.customer_id as string | undefined) ??
+      undefined;
+    
     const subscriptionId: string | undefined =
       data?.subscription_id || data?.id;
     const planCode: string | undefined =
@@ -88,6 +95,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
         type,
         subscriptionId,
         planCode,
+        customerId, // Added for debugging
       }),
     );
 

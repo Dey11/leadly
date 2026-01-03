@@ -67,7 +67,7 @@ router.post(
       }
 
       const userId = req.userId!;
-      const user = await db.user.findUnique({ where: { id: userId } });
+      const user = await getUserWithSubscription(userId);
       if (!user || user.isDeleted) {
         return res.status(401).json({ error: "Unauthorized" });
       }
@@ -81,7 +81,9 @@ router.post(
       const baseReturn = env.APP_BASE_URL || env.FRONTEND_URL;
       const returnUrl = `${baseReturn.replace(/\/+$/, "")}/billing/result`;
 
-     
+      // Use existing Dodo customer ID if available to maintain consistency
+      const existingCustomerId = user.subscription?.subscriptionCustomerId;
+      
       const session = await client.checkoutSessions.create({
         product_cart: [
           {
@@ -89,10 +91,11 @@ router.post(
             quantity: 1,
           },
         ],
-        customer: {
-          email: user.email,
-          name: user.name,
-        },
+        // If we have an existing Dodo customer ID, use it; otherwise use email/name
+        ...(existingCustomerId 
+          ? { customer_id: existingCustomerId }
+          : { customer: { email: user.email, name: user.name } }
+        ),
         return_url: returnUrl,
         show_saved_payment_methods: true,
         metadata: {
