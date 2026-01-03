@@ -34,6 +34,11 @@ export async function processScrapeJob(job: Job) {
     throw new Error("ScrapeJob or Monitor not found");
   }
 
+  if (monitor.user.isDeleted) {
+    console.log(`Skipping job ${job.data.jobId} because user is deleted`);
+    return;
+  }
+
   try {
     const redditClient = new Reddit(
       env.REDDIT_CLIENT_ID,
@@ -126,7 +131,9 @@ export async function processScrapeJob(job: Job) {
         // Schedule for retry
         const nextRetryAt = new Date(Date.now() + SCRAPE_RETRY_DELAY_MS);
         console.log(
-          `Scheduling retry for job ${job.data.jobId} at ${nextRetryAt.toISOString()}`,
+          `Scheduling retry for job ${
+            job.data.jobId
+          } at ${nextRetryAt.toISOString()}`,
         );
 
         await db.scrapeJob.update({

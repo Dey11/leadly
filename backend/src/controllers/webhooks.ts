@@ -213,10 +213,10 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
           db.user
             .findUnique({
               where: { id: userId },
-              select: { name: true, email: true },
+              select: { name: true, email: true, isDeleted: true },
             })
             .then((user) => {
-              if (user) {
+              if (user && !user.isDeleted) {
                 sendTransactionToDiscord({
                   type: "subscription.active",
                   tier,
@@ -300,10 +300,10 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
           db.user
             .findUnique({
               where: { id: userId },
-              select: { name: true, email: true },
+              select: { name: true, email: true, isDeleted: true },
             })
             .then((user) => {
-              if (user) {
+              if (user && !user.isDeleted) {
                 sendTransactionToDiscord({
                   type: "subscription.renewed",
                   tier: tierForReset,
@@ -376,10 +376,10 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
             db.user
               .findUnique({
                 where: { id: userId },
-                select: { name: true, email: true },
+                select: { name: true, email: true, isDeleted: true },
               })
               .then((user) => {
-                if (user) {
+                if (user && !user.isDeleted) {
                   sendTransactionToDiscord({
                     type: "subscription.plan_changed",
                     tier,

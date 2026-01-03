@@ -12,6 +12,11 @@ async function pickupRetryJobs() {
       status: "FAILED",
       retryCount: { lt: MAX_SCRAPE_RETRY_COUNT },
       nextRetryAt: { lte: now },
+      monitor: {
+        user: {
+          isDeleted: false,
+        },
+      },
     },
     include: {
       monitor: { include: { icp: true } },
@@ -23,7 +28,9 @@ async function pickupRetryJobs() {
   for (const job of jobsToRetry) {
     try {
       console.log(
-        `Retrying job ${job.id} (attempt ${job.retryCount + 1}/${MAX_SCRAPE_RETRY_COUNT})`,
+        `Retrying job ${job.id} (attempt ${
+          job.retryCount + 1
+        }/${MAX_SCRAPE_RETRY_COUNT})`,
       );
 
       await db.scrapeJob.update({
