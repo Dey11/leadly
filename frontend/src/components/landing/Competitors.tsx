@@ -108,7 +108,7 @@ export function Competitors() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mx-auto mb-16 max-w-5xl sm:mb-20 lg:mb-28"
+          className="mx-auto mb-16 max-w-5xl sm:mb-20 lg:mb-60"
         >
           {/* Two-section layout grid */}
           <div className="grid items-start gap-0 md:grid-cols-[1.5fr_1.8fr]">
@@ -239,7 +239,7 @@ export function Competitors() {
           </motion.div>
 
           {/* Video Embed */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -258,7 +258,7 @@ export function Competitors() {
                 className="absolute inset-0 h-full w-full"
               />
             </div>
-          </motion.div>
+          </motion.div> */}
 
           <div className="mx-auto grid max-w-5xl gap-4 sm:gap-6 md:grid-cols-3">
             {advantages.map((item, i) => (

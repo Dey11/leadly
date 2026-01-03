@@ -29,6 +29,12 @@
 - [x] link landing pricing section w payment link
 - [x] beta users get lifetime beta price
 - [x] bug found by arsh on discord channel
+- [x] reduce faqs
+- [x] ensure smooth scrolling is on. CURRENTLY ON, HOPE KRISH DOESNT MESS THIS UP, just check it before pushing
+- [x] policy pages should have back btns
+- [x] light/dark mode for logo as well
+- [x] cards are the same in the landing page, need another color, remove ai like emojis
+- [x] favicon not present, fix this
 
 ## Probably done/need not do. Need to test though
 
@@ -38,15 +44,14 @@
 - [-] remove console logs
 - [ ] image screenshot + good looking mac border (mac window border not done, krish will do)
 - [?] tracking based on cookies. disagreeing with cookies can lead to stuff (not so imp tho)
-- [ ] ensure smooth scrolling is on. CURRENTLY ON, HOPE KRISH DOESNT MESS THIS UP, just check it before pushing
 
 ## Todo
 
-- [x] policy pages should have back btns
-- [x] light/dark mode for logo as well
-- [x] cards are the same in the landing page, need another color, remove ai like emojis
-- [x] demo video in landing page section
-- [ ] favicon not present, fix this
+- [ ] fix checks for wrong subs
+- [ ] better prompts to classify btw warm, cold, neutral leads
+- [ ] billing checks
+- [ ] demo video in landing page section
+- [ ] a form for bugs, dming us directly in discord
 
 * global rate limits ok, in memory
 

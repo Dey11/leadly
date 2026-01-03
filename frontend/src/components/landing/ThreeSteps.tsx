@@ -1,9 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-
 const steps = [
   {
     number: "1",

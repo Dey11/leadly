@@ -103,7 +103,7 @@ export function SiteFooter() {
                     </div>
                     Leadly
                   </Link>
-                  <p className="text-muted-foreground max-w-xs text-xs leading-relaxed sm:text-sm">
+                  {/* <p className="text-muted-foreground max-w-xs text-xs leading-relaxed sm:text-sm">
                     Receive product updates, feature launches, and lead
                     generation insights.
                   </p>
@@ -123,7 +123,7 @@ export function SiteFooter() {
                     >
                       Submit
                     </Button>
-                  </form>
+                  </form> */}
                 </div>
 
                 {/* Product */}
@@ -209,20 +209,20 @@ export function SiteFooter() {
                   <ul className="text-muted-foreground space-y-2 text-xs sm:text-sm">
                     <li>
                       <Link
-                        href="/blog"
+                        href="/cookies"
                         className="hover:text-foreground transition-colors"
                       >
-                        Blog
+                        Cookies
                       </Link>
                     </li>
-                    <li>
+                    {/* <li>
                       <Link
                         href="/help"
                         className="hover:text-foreground transition-colors"
                       >
                         Help
                       </Link>
-                    </li>
+                    </li> */}
                   </ul>
                 </div>
               </div>

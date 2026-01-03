@@ -37,7 +37,7 @@ import {
   getSchedule,
 } from "@/lib/backend-queries";
 import { formatDateTime, formatRelative } from "@/lib/format";
-import type { Icp, LeadSummary, Monitor, ScrapeJob } from "@/types/backend";
+import type { Icp, Monitor, ScrapeJob } from "@/types/backend";
 import {
   numberFormatter,
   LEAD_TYPE_STYLES,

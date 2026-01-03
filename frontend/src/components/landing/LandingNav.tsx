@@ -80,7 +80,7 @@ export function LandingNav() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="bg-background/95 border-border/40 absolute top-full right-0 left-0 overflow-hidden border-b backdrop-blur-lg md:hidden"
+            className="bg-background/95 border-border/40 absolute top-full right-4 left-4 mt-2 overflow-hidden rounded-3xl border backdrop-blur-lg md:hidden"
           >
             <nav className="container mx-auto flex flex-col items-center gap-2 px-4 py-4">
               {navLinks.map((item) => (

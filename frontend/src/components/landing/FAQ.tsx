@@ -41,11 +41,6 @@ const faqs = [
       "Absolutely! Our Free tier gives you 3 subreddits to monitor with 30 scrapes per month. No credit card required. Upgrade only if you see value and need more capacity.",
   },
   {
-    question: "What happens to my data if I cancel?",
-    answer:
-      "Your data is yours. You can export your leads at any time. If you cancel, we keep your data for 30 days in case you change your mind, then permanently delete everything.",
-  },
-  {
     question: "Do you support platforms other than Reddit?",
     answer:
       "We're focused on Reddit for now since that's where the highest-intent B2B conversations happen. We're exploring other platforms like Twitter/X and HackerNews based on user demand.",
