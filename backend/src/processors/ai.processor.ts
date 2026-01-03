@@ -77,7 +77,7 @@ export async function processLeads(
     const { object: leadsArray } = await generateObject({
       model,
       temperature: 0.15,
-      topP: 0.9,
+      topP: 1,
       schema: z.array(
         z.object({
           title: z
@@ -85,12 +85,14 @@ export async function processLeads(
             .describe(
               "title of the post, or a matching title if the post is a comment",
             ),
-          leadType: z
-            .enum(["WARM", "COLD", "NEUTRAL"])
-            .describe("the type of lead"),
           reasoning: z
             .string()
-            .describe("explain briefly why this matches the lead description"),
+            .describe(
+              "First, explain why this matches the lead description. Be specific.",
+            ),
+          leadType: z
+            .enum(["WARM", "COLD", "NEUTRAL"])
+            .describe("the type of lead based on the reasoning"),
           id: z.string().describe("Post ID of the post/comment"),
           url: z
             .string()
@@ -99,7 +101,9 @@ export async function processLeads(
           subreddit: z.string().describe("Subreddit name"),
           relevanceScore: z
             .number()
-            .describe("0-1 (how confident you are in the match)"),
+            .describe(
+              "0-1 score. How well does the person/topic match the ICP? (High score = good fit, even if intent is low/neutral)",
+            ),
         }),
       ),
       prompt: leadGenerationPrompt

@@ -256,3 +256,196 @@ export function BugReportDialog() {
     </Dialog>
   );
 }
+
+/**
+ * Standalone bug report button for use outside the sidebar.
+ * Opens the same dialog but with a customizable trigger.
+ */
+export function BugReportButton({
+  variant = "outline",
+  children = "Share Feedback",
+  defaultCategory = "OTHER",
+}: {
+  variant?:
+    | "default"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link"
+    | "destructive";
+  children?: React.ReactNode;
+  defaultCategory?: BugReportCategory;
+}) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState<FormData>({
+    title: "",
+    description: "",
+    category: defaultCategory,
+    severity: "",
+  });
+  const [success, setSuccess] = useState(false);
+
+  const createMutation = useMutation({
+    mutationFn: () =>
+      clientApi.createBugReport({
+        title: form.title,
+        description: form.description,
+        category: form.category,
+        severity: form.severity || undefined,
+        pageUrl:
+          typeof window !== "undefined" ? window.location.href : undefined,
+      }),
+    onSuccess: () => {
+      setSuccess(true);
+      setForm({
+        title: "",
+        description: "",
+        category: defaultCategory,
+        severity: "",
+      });
+      setTimeout(() => {
+        setOpen(false);
+        setSuccess(false);
+      }, 2000);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMutation.mutate();
+  };
+
+  const isValid =
+    form.title.length >= 5 && form.description.length >= 20 && form.category;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant={variant}>
+          <Bug className="size-4" />
+          {children}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Bug className="text-primary size-5" />
+            Share Feedback
+          </DialogTitle>
+          <DialogDescription>
+            Let us know what happened or how we can improve.
+          </DialogDescription>
+        </DialogHeader>
+
+        {success ? (
+          <Alert className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+            <AlertDescription className="flex items-center gap-2">
+              ✓ Thank you for your feedback!
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="feedback-title">Title</Label>
+              <Input
+                id="feedback-title"
+                placeholder="Brief summary"
+                value={form.title}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, title: e.target.value }))
+                }
+                maxLength={100}
+              />
+              {form.title.length > 0 && form.title.length < 5 && (
+                <p className="text-destructive text-xs">
+                  Title must be at least 5 characters
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="feedback-category">Category</Label>
+              <Select
+                value={form.category}
+                onValueChange={(value: BugReportCategory) =>
+                  setForm((f) => ({ ...f, category: value }))
+                }
+              >
+                <SelectTrigger id="feedback-category">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="feedback-description">Description</Label>
+              <Textarea
+                id="feedback-description"
+                placeholder="Please provide details..."
+                value={form.description}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, description: e.target.value }))
+                }
+                rows={4}
+                maxLength={2000}
+              />
+              <div className="flex justify-between text-xs">
+                {form.description.length > 0 && form.description.length < 20 ? (
+                  <p className="text-destructive">
+                    Description must be at least 20 characters
+                  </p>
+                ) : (
+                  <span />
+                )}
+                <span className="text-muted-foreground">
+                  {form.description.length}/2000
+                </span>
+              </div>
+            </div>
+
+            {createMutation.isError && (
+              <Alert variant="destructive">
+                <AlertTriangle className="size-4" />
+                <AlertDescription>
+                  {createMutation.error instanceof Error
+                    ? createMutation.error.message
+                    : "Failed to submit. Please try again."}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!isValid || createMutation.isPending}
+              >
+                {createMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
