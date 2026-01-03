@@ -39,6 +39,9 @@ const envSchema = z.object({
 
   // Resend
   RESEND_API_KEY: z.string().min(1, "RESEND_API_KEY is required"),
+
+  // Discord
+  DISCORD_WEBHOOK_URL: z.string().url().optional(),
 });
 
 export const env = envSchema.parse(process.env);

@@ -1,13 +1,11 @@
 "use client";
 
 import {
-  ArrowRight,
   CreditCard,
   HelpCircle,
   LifeBuoy,
   LogOut,
   Menu,
-  Sparkles,
   User,
   X,
 } from "lucide-react";
@@ -32,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { DashboardNav, type DashboardNavItem } from "./nav";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { SUPPORT_EMAIL } from "@/constants/config";
+import { BugReportDialog } from "@/components/shared/bug-report-dialog";
 
 type DashboardShellProps = {
   navItems: DashboardNavItem[];
@@ -126,23 +125,7 @@ export function DashboardShell({
           </p>
         </section>
 
-        <section className="border-sidebar-border bg-sidebar/70 text-muted-foreground rounded-2xl border p-4 text-xs leading-relaxed shadow-sm backdrop-blur">
-          <div className="text-sidebar-foreground flex items-center gap-2 text-sm font-semibold">
-            <Sparkles className="text-primary size-4" aria-hidden />
-            Workspace tips
-          </div>
-          <p className="mt-2">
-            Rotate monitors weekly to keep capture quality high, and adjust your
-            scrape schedule to mirror audience activity.
-          </p>
-          <Link
-            href="/dashboard/monitors"
-            className="text-primary hover:text-primary/80 mt-3 inline-flex items-center gap-1 text-xs font-semibold transition"
-          >
-            Optimize monitors
-            <ArrowRight className="size-3.5" aria-hidden />
-          </Link>
-        </section>
+        <BugReportDialog />
 
         <section className="border-sidebar-border bg-sidebar/50 group hover:bg-primary/5 rounded-2xl border p-1 text-xs shadow-sm backdrop-blur transition-colors">
           <a
@@ -178,7 +161,7 @@ export function DashboardShell({
     <div className="from-background via-background to-secondary/20 relative min-h-screen bg-gradient-to-b lg:flex">
       <aside
         id="dashboard-sidebar"
-        className="border-sidebar-border bg-sidebar/90 hidden w-72 shrink-0 border-r shadow-[inset_-1px_0px_rgba(119,51,68,0.05)] backdrop-blur lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden"
+        className="border-sidebar-border bg-sidebar/90 hidden w-72 shrink-0 border-r shadow-[inset_-1px_0px_rgba(119,51,68,0.05)] backdrop-blur lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:overflow-hidden"
       >
         {sidebarContent}
       </aside>

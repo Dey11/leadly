@@ -13,6 +13,7 @@ import leadRouter from "./routes/lead";
 import scrapeJobsRouter from "./routes/scrape-jobs";
 import { CRON_INTERVAL } from "./lib/constants";
 import billingRouter from "./routes/billing";
+import bugReportRouter from "./routes/bug-report";
 import { dodoWebhookHandler } from "./controllers/webhooks";
 
 const PORT = env.PORT;
@@ -54,6 +55,7 @@ apiRouter.use("/account", accountRouter);
 apiRouter.use("/leads", leadRouter);
 apiRouter.use("/monitors", scrapeJobsRouter);
 apiRouter.use("/billing", billingRouter);
+apiRouter.use("/bug-reports", bugReportRouter);
 
 const scheduledTask = cron.schedule(CRON_INTERVAL, runScheduler, {
   timezone: "UTC",

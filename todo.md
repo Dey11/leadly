@@ -52,6 +52,7 @@
 - [ ] billing checks
 - [ ] demo video in landing page section
 - [ ] a form for bugs, dming us directly in discord
+- [ ] payment failure redirect
 
 * global rate limits ok, in memory
 

@@ -50,6 +50,27 @@ enum SubscriptionTier {
   PREMIUM
 }
 
+enum BugReportCategory {
+  BUG
+  FEATURE_REQUEST
+  QUESTION
+  OTHER
+}
+
+enum BugReportSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum BugReportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -62,9 +83,10 @@ model User {
   subscription Subscription?
   schedule     UserSchedule?
 
-  monitors Monitor[]
-  icps     Icp[]
-  usage    Usage?
+  monitors   Monitor[]
+  icps       Icp[]
+  usage      Usage?
+  bugReports BugReport[]
 
   name                String
   emailVerified       Boolean   @default(false)
@@ -78,6 +100,26 @@ model User {
   hasSeenWalkthrough  Boolean   @default(false)
 
   @@map("users")
+}
+
+model BugReport {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String             @db.Text
+  category    BugReportCategory
+  severity    BugReportSeverity?
+  pageUrl     String?
+  status      BugReportStatus    @default(OPEN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("bug_reports")
 }
 
 model Subscription {

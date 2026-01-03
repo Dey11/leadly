@@ -243,4 +243,20 @@ export const clientApi = {
     }),
   deleteLead: (leadId: string) =>
     request(`${apiBaseUrl}/leads/${leadId}`, { method: "DELETE" }),
+
+  // Bug Reports
+  createBugReport: (body: {
+    title: string;
+    description: string;
+    category: string;
+    severity?: string;
+    pageUrl?: string;
+  }) =>
+    request<{ message: string; payload: { id: string } }>(
+      `${apiBaseUrl}/bug-reports`,
+      {
+        method: "POST",
+        body,
+      },
+    ),
 };
