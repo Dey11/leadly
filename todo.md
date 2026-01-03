@@ -25,3 +25,4 @@
 - [ ] are scheduled jobs checked by the exact minute or checked by the last hour vs db value?
 - [ ] have to add paginations to everything to prevent misuse (need to test if done)
 - [ ] Find out the upper constraints before it breaks (scraper mostly)
+
