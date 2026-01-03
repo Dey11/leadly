@@ -344,6 +344,27 @@ export function DashboardShell({
           </div>
 
           <div className="space-y-4 px-5 pb-6 text-sm">
+            <BugReportDialog />
+
+            <section className="border-sidebar-border bg-sidebar/50 group hover:bg-primary/5 rounded-2xl border p-1 text-xs shadow-sm backdrop-blur transition-colors">
+              <a
+                href={`mailto:${SUPPORT_EMAIL}`}
+                className="flex items-center gap-3 px-3 py-2 font-medium transition-colors"
+              >
+                <div className="bg-primary/10 group-hover:bg-primary/20 flex size-8 items-center justify-center rounded-xl transition-colors">
+                  <LifeBuoy className="text-primary size-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sidebar-foreground text-sm">
+                    Help & Support
+                  </span>
+                  <span className="text-muted-foreground text-[10px]">
+                    {SUPPORT_EMAIL}
+                  </span>
+                </div>
+              </a>
+            </section>
+
             <div className="border-sidebar-border bg-sidebar/80 rounded-2xl border p-4 shadow-sm">
               <p className="text-muted-foreground text-xs tracking-wide uppercase">
                 Signed in

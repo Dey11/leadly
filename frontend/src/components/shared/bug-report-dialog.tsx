@@ -102,7 +102,7 @@ export function BugReportDialog() {
               Report a Bug
             </span>
             <span className="text-muted-foreground text-[10px]">
-              Help us improve Leadly
+              Or suggest a feature
             </span>
           </div>
         </button>

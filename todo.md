@@ -35,31 +35,34 @@
 - [x] light/dark mode for logo as well
 - [x] cards are the same in the landing page, need another color, remove ai like emojis
 - [x] favicon not present, fix this
+- [x] a form for bugs, dming us directly in discord
 
 ## Probably done/need not do. Need to test though
 
 '-' -> Not needed
 '?' -> Need to test
 
-- [-] remove console logs
+- [?] remove console logs
 - [ ] image screenshot + good looking mac border (mac window border not done, krish will do)
 - [?] tracking based on cookies. disagreeing with cookies can lead to stuff (not so imp tho)
+- [ ] demo video in landing page section
+- [?] better prompts to classify btw warm, cold, neutral leads
+- [?] payment failure redirect
 
 ## Todo
 
-- [ ] fix checks for wrong subs
-- [ ] better prompts to classify btw warm, cold, neutral leads
 - [ ] billing checks
-- [ ] demo video in landing page section
-- [ ] a form for bugs, dming us directly in discord
-- [ ] payment failure redirect
 
 * global rate limits ok, in memory
 
 ## Future scope
 
+- [ ] Notification system
+- [ ] Cold dm builder
+- [ ] Error logging using sentry
 - [ ] some sort of retry mechanisms. currently if the redis got fucked, the job stays pending. we need a cron that checks for pending/failed jobs and processes them at the end of the day anyways
 - [ ] toggle email alerts for pro/premium plan for warm leads
+- [ ] check for banned subs during monitor creation
 - [ ] on demand scrape jobs, with a 30min cooldown (we promised it)
 - [ ] think about rotating the reddit credentials using a rotation strategy
 - [ ] maybe post levels of filtering. aggressive, moderate, mild. aggressive can bring out false positives but thats okay. mild will be more accurate but will miss some leads. moderate will be a balance between the two
