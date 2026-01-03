@@ -67,7 +67,10 @@ export function BillingPanel(props: {
             />
           </div>
           <p>
-            {usage.dailyUsed} / {usage.dailyLimit} scrapes today
+            {usage.dailyUsed > usage.dailyLimit
+              ? `${usage.dailyLimit}+`
+              : usage.dailyUsed}{" "}
+            / {usage.dailyLimit} scrapes today
           </p>
         </section>
 
@@ -80,7 +83,10 @@ export function BillingPanel(props: {
             />
           </div>
           <p>
-            {usage.monthlyUsed} / {usage.monthlyLimit} scrapes this month
+            {usage.monthlyUsed > usage.monthlyLimit
+              ? `${usage.monthlyLimit}+`
+              : usage.monthlyUsed}{" "}
+            / {usage.monthlyLimit} scrapes this month
           </p>
         </section>
 
@@ -91,7 +97,7 @@ export function BillingPanel(props: {
               disabled={loading !== null}
               onClick={() => handleSubscribe("pro")}
             >
-              {loading === "pro" ? "Redirecting…" : "Upgrade to Pro ($9/mo)"}
+              {loading === "pro" ? "Redirecting…" : "Upgrade to Pro ($4.5/mo)"}
             </Button>
           )}
           {canUpgradeToPremium && (
@@ -102,7 +108,7 @@ export function BillingPanel(props: {
             >
               {loading === "premium"
                 ? "Redirecting…"
-                : "Upgrade to Premium ($24/mo)"}
+                : "Upgrade to Premium ($12/mo)"}
             </Button>
           )}
           {!canUpgradeToPro && !canUpgradeToPremium && (

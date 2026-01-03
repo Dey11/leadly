@@ -31,13 +31,10 @@ export function CookieConsent() {
   }, []);
 
   const loadAnalytics = () => {
-    // PostHog would be initialized here
-    // This is where you'd call posthog.init() or similar
-    if (
-      typeof window !== "undefined" &&
-      (window as unknown as Record<string, unknown>).posthog
-    ) {
-      console.log("Analytics loaded with user consent");
+    // When consent is given, we trigger a page refresh or custom event
+    // so that conditional scripts can pick up the change.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("cookie-consent-updated"));
     }
   };
 
@@ -118,7 +115,7 @@ export function CookieConsent() {
                       Analytics
                     </p>
                     <p className="text-muted-foreground text-xs">
-                      PostHog, Google Analytics
+                      Google Analytics
                     </p>
                   </div>
                   <span className="text-muted-foreground bg-muted rounded px-2 py-1 text-xs font-medium">

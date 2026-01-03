@@ -24,7 +24,7 @@ export default function PrivacyPage() {
           Privacy Policy
         </h1>
         <p className="text-muted-foreground mt-3 text-sm">
-          Effective date: January 2026 — Last updated: January 1, 2026
+          Effective date: January 3, 2026 — Last updated: January 3, 2026
         </p>
       </header>
 
@@ -141,8 +141,9 @@ export default function PrivacyPage() {
           </h3>
           <ul className="text-muted-foreground list-disc space-y-2 pl-6">
             <li>DodoPayments - Payment processing</li>
-            <li>PostHog - Product analytics (if you consent)</li>
-            <li>Google Analytics - Website analytics (if you consent)</li>
+            <li>Umami Analytics - Privacy-focused web analytics</li>
+            <li>Google Analytics - Website analytics</li>
+            <li>Cloudflare - Security and performance optimization</li>
             <li>Reddit API - Data source for lead monitoring</li>
           </ul>
         </section>
@@ -156,7 +157,10 @@ export default function PrivacyPage() {
             or as needed to provide services. Specifically:
           </p>
           <ul className="text-muted-foreground list-disc space-y-2 pl-6">
-            <li>Account data: Retained until account deletion plus 30 days</li>
+            <li>
+              Account data: Retained indefinitely to provide history, unless
+              deletion is requested
+            </li>
             <li>Lead data: Retained for 90 days after generation</li>
             <li>Log data: Retained for 30 days for troubleshooting</li>
             <li>

@@ -24,7 +24,7 @@ export default function TermsPage() {
           Terms of Service
         </h1>
         <p className="text-muted-foreground mt-3 text-sm">
-          Effective date: January 2025 — Last updated: December 31, 2024
+          Effective date: January 3, 2026 — Last updated: January 3, 2026
         </p>
       </header>
 
@@ -140,8 +140,8 @@ export default function TermsPage() {
           <h3 className="text-foreground text-lg font-medium">Pricing</h3>
           <p className="text-muted-foreground leading-relaxed">
             Leadly offers Free, Pro ($9/month), and Premium ($24/month) plans.
-            Prices are subject to change with 30 days notice to existing
-            subscribers.
+            All new plans come with a 3-day free trial. Prices are subject to
+            change with 30 days notice to existing subscribers.
           </p>
 
           <h3 className="text-foreground mt-4 text-lg font-medium">Billing</h3>
@@ -169,7 +169,9 @@ export default function TermsPage() {
               Cancellation takes effect at the end of the current billing period
             </li>
             <li>
-              We do not provide refunds for partial months or unused service
+              We offer a full refund within the first 7 days of your
+              subscription if you are unsatisfied. To request a refund, please
+              email us with the reason for your dissatisfaction
             </li>
             <li>
               If you believe you were charged in error, contact us within 72
@@ -311,8 +313,8 @@ export default function TermsPage() {
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             Any dispute arising from these Terms shall be governed by and
-            construed in accordance with the laws of the State of Delaware,
-            United States, without regard to conflict of law principles.
+            construed in accordance with the laws of Bengaluru, Karnataka,
+            India, without regard to conflict of law principles.
           </p>
           <p className="text-muted-foreground mt-4 leading-relaxed">
             Before filing any legal claim, you agree to attempt to resolve the

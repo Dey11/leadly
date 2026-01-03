@@ -51,6 +51,18 @@ export async function BillingContent() {
             higher tiers to increase your daily scrape limits and gain access to
             premium features like CSV exports and dedicated support.
           </p>
+
+          {isFreeTier && (
+            <div className="mt-4 max-w-2xl rounded-xl border border-green-500/20 bg-green-500/10 p-4">
+              <p className="text-sm font-medium text-green-700 dark:text-green-400">
+                🎉 New subscribers get a <strong>3-day free trial</strong> on
+                paid plans!
+              </p>
+              <p className="mt-1 text-xs text-green-600/80 dark:text-green-400/80">
+                Beta users lock in their discounted price for life.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

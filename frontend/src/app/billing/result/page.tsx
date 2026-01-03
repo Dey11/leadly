@@ -12,11 +12,11 @@ import { SUPPORT_EMAIL } from "@/constants/config";
 const SUCCESS_STATUSES = new Set(["active", "subscription.active"]);
 
 type BillingResultPageProps = {
-  searchParams: {
+  searchParams: Promise<{
     status?: string;
     subscription_id?: string;
     plan?: string;
-  };
+  }>;
 };
 
 function describePlan(tier: "FREE" | "PRO" | "PREMIUM", fallback?: string) {
@@ -28,7 +28,8 @@ function describePlan(tier: "FREE" | "PRO" | "PREMIUM", fallback?: string) {
 export default async function BillingResultPage({
   searchParams,
 }: BillingResultPageProps) {
-  const statusRaw = searchParams.status ?? "";
+  const params = await searchParams;
+  const statusRaw = params.status ?? "";
   const statusNormalized = statusRaw.toLowerCase().trim();
   const isSuccessful =
     !statusNormalized || SUCCESS_STATUSES.has(statusNormalized);
@@ -44,7 +45,7 @@ export default async function BillingResultPage({
   const usageSummary = await getUsageSummary();
   const usagePayload = usageSummary?.payload ?? null;
   const tier = (usagePayload?.tier ?? "FREE") as "FREE" | "PRO" | "PREMIUM";
-  const planName = describePlan(tier, searchParams.plan);
+  const planName = describePlan(tier, params.plan);
 
   const usageSnapshot = {
     dailyUsed: usagePayload?.dailyUsed ?? 0,
@@ -115,8 +116,8 @@ export default async function BillingResultPage({
                     {planName}
                   </p>
                   <p className="text-muted-foreground text-xs">
-                    {searchParams.subscription_id
-                      ? `Subscription ID: ${searchParams.subscription_id}`
+                    {params.subscription_id
+                      ? `Subscription ID: ${params.subscription_id}`
                       : "Subscription details will appear shortly."}
                   </p>
                 </CardContent>
