@@ -101,3 +101,98 @@ export async function sendBugReportToDiscord(
     return false;
   }
 }
+
+const TRANSACTION_COLORS: Record<string, number> = {
+  "subscription.active": 0x22c55e, // green
+  "subscription.renewed": 0x3b82f6, // blue
+  "subscription.plan_changed": 0xa855f7, // purple
+  "subscription.cancelled": 0xf97316, // orange
+  "subscription.failed": 0xdc2626, // red
+};
+
+const TRANSACTION_TITLES: Record<string, string> = {
+  "subscription.active": "🎉 New Subscription",
+  "subscription.renewed": "🔄 Subscription Renewed",
+  "subscription.plan_changed": "⬆️ Plan Changed",
+  "subscription.cancelled": "⚠️ Subscription Cancelled",
+  "subscription.failed": "❌ Payment Failed",
+};
+
+export type TransactionDetails = {
+  type: string;
+  tier: string;
+  user: {
+    name: string;
+    email: string;
+  };
+  subscriptionId?: string;
+  periodEnd?: Date;
+  amount?: string; // formatted string if available
+};
+
+export async function sendTransactionToDiscord(
+  details: TransactionDetails,
+): Promise<boolean> {
+  const webhookUrl = env.DISCORD_PAYMENT_WEBHOOK_URL;
+
+  if (!webhookUrl) {
+    return false;
+  }
+
+  const color = TRANSACTION_COLORS[details.type] ?? 0x6b7280;
+  const title = TRANSACTION_TITLES[details.type] ?? details.type;
+
+  const embed = {
+    title,
+    color,
+    fields: [
+      {
+        name: "User",
+        value: `${details.user.name}\n${details.user.email}`,
+        inline: true,
+      },
+      {
+        name: "Plan",
+        value: details.tier,
+        inline: true,
+      },
+      ...(details.periodEnd
+        ? [
+            {
+              name: "Next Renewal",
+              value: details.periodEnd.toDateString(),
+              inline: true,
+            },
+          ]
+        : []),
+      ...(details.subscriptionId
+        ? [
+            {
+              name: "Subscription ID",
+              value: details.subscriptionId,
+              inline: false,
+            },
+          ]
+        : []),
+    ],
+    timestamp: new Date().toISOString(),
+    footer: {
+      text: "Leadly Billing",
+    },
+  };
+
+  try {
+    await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Leadly Transactions",
+        embeds: [embed],
+      }),
+    });
+    return true;
+  } catch (error) {
+    console.error("Error sending transaction notification:", error);
+    return false;
+  }
+}

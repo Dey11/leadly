@@ -8,6 +8,7 @@ import { getRedis } from "../lib/redis";
 import db from "../lib/db";
 import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
 import { initializeOrResetUsagePeriod } from "../lib/usage";
+import { sendTransactionToDiscord } from "../lib/discord";
 
 /**x
  * Dodo Payments Webhook Handler
@@ -52,8 +53,8 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     const raw = Buffer.isBuffer(req.body)
       ? req.body.toString("utf8")
       : typeof req.body === "string"
-        ? req.body
-        : JSON.stringify(req.body ?? {});
+      ? req.body
+      : JSON.stringify(req.body ?? {});
     const redis = getRedis();
     const idemKey = `dodo:webhooks:${headers["webhook-id"]}`;
     const created = await redis.setnx(idemKey, "1"); // 1 if key set, 0 if exists
@@ -76,14 +77,14 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     const type: string = payload?.type || payload?.event_type || "";
     // Common fields we may use
     const data = payload?.data ?? payload?.object ?? {};
-    
+
     // Extract customer_id from multiple possible paths in Dodo payload
-    const customerId: string | undefined = 
+    const customerId: string | undefined =
       (data?.customer_id as string | undefined) ??
       (data?.customer?.customer_id as string | undefined) ??
       (payload?.customer_id as string | undefined) ??
       undefined;
-    
+
     const subscriptionId: string | undefined =
       data?.subscription_id || data?.id;
     const planCode: string | undefined =
@@ -149,7 +150,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
       const address =
         addressFields && typeof addressFields === "object"
           ? JSON.stringify(addressFields)
-          : (addressFields ?? undefined);
+          : addressFields ?? undefined;
       return {
         billingName: name ?? undefined,
         billingEmail: email ?? undefined,
@@ -199,7 +200,6 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               },
             });
 
-            // Initialize/reset usage window on activation
             await initializeOrResetUsagePeriod(
               tx,
               userId,
@@ -208,6 +208,25 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               periodEnd,
             );
           });
+
+          // Notify Discord
+          db.user
+            .findUnique({
+              where: { id: userId },
+              select: { name: true, email: true },
+            })
+            .then((user) => {
+              if (user) {
+                sendTransactionToDiscord({
+                  type: "subscription.active",
+                  tier,
+                  user: { name: user.name, email: user.email },
+                  subscriptionId,
+                  periodEnd,
+                });
+              }
+            })
+            .catch((e) => console.error("Discord notify failed", e));
 
           console.log(
             JSON.stringify({
@@ -277,6 +296,25 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
             );
           });
 
+          // Notify Discord
+          db.user
+            .findUnique({
+              where: { id: userId },
+              select: { name: true, email: true },
+            })
+            .then((user) => {
+              if (user) {
+                sendTransactionToDiscord({
+                  type: "subscription.renewed",
+                  tier: tierForReset,
+                  user: { name: user.name, email: user.email },
+                  subscriptionId,
+                  periodEnd,
+                });
+              }
+            })
+            .catch((e) => console.error("Discord notify failed", e));
+
           console.log(
             JSON.stringify({
               evt: "subscription.renewed.persisted",
@@ -333,6 +371,25 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 end,
               );
             });
+
+            // Notify Discord
+            db.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true },
+              })
+              .then((user) => {
+                if (user) {
+                  sendTransactionToDiscord({
+                    type: "subscription.plan_changed",
+                    tier,
+                    user: { name: user.name, email: user.email },
+                    subscriptionId,
+                    periodEnd: end,
+                  });
+                }
+              })
+              .catch((e) => console.error("Discord notify failed", e));
 
             console.log(
               JSON.stringify({
