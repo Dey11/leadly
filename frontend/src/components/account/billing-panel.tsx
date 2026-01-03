@@ -19,20 +19,23 @@ export function BillingPanel(props: {
 }) {
   const { tier, usage } = props;
   const [loading, setLoading] = useState<"pro" | "premium" | null>(null);
-  const canUpgradeToPro = tier === "FREE";
-  const canUpgradeToPremium = tier !== "PREMIUM";
 
   async function handleSubscribe(plan: "pro" | "premium") {
     try {
       setLoading(plan);
       const res = await clientApi.subscribe(plan);
+      if (res && (res as any).planChanged) {
+        window.location.reload();
+        return;
+      }
       if (res && (res as any).url) {
         window.location.href = (res as { url: string }).url;
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Subscribe failed", e);
       setLoading(null);
-      alert("Failed to start checkout. Please try again.");
+      const errorMsg = e?.message || e?.error || "Failed to start checkout. Please try again.";
+      alert(errorMsg);
     }
   }
 
@@ -91,30 +94,45 @@ export function BillingPanel(props: {
         </section>
 
         <section className="flex flex-col gap-2 pt-2">
-          {canUpgradeToPro && (
+          {tier === "FREE" && (
+            <>
+              <Button
+                variant="default"
+                disabled={loading !== null}
+                onClick={() => handleSubscribe("pro")}
+              >
+                {loading === "pro" ? "Redirecting…" : "Upgrade to Pro ($4.5/mo)"}
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={loading !== null}
+                onClick={() => handleSubscribe("premium")}
+              >
+                {loading === "premium"
+                  ? "Redirecting…"
+                  : "Upgrade to Premium ($12/mo)"}
+              </Button>
+            </>
+          )}
+          {tier === "PRO" && (
             <Button
               variant="default"
-              disabled={loading !== null}
-              onClick={() => handleSubscribe("pro")}
-            >
-              {loading === "pro" ? "Redirecting…" : "Upgrade to Pro ($4.5/mo)"}
-            </Button>
-          )}
-          {canUpgradeToPremium && (
-            <Button
-              variant="secondary"
               disabled={loading !== null}
               onClick={() => handleSubscribe("premium")}
             >
               {loading === "premium"
-                ? "Redirecting…"
+                ? "Changing plan…"
                 : "Upgrade to Premium ($12/mo)"}
             </Button>
           )}
-          {!canUpgradeToPro && !canUpgradeToPremium && (
-            <p className="text-xs">
-              You are on the highest plan. Thank you for supporting us.
-            </p>
+          {tier === "PREMIUM" && (
+            <Button
+              variant="outline"
+              disabled={loading !== null}
+              onClick={() => handleSubscribe("pro")}
+            >
+              {loading === "pro" ? "Changing plan…" : "Downgrade to Pro ($4.5/mo)"}
+            </Button>
           )}
         </section>
       </CardContent>

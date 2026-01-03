@@ -72,16 +72,59 @@ router.post(
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      // Map plan code to Dodo product_id
       const plan = parse.data.plan;
       const productId =
         plan === "pro" ? env.DODO_PRO_PRODUCT_ID : env.DODO_PREMIUM_PRODUCT_ID;
 
-      // Build return URL
+      const existingSubscriptionId = user.subscription?.subscriptionId;
+      const isActive = user.subscription?.status === "ACTIVE";
+
+      console.log("[Subscribe] Debug:", JSON.stringify({
+        userId,
+        plan,
+        existingSubscriptionId,
+        isActive,
+        subscriptionStatus: user.subscription?.status,
+        tier: user.subscription?.tier,
+      }));
+
+      if (existingSubscriptionId && isActive) {
+        console.log("[Subscribe] Using changePlan for:", existingSubscriptionId);
+        try {
+          await client.subscriptions.changePlan(existingSubscriptionId, {
+            product_id: productId,
+            quantity: 1,
+            proration_billing_mode: "prorated_immediately",
+          });
+
+          const newTier = plan === "pro" ? "PRO" : "PREMIUM";
+          await db.subscription.update({
+            where: { userId },
+            data: { tier: newTier as any },
+          });
+          console.log("[Subscribe] Plan changed and DB updated to:", newTier);
+
+          return res.status(200).json({ 
+            success: true, 
+            message: "Plan changed successfully",
+            planChanged: true,
+          });
+        } catch (changePlanError: any) {
+          if (changePlanError?.error?.code === "PREVIOUS_PAYMENT_PENDING") {
+            return res.status(409).json({ 
+              error: "Plan changes are available after your trial ends.",
+              code: "PAYMENT_PENDING",
+            });
+          }
+          throw changePlanError;
+        }
+      }
+
+      console.log("[Subscribe] Creating new checkout (no active subscription)");
+
       const baseReturn = env.APP_BASE_URL || env.FRONTEND_URL;
       const returnUrl = `${baseReturn.replace(/\/+$/, "")}/billing/result`;
 
-      // Use existing Dodo customer ID if available to maintain consistency
       const existingCustomerId = user.subscription?.subscriptionCustomerId;
       
       const session = await client.checkoutSessions.create({
@@ -91,7 +134,6 @@ router.post(
             quantity: 1,
           },
         ],
-        // If we have an existing Dodo customer ID, use it; otherwise use email/name
         ...(existingCustomerId 
           ? { customer_id: existingCustomerId }
           : { customer: { email: user.email, name: user.name } }
@@ -114,7 +156,6 @@ router.post(
           .json({ error: "Failed to create checkout session URL" });
       }
 
-      // Return URL for frontend redirect
       return res.status(200).json({ url });
     } catch (err) {
       console.error("Failed to create subscription link:", err);

@@ -365,59 +365,84 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
         break;
       }
       case "subscription.on_hold": {
-        if (userId) {
-          await db.subscription
-            .update({
-              where: { userId },
-              data: { status: SubscriptionStatus.PAST_DUE },
-            })
-            .catch(() => {});
-          console.log(
-            JSON.stringify({
-              evt: "subscription.on_hold.persisted",
-              userId,
-              subscriptionId,
-            }),
-          );
+        if (userId && subscriptionId) {
+          const existing = await db.subscription.findUnique({
+            where: { userId },
+          });
+          if (existing?.subscriptionId === subscriptionId) {
+            await db.subscription
+              .update({
+                where: { userId },
+                data: { status: SubscriptionStatus.PAST_DUE },
+              })
+              .catch(() => {});
+            console.log(
+              JSON.stringify({
+                evt: "subscription.on_hold.persisted",
+                userId,
+                subscriptionId,
+              }),
+            );
+          }
         }
         break;
       }
       case "subscription.cancelled": {
-        if (userId) {
-          await db.subscription
-            .update({
-              where: { userId },
-              data: {
-                status: SubscriptionStatus.CANCELED,
-                tier: SubscriptionTier.FREE,
-              },
-            })
-            .catch(() => {});
-          console.log(
-            JSON.stringify({
-              evt: "subscription.cancelled.persisted",
-              userId,
-              subscriptionId,
-            }),
-          );
+        if (userId && subscriptionId) {
+          const existing = await db.subscription.findUnique({
+            where: { userId },
+          });
+          if (existing?.subscriptionId === subscriptionId) {
+            await db.subscription
+              .update({
+                where: { userId },
+                data: {
+                  status: SubscriptionStatus.CANCELED,
+                  tier: SubscriptionTier.FREE,
+                },
+              })
+              .catch(() => {});
+            console.log(
+              JSON.stringify({
+                evt: "subscription.cancelled.persisted",
+                userId,
+                subscriptionId,
+              }),
+            );
+          } else {
+            console.log(
+              JSON.stringify({
+                evt: "subscription.cancelled.skipped",
+                reason: "subscriptionId_mismatch",
+                userId,
+                webhookSubscriptionId: subscriptionId,
+                storedSubscriptionId: existing?.subscriptionId,
+              }),
+            );
+          }
         }
         break;
       }
       case "subscription.failed": {
-        if (userId) {
-          await db.subscription
-            .update({
-              where: { userId },
-              data: { status: SubscriptionStatus.INCOMPLETE },
-            })
-            .catch(() => {});
-          console.log(
-            JSON.stringify({
-              evt: "subscription.failed.persisted",
-              userId,
-              subscriptionId,
-            }),
-          );
+        if (userId && subscriptionId) {
+          const existing = await db.subscription.findUnique({
+            where: { userId },
+          });
+          if (existing?.subscriptionId === subscriptionId) {
+            await db.subscription
+              .update({
+                where: { userId },
+                data: { status: SubscriptionStatus.INCOMPLETE },
+              })
+              .catch(() => {});
+            console.log(
+              JSON.stringify({
+                evt: "subscription.failed.persisted",
+                userId,
+                subscriptionId,
+              }),
+            );
+          }
         }
         break;
       }
