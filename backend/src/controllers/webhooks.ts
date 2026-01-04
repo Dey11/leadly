@@ -337,36 +337,25 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
       }
       case "subscription.plan_changed": {
         if (userId) {
-          const tier = mapPlanToTier(planCode);
-          if (tier) {
-            const end = parsePeriodEnd();
+          const end = parsePeriodEnd();
 
-            // Wrap subscription + usage update in transaction
+          const existing = await db.subscription.findUnique({
+            where: { userId },
+          });
+
+          if (existing) {
             await db.$transaction(async (tx) => {
-              // Try update, create if doesn't exist
-              try {
-                await tx.subscription.update({
-                  where: { userId },
-                  data: { tier },
-                });
-              } catch {
-                await tx.subscription.create({
-                  data: {
-                    userId,
-                    status: SubscriptionStatus.ACTIVE,
-                    tier,
-                    subscriptionId: subscriptionId ?? undefined,
-                    currentPeriodEnd: end!,
-                    ...billingDetails,
-                  },
-                });
-              }
+              await tx.subscription.update({
+                where: { userId },
+                data: {
+                  currentPeriodEnd: end ?? existing.currentPeriodEnd,
+                },
+              });
 
-              // Reset usage counters on plan change and align to current cycle end if present
               await initializeOrResetUsagePeriod(
                 tx,
                 userId,
-                tier,
+                existing.tier,
                 undefined,
                 end,
               );
@@ -382,7 +371,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 if (user && !user.isDeleted) {
                   sendTransactionToDiscord({
                     type: "subscription.plan_changed",
-                    tier,
+                    tier: existing.tier,
                     user: { name: user.name, email: user.email },
                     subscriptionId,
                     periodEnd: end,
@@ -395,7 +384,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               JSON.stringify({
                 evt: "subscription.plan_changed.persisted",
                 userId,
-                tier,
+                tier: existing.tier,
                 subscriptionId,
                 periodEnd: end,
               }),
@@ -404,7 +393,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
           } else {
             console.warn(
               JSON.stringify({
-                warn: "subscription.plan_changed.unknown_plan",
+                warn: "subscription.plan_changed.no_existing_subscription",
                 userId,
                 planCode,
               }),
