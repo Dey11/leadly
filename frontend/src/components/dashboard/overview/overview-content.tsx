@@ -318,7 +318,7 @@ export async function OverviewContent() {
                       colSpan={7}
                       className="h-96 text-center whitespace-normal"
                     >
-                      <div className="flex flex-col items-center justify-center text-center h-full w-full">
+                      <div className="flex h-full w-full flex-col items-center justify-center text-center">
                         <div className="bg-muted mb-3 flex h-12 w-12 items-center justify-center rounded-full">
                           <ListChecks className="text-muted-foreground/50 h-6 w-6" />
                         </div>
