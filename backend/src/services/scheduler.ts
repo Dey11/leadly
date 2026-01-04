@@ -12,6 +12,11 @@ async function pickupRetryJobs() {
       status: "FAILED",
       retryCount: { lt: MAX_SCRAPE_RETRY_COUNT },
       nextRetryAt: { lte: now },
+      monitor: {
+        user: {
+          isDeleted: false,
+        },
+      },
     },
     include: {
       monitor: { include: { icp: true } },
@@ -22,7 +27,11 @@ async function pickupRetryJobs() {
 
   for (const job of jobsToRetry) {
     try {
-      console.log(`Retrying job ${job.id} (attempt ${job.retryCount + 1}/${MAX_SCRAPE_RETRY_COUNT})`);
+      console.log(
+        `Retrying job ${job.id} (attempt ${
+          job.retryCount + 1
+        }/${MAX_SCRAPE_RETRY_COUNT})`,
+      );
 
       await db.scrapeJob.update({
         where: { id: job.id },
@@ -87,7 +96,11 @@ export async function runScheduler() {
     const limits = TIER_LIMITS[tier];
 
     // Preview current usage for logs
-    const usagePreview = await previewUsage(user.id, tier, user.subscription.currentPeriodEnd);
+    const usagePreview = await previewUsage(
+      user.id,
+      tier,
+      user.subscription.currentPeriodEnd,
+    );
     console.log(
       JSON.stringify({
         evt: "scheduler.usage_preview",
@@ -97,7 +110,7 @@ export async function runScheduler() {
         dailyLimit: usagePreview.dailyLimit,
         monthlyUsed: usagePreview.monthlyUsed,
         monthlyLimit: usagePreview.monthlyLimit,
-      })
+      }),
     );
 
     for (const monitor of user.monitors) {
@@ -113,7 +126,7 @@ export async function runScheduler() {
 
         if (existingJob) {
           console.log(
-            `Skipping monitor ${monitor.id} because a job is already ${existingJob.status}`
+            `Skipping monitor ${monitor.id} because a job is already ${existingJob.status}`,
           );
           continue;
         }
@@ -123,7 +136,7 @@ export async function runScheduler() {
           user.id,
           tier,
           user.subscription.currentPeriodEnd,
-          env.FEATURE_BILLING_ENFORCEMENT // "off" | "log" | "on"
+          env.FEATURE_BILLING_ENFORCEMENT, // "off" | "log" | "on"
         );
 
         if (!allowed) {
@@ -138,7 +151,7 @@ export async function runScheduler() {
               dailyLimit: summary.dailyLimit,
               monthlyUsed: summary.monthlyUsed,
               monthlyLimit: summary.monthlyLimit,
-            })
+            }),
           );
           continue;
         }
@@ -159,7 +172,7 @@ export async function runScheduler() {
       } catch (error) {
         console.error(
           `Failed to schedule scrape job for monitor ${monitor.id}:`,
-          error
+          error,
         );
       }
     }

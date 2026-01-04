@@ -22,7 +22,13 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 type EditIcpDialogProps = {
@@ -64,10 +70,8 @@ export function EditIcpDialog({ icp }: EditIcpDialogProps) {
 
   const updateField =
     <
-      T extends
-        | HTMLInputElement
-        | HTMLTextAreaElement
-        | HTMLSelectElement = HTMLInputElement,
+      T extends HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement =
+        HTMLInputElement,
     >(
       field: keyof typeof formState,
     ) =>
@@ -261,31 +265,49 @@ export function EditIcpDialog({ icp }: EditIcpDialogProps) {
                 Platform
               </FieldLabel>
               <Select
-                id={`icp-platform-${icp.id}`}
                 value={formState.platform}
-                onChange={updateField("platform")}
+                onValueChange={(val) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    platform: val as "REDDIT",
+                  }))
+                }
               >
-                <option value="REDDIT">Reddit</option>
+                <SelectTrigger id={`icp-platform-${icp.id}`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="REDDIT">Reddit</SelectItem>
+                </SelectContent>
               </Select>
             </Field>
 
             <Field>
               <FieldLabel htmlFor={`icp-status-${icp.id}`}>Status</FieldLabel>
               <Select
-                id={`icp-status-${icp.id}`}
                 value={formState.status}
-                onChange={updateField("status")}
+                onValueChange={(val) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    status: val as typeof icp.status,
+                  }))
+                }
               >
-                <option value="ACTIVE">Active</option>
-                <option value="PAUSED">Paused</option>
-                <option value="ARCHIVED">Archived</option>
+                <SelectTrigger id={`icp-status-${icp.id}`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="PAUSED">Paused</SelectItem>
+                  <SelectItem value="ARCHIVED">Archived</SelectItem>
+                </SelectContent>
               </Select>
             </Field>
           </FieldGroup>
           {error ? (
             <p className="text-destructive text-sm font-medium">{error}</p>
           ) : null}
-          <DialogFooter className="border-t border-border/40 px-0 pt-4">
+          <DialogFooter className="border-border/40 border-t px-0 pt-4">
             <Button
               type="button"
               variant="outline"
@@ -304,4 +326,3 @@ export function EditIcpDialog({ icp }: EditIcpDialogProps) {
     </Dialog>
   );
 }
-

@@ -24,7 +24,7 @@ services:
       - POSTGRES_HOST
     volumes:
       - leadly_postgres_data:/var/lib/postgresql/data
-    
+
     command: >
       postgres 
       -p ${POSTGRES_PORT}
@@ -73,7 +73,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    entrypoint: ["bun", "src/workers/reddit.worker.ts"]
+    entrypoint: ["bun", "dist/workers/reddit.worker.js"]
     container_name: leadly_worker
     image: leadly_worker:${TAG}
     network_mode: host
@@ -159,6 +159,6 @@ volumes:
   leadly_backup_hooks:
 
 networks:
-  default: 
+  default:
     external: true
     name: host

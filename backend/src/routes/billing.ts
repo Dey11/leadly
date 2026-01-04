@@ -22,7 +22,7 @@ async function getUserWithSubscription(userId: string) {
 }
 
 async function ensureCustomerId(
-  user: Awaited<ReturnType<typeof getUserWithSubscription>>
+  user: Awaited<ReturnType<typeof getUserWithSubscription>>,
 ) {
   if (!user?.subscription) {
     throw new Error("Subscription not found");
@@ -56,19 +56,6 @@ async function ensureCustomerId(
   return customer.customer_id;
 }
 
-/**
- * POST /api/v1/billing/subscribe
- * Body: { plan: "pro" | "premium" }
- * Returns: { url: string }
- *
- * Implementation notes:
- * - Uses Dodo-hosted checkout via Checkout Sessions to avoid collecting billing details server-side.
- * - Relies on webhooks for source-of-truth updates post-payment.
- *
- * Docs:
- * - Initialize client: https://context7.com/dodopayments/dodopayments-node/llms.txt
- * - Create Checkout Session: https://github.com/dodopayments/dodopayments-node/blob/main/api.md
- */
 router.post(
   "/subscribe",
   authMiddleware,
@@ -80,34 +67,99 @@ router.post(
       }
 
       const userId = req.userId!;
-      const user = await db.user.findUnique({ where: { id: userId } });
+      const user = await getUserWithSubscription(userId);
       if (!user || user.isDeleted) {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      // Map plan code to Dodo product_id
       const plan = parse.data.plan;
       const productId =
         plan === "pro" ? env.DODO_PRO_PRODUCT_ID : env.DODO_PREMIUM_PRODUCT_ID;
 
-      // Build return URL
+      const existingSubscriptionId = user.subscription?.subscriptionId;
+      const isActive = user.subscription?.status === "ACTIVE";
+
+      console.log(
+        "[Subscribe] Debug:",
+        JSON.stringify({
+          userId,
+          plan,
+          existingSubscriptionId,
+          isActive,
+          subscriptionStatus: user.subscription?.status,
+          tier: user.subscription?.tier,
+        }),
+      );
+
+      if (existingSubscriptionId && isActive) {
+        console.log(
+          "[Subscribe] Using changePlan for:",
+          existingSubscriptionId,
+        );
+
+        const attemptChangePlan = async () => {
+          await client.subscriptions.changePlan(existingSubscriptionId, {
+            product_id: productId,
+            quantity: 1,
+            proration_billing_mode: "prorated_immediately",
+          });
+        };
+
+        try {
+          await attemptChangePlan();
+        } catch (changePlanError: any) {
+          const errorCode = changePlanError?.error?.code;
+
+          if (errorCode === "PREVIOUS_PAYMENT_PENDING") {
+            return res.status(409).json({
+              error: "Plan changes are available after your trial ends.",
+              code: "PAYMENT_PENDING",
+            });
+          }
+
+          if (errorCode === "PLAN_CHANGE_NOT_ALLOWED_FOR_SCHEDULED_CANCELLATION") {
+            console.log("[Subscribe] Subscription scheduled for cancellation, resuming first...");
+            await client.subscriptions.update(existingSubscriptionId, {
+              cancel_at_next_billing_date: false,
+            });
+            console.log("[Subscribe] Subscription resumed, retrying plan change...");
+            try {
+              await attemptChangePlan();
+            } catch (retryError: any) {
+              if (retryError?.error?.code === "PREVIOUS_PAYMENT_PENDING") {
+                return res.status(409).json({
+                  error: "Plan changes are available after your trial ends.",
+                  code: "PAYMENT_PENDING",
+                });
+              }
+              throw retryError;
+            }
+          } else {
+            throw changePlanError;
+          }
+        }
+
+        const newTier = plan === "pro" ? "PRO" : "PREMIUM";
+        await db.subscription.update({
+          where: { userId },
+          data: { tier: newTier as any },
+        });
+        console.log("[Subscribe] Plan changed and DB updated to:", newTier);
+
+        return res.status(200).json({
+          success: true,
+          message: "Plan changed successfully",
+          planChanged: true,
+        });
+      }
+
+      console.log("[Subscribe] Creating new checkout (no active subscription)");
+
       const baseReturn = env.APP_BASE_URL || env.FRONTEND_URL;
       const returnUrl = `${baseReturn.replace(/\/+$/, "")}/billing/result`;
 
-      // Allowed payment methods (fallback includes credit & debit)
-      const allowed_payment_method_types: Array<
-        | "credit"
-        | "debit"
-        | "apple_pay"
-        | "google_pay"
-        | "paypal"
-        | "ach"
-        | "sepa"
-      > = ["credit", "debit"];
+      const existingCustomerId = user.subscription?.subscriptionCustomerId;
 
-      // Create hosted checkout session for a subscription product
-      // Note: Checkout Sessions will handle subscription creation automatically
-      // for recurring products, and collect missing details on-hosted page.
       const session = await client.checkoutSessions.create({
         product_cart: [
           {
@@ -115,32 +167,17 @@ router.post(
             quantity: 1,
           },
         ],
-        customer: {
-          email: user.email,
-          name: user.name,
-        },
-        billing_currency: "USD",
+        ...(existingCustomerId && { customer_id: existingCustomerId }),
+        customer: { email: user.email, name: user.name },
         return_url: returnUrl,
-        allowed_payment_method_types,
         show_saved_payment_methods: true,
         metadata: {
           user_id: userId,
           plan_code: plan,
           source: "backend_subscribe_endpoint",
         },
-        feature_flags: {
-          allow_currency_selection: false,
-          allow_discount_code: true,
-          allow_phone_number_collection: true,
-          allow_tax_id: true,
-          always_create_new_customer: false,
-        },
-      } as any); // SDK supports typed params; casting for compatibility across versions
+      });
 
-      // session.checkout_url is the redirect URL
-      // Sources:
-      // - https://context7.com/dodopayments/dodopayments-node/llms.txt
-      // - https://github.com/dodopayments/dodopayments-node/blob/main/api.md
       const s: any = session as any;
       const url = s?.checkout_url || s?.link || s?.url;
 
@@ -150,13 +187,12 @@ router.post(
           .json({ error: "Failed to create checkout session URL" });
       }
 
-      // Return URL for frontend redirect
       return res.status(200).json({ url });
     } catch (err) {
       console.error("Failed to create subscription link:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 async function createCustomerPortalUrl(userId: string) {
@@ -190,7 +226,7 @@ router.post(
       console.error("Failed to create portal link:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 router.post(
@@ -205,7 +241,7 @@ router.post(
       console.error("Failed to create cancel link:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 export default router;

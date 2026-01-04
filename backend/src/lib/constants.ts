@@ -1,6 +1,6 @@
 import { SubscriptionTier } from "@prisma/client";
 
-export const MIN_RELEVANCE_SCORE = 0.75;
+export const MIN_RELEVANCE_SCORE = 0.7;
 export const MAX_SCRAPE_POSTS_LIMIT = 50;
 
 /**

@@ -9,8 +9,14 @@ import { clientApi } from "@/lib/client/api";
 import { validatePassword } from "@/lib/validation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -24,7 +30,7 @@ export function RegisterForm() {
       if (!name || !email || !password) {
         throw new Error("Please fill every field to continue.");
       }
-      
+
       const passwordError = validatePassword(password);
       if (passwordError) {
         throw new Error(passwordError);
@@ -41,7 +47,7 @@ export function RegisterForm() {
       setFormError(
         error instanceof Error
           ? error.message
-          : "Unable to create your account."
+          : "Unable to create your account.",
       );
     },
   });
@@ -67,9 +73,7 @@ export function RegisterForm() {
             aria-invalid={!!formError && !name}
             required
           />
-          {!name && formError && (
-            <FieldError>Name is required.</FieldError>
-          )}
+          {!name && formError && <FieldError>Name is required.</FieldError>}
         </Field>
         <Field data-invalid={!!formError && !email}>
           <FieldLabel htmlFor="email">Work email</FieldLabel>
@@ -84,16 +88,13 @@ export function RegisterForm() {
             aria-invalid={!!formError && !email}
             required
           />
-          {!email && formError && (
-            <FieldError>Email is required.</FieldError>
-          )}
+          {!email && formError && <FieldError>Email is required.</FieldError>}
         </Field>
         <Field data-invalid={!!formError && !password}>
           <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             placeholder="At least 8 characters"
             autoComplete="new-password"
             value={password}
@@ -118,11 +119,11 @@ export function RegisterForm() {
         {mutation.isPending ? "Creating account..." : "Create account"}
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-center text-sm">
         Already have an account?{" "}
         <Link
           href="/login"
-          className="font-semibold text-primary transition hover:text-primary/80"
+          className="text-primary hover:text-primary/80 font-semibold transition"
         >
           Sign in
         </Link>

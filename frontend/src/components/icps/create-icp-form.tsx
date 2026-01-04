@@ -9,17 +9,20 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AiAssistDialog } from "@/components/icps/ai-assist-dialog";
+import { FieldGroup, Field, FieldLabel } from "@/components/ui/field";
 import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { IcpBasicInfo } from "@/components/icps/icp-basic-info";
+import { IcpDetailedInfo } from "@/components/icps/icp-detailed-info";
+import { IcpSignals } from "@/components/icps/icp-signals";
+import type { IcpFormState } from "@/types/components/icps";
 
-const INITIAL_STATE = {
+const INITIAL_STATE: IcpFormState = {
   name: "",
   summary: "",
   targetPersona: "",
@@ -32,34 +35,26 @@ const INITIAL_STATE = {
 
 export function CreateIcpForm() {
   const router = useRouter();
-  const [formState, setFormState] = useState(INITIAL_STATE);
+  const [formState, setFormState] = useState<IcpFormState>(INITIAL_STATE);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
-  const handleAiValues = (values: {
-    name: string;
-    summary: string;
-    targetPersona: string;
-    pains: string;
-    valueProposition: string;
-    qualifyingSignals: string;
-    disqualifyingSignals: string;
-  }) => {
+  const handleAiValues = (values: Partial<IcpFormState>) => {
     setFormState((prev) => ({ ...prev, ...values }));
     setError(null);
     setSuccess(null);
   };
 
   const updateField =
-    (field: keyof typeof INITIAL_STATE) =>
-      (
-        event: ChangeEvent<
-          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >,
-      ) => {
-        setFormState((prev) => ({ ...prev, [field]: event.target.value }));
-      };
+    (field: keyof IcpFormState) =>
+    (
+      event: ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >,
+    ) => {
+      setFormState((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -141,139 +136,36 @@ export function CreateIcpForm() {
       <CardContent className="">
         <form onSubmit={handleSubmit} className="grid gap-4">
           <FieldGroup>
-            <Field data-invalid={!!error && !formState.name}>
-              <FieldLabel htmlFor="icp-name">ICP name</FieldLabel>
-              <Input
-                id="icp-name"
-                name="name"
-                placeholder="Cold outreach for AI automation agencies"
-                value={formState.name}
-                onChange={updateField("name")}
-                aria-invalid={!!error && !formState.name}
-                required
-              />
-              {!formState.name && error && (
-                <FieldError>Enter a name.</FieldError>
-              )}
-            </Field>
-
-            <Field data-invalid={!!error && !formState.summary}>
-              <FieldLabel htmlFor="icp-summary">
-                Summary of the offer
-              </FieldLabel>
-              <Textarea
-                id="icp-summary"
-                name="summary"
-                placeholder="Briefly explain what you sell and why someone buys it."
-                value={formState.summary}
-                onChange={updateField("summary")}
-                aria-invalid={!!error && !formState.summary}
-                rows={3}
-                required
-              />
-              {!formState.summary && error && (
-                <FieldError>Summarise your offer.</FieldError>
-              )}
-            </Field>
-
-            <Field data-invalid={!!error && !formState.targetPersona}>
-              <FieldLabel htmlFor="icp-persona">Target persona</FieldLabel>
-              <Textarea
-                id="icp-persona"
-                name="targetPersona"
-                placeholder="Roles, company attributes, budget ranges, or market focus that define your ideal buyer."
-                value={formState.targetPersona}
-                onChange={updateField("targetPersona")}
-                aria-invalid={!!error && !formState.targetPersona}
-                rows={3}
-                required
-              />
-              {!formState.targetPersona && error && (
-                <FieldError>Describe who the buyer is.</FieldError>
-              )}
-            </Field>
-
-            <Field data-invalid={!!error && !formState.pains}>
-              <FieldLabel htmlFor="icp-pains">Key pain points</FieldLabel>
-              <Textarea
-                id="icp-pains"
-                name="pains"
-                placeholder="List the specific pains or triggers that make this persona look for help."
-                value={formState.pains}
-                onChange={updateField("pains")}
-                aria-invalid={!!error && !formState.pains}
-                rows={3}
-                required
-              />
-              {!formState.pains && error && (
-                <FieldError>Capture the pains that matter.</FieldError>
-              )}
-            </Field>
-
-            <Field data-invalid={!!error && !formState.valueProposition}>
-              <FieldLabel htmlFor="icp-value">Value proposition</FieldLabel>
-              <Textarea
-                id="icp-value"
-                name="valueProposition"
-                placeholder="Explain how you solve those pains or what outcome you deliver."
-                value={formState.valueProposition}
-                onChange={updateField("valueProposition")}
-                aria-invalid={!!error && !formState.valueProposition}
-                rows={3}
-                required
-              />
-              {!formState.valueProposition && error && (
-                <FieldError>Describe the outcome you promise.</FieldError>
-              )}
-            </Field>
-
-            <Field data-invalid={!!error && !formState.qualifyingSignals}>
-              <FieldLabel htmlFor="icp-qualifiers">
-                Qualifying signals
-              </FieldLabel>
-              <Textarea
-                id="icp-qualifiers"
-                name="qualifyingSignals"
-                placeholder="Signals or keywords that indicate someone is a great fit (e.g. “hiring a RevOps specialist”, “manual onboarding backlog”)."
-                value={formState.qualifyingSignals}
-                onChange={updateField("qualifyingSignals")}
-                aria-invalid={!!error && !formState.qualifyingSignals}
-                rows={4}
-                required
-              />
-              {!formState.qualifyingSignals && error && (
-                <FieldError>List the signals that matter.</FieldError>
-              )}
-            </Field>
-
-            <Field data-invalid={!!error && !formState.disqualifyingSignals}>
-              <FieldLabel htmlFor="icp-disqualifiers">
-                Disqualifying signals
-              </FieldLabel>
-              <Textarea
-                id="icp-disqualifiers"
-                name="disqualifyingSignals"
-                placeholder="Things that should be ignored (e.g. students, DIY hobbyists, budgets under $1k)."
-                value={formState.disqualifyingSignals}
-                onChange={updateField("disqualifyingSignals")}
-                aria-invalid={!!error && !formState.disqualifyingSignals}
-                rows={3}
-                required
-              />
-              {!formState.disqualifyingSignals && error && (
-                <FieldError>Clarify who is not a fit.</FieldError>
-              )}
-            </Field>
+            <IcpBasicInfo
+              values={formState}
+              onChange={updateField}
+              error={error}
+            />
+            <IcpDetailedInfo
+              values={formState}
+              onChange={updateField}
+              error={error}
+            />
+            <IcpSignals
+              values={formState}
+              onChange={updateField}
+              error={error}
+            />
 
             <Field>
               <FieldLabel htmlFor="icp-platform">Platform</FieldLabel>
               <Select
-                id="icp-platform"
-                name="platform"
                 value={formState.platform}
-                onChange={updateField("platform")}
+                onValueChange={(val) =>
+                  setFormState((prev) => ({ ...prev, platform: val }))
+                }
               >
-                <option value="REDDIT">Reddit</option>
+                <SelectTrigger id="icp-platform">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="REDDIT">Reddit</SelectItem>
+                </SelectContent>
               </Select>
             </Field>
           </FieldGroup>
@@ -286,7 +178,7 @@ export function CreateIcpForm() {
           )}
 
           {success && (
-            <Alert variant="success">
+            <Alert className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
               <AlertTitle>ICP created</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>

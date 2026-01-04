@@ -50,6 +50,27 @@ enum SubscriptionTier {
   PREMIUM
 }
 
+enum BugReportCategory {
+  BUG
+  FEATURE_REQUEST
+  QUESTION
+  OTHER
+}
+
+enum BugReportSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum BugReportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -62,28 +83,49 @@ model User {
   subscription Subscription?
   schedule     UserSchedule?
 
-  monitors Monitor[]
-  icps     Icp[]
-  usage    Usage?
+  monitors   Monitor[]
+  icps       Icp[]
+  usage      Usage?
+  bugReports BugReport[]
 
-  name               String
-  emailVerified      Boolean   @default(false)
-  emailOtp           String?
-  emailOtpExpiresAt  DateTime?
-  resetToken         String?   @unique
+  name                String
+  emailVerified       Boolean   @default(false)
+  emailOtp            String?
+  emailOtpExpiresAt   DateTime?
+  resetToken          String?   @unique
   resetTokenExpiresAt DateTime?
-  image              String?
-  sessions           Session[]
-  accounts           Account[]
-  hasSeenWalkthrough Boolean   @default(false)
+  image               String?
+  sessions            Session[]
+  accounts            Account[]
+  hasSeenWalkthrough  Boolean   @default(false)
 
   @@map("users")
+}
+
+model BugReport {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String             @db.Text
+  category    BugReportCategory
+  severity    BugReportSeverity?
+  pageUrl     String?
+  status      BugReportStatus    @default(OPEN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("bug_reports")
 }
 
 model Subscription {
   id     String @id @default(cuid())
   userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   subscriptionCustomerId String? @unique
   subscriptionId         String? @unique
@@ -195,17 +237,17 @@ model ScrapeJob {
 }
 
 model FailedScrapeJob {
-  id            String   @id @default(cuid())
-  monitorId     String
-  monitor       Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  monitorId String
+  monitor   Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 
   originalJobId String   @unique
   errorMessage  String   @db.Text
   failedAt      DateTime @default(now())
   metadata      Json?
 
-  reviewed    Boolean  @default(false)
-  reviewNotes String?  @db.Text
+  reviewed    Boolean @default(false)
+  reviewNotes String? @db.Text
 
   @@index([monitorId])
   @@index([reviewed])

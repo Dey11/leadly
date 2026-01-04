@@ -32,16 +32,16 @@ RUN bunx prisma generate
 # [optional] tests & build
 ENV NODE_ENV=production
 # RUN bun test
-# RUN bun run build
+RUN bun run build
 
 # copy production dependencies and source code into final image
 FROM base AS release
 COPY --from=prerelease /usr/src/app/node_modules node_modules
 COPY --from=prerelease /usr/src/app/package.json .
-COPY --from=prerelease /usr/src/app/src src
+COPY --from=prerelease /usr/src/app/dist dist
 COPY --from=prerelease /usr/src/app/prisma prisma
 COPY --from=prerelease /usr/src/app/prisma.config.ts .
 
 # run the app
 USER bun
-ENTRYPOINT [ "bun", "src/index.ts" ]
+ENTRYPOINT [ "bun", "dist/index.js" ]

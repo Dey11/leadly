@@ -22,7 +22,13 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type EditMonitorDialogProps = {
   monitor: Monitor & { icpName?: string };
@@ -95,25 +101,26 @@ export function EditMonitorDialog({ monitor, icps }: EditMonitorDialogProps) {
         >
           <FieldGroup className="space-y-4">
             <Field data-invalid={!!error && !formState.icpId}>
-              <FieldLabel htmlFor={`monitor-icp-${monitor.id}`}>
-                ICP
-              </FieldLabel>
+              <FieldLabel htmlFor={`monitor-icp-${monitor.id}`}>ICP</FieldLabel>
               <Select
-                id={`monitor-icp-${monitor.id}`}
                 value={formState.icpId}
-                onChange={(event) =>
+                onValueChange={(val) =>
                   setFormState((prev) => ({
                     ...prev,
-                    icpId: event.target.value,
+                    icpId: val,
                   }))
                 }
-                required
               >
-                {icps.map((icp) => (
-                  <option key={icp.id} value={icp.id}>
-                    {icp.name} · {icp.platform}
-                  </option>
-                ))}
+                <SelectTrigger id={`monitor-icp-${monitor.id}`}>
+                  <SelectValue placeholder="Select ICP" />
+                </SelectTrigger>
+                <SelectContent>
+                  {icps.map((icp) => (
+                    <SelectItem key={icp.id} value={icp.id}>
+                      {icp.name} · {icp.platform}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
               {!formState.icpId && error ? (
                 <FieldError>Select an ICP.</FieldError>
@@ -145,27 +152,29 @@ export function EditMonitorDialog({ monitor, icps }: EditMonitorDialogProps) {
                 Status
               </FieldLabel>
               <Select
-                id={`monitor-status-${monitor.id}`}
                 value={formState.status}
-                onChange={(event) =>
+                onValueChange={(val) =>
                   setFormState((prev) => ({
                     ...prev,
-                    status: event.target.value as Monitor["status"],
+                    status: val as Monitor["status"],
                   }))
                 }
               >
-                <option value="ACTIVE">Active</option>
-                <option value="PAUSED">Paused</option>
-                <option value="ARCHIVED">Archived</option>
+                <SelectTrigger id={`monitor-status-${monitor.id}`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="PAUSED">Paused</SelectItem>
+                  <SelectItem value="ARCHIVED">Archived</SelectItem>
+                </SelectContent>
               </Select>
             </Field>
           </FieldGroup>
           {error ? (
-            <p className="text-destructive mt-4 text-sm font-medium">
-              {error}
-            </p>
+            <p className="text-destructive mt-4 text-sm font-medium">{error}</p>
           ) : null}
-          <DialogFooter className="border-t border-border/40 px-0 pt-4">
+          <DialogFooter className="border-border/40 border-t px-0 pt-4">
             <Button
               type="button"
               variant="outline"

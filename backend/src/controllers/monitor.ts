@@ -52,7 +52,7 @@ export const createMonitor = async (req: Request, res: Response) => {
     if (payload.data.platform === "REDDIT") {
       const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
       const isValid = await reddit.validateSubreddit(payload.data.target);
-      
+
       if (!isValid) {
         return res.status(400).json({ error: "Invalid subreddit" });
       }
@@ -127,7 +127,7 @@ export const updateMonitor = async (req: Request, res: Response) => {
     if (payload.data.target && payload.data.platform === "REDDIT") {
       const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
       const isValid = await reddit.validateSubreddit(payload.data.target);
-      
+
       if (!isValid) {
         return res.status(400).json({ error: "Invalid subreddit" });
       }

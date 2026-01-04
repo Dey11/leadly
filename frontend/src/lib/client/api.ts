@@ -92,10 +92,13 @@ export const clientApi = {
       body,
     }),
   resendVerificationEmail: (body: { email: string }) =>
-    request<{ message?: string }>(`${apiBaseUrl}/auth/resend-verification-email`, {
-      method: "POST",
-      body,
-    }),
+    request<{ message?: string }>(
+      `${apiBaseUrl}/auth/resend-verification-email`,
+      {
+        method: "POST",
+        body,
+      },
+    ),
   forgotPassword: (body: { email: string }) =>
     request<{ message?: string }>(`${apiBaseUrl}/auth/forgot-password`, {
       method: "POST",
@@ -172,7 +175,8 @@ export const clientApi = {
     request(`${apiBaseUrl}/account/walkthrough`, { method: "PATCH" }),
   suggestIcp: async (body: { description: string }) => {
     const response = await request<{
-      message: string; payload: {
+      message: string;
+      payload: {
         name: string;
         summary: string;
         targetPersona: string;
@@ -180,14 +184,14 @@ export const clientApi = {
         valueProposition: string;
         qualifyingSignals: string;
         disqualifyingSignals: string;
-      }
+      };
     }>(`${apiBaseUrl}/icps/ai/suggest`, { method: "POST", body });
     return response.payload;
   },
   suggestSubreddits: async (body: { icpId: string }) => {
     const response = await request<{ message: string; payload: string[] }>(
       `${apiBaseUrl}/monitors/ai/suggest-subreddits`,
-      { method: "POST", body }
+      { method: "POST", body },
     );
     return response.payload;
   },
@@ -239,4 +243,20 @@ export const clientApi = {
     }),
   deleteLead: (leadId: string) =>
     request(`${apiBaseUrl}/leads/${leadId}`, { method: "DELETE" }),
+
+  // Bug Reports
+  createBugReport: (body: {
+    title: string;
+    description: string;
+    category: string;
+    severity?: string;
+    pageUrl?: string;
+  }) =>
+    request<{ message: string; payload: { id: string } }>(
+      `${apiBaseUrl}/bug-reports`,
+      {
+        method: "POST",
+        body,
+      },
+    ),
 };

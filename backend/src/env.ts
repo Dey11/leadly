@@ -32,10 +32,17 @@ const envSchema = z.object({
   WEBHOOK_PUBLIC_URL: z.string().url().optional(),
 
   // Feature flags
-  FEATURE_BILLING_ENFORCEMENT: z.enum(["off", "log", "on"]).default("off"),
+  // Enforcement: "on" in production (blocks over-quota), "log" in dev (allows but logs)
+  FEATURE_BILLING_ENFORCEMENT: z
+    .enum(["off", "log", "on"])
+    .default(process.env.NODE_ENV === "production" ? "on" : "log"),
 
   // Resend
   RESEND_API_KEY: z.string().min(1, "RESEND_API_KEY is required"),
+
+  // Discord
+  DISCORD_WEBHOOK_URL: z.string().url().optional(),
+  DISCORD_PAYMENT_WEBHOOK_URL: z.string().url().optional(),
 });
 
 export const env = envSchema.parse(process.env);

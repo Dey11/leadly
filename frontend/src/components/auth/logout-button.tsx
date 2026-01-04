@@ -27,7 +27,7 @@ export function LogoutButton({ children, ...props }: LogoutButtonProps) {
       onClick={() => mutation.mutate()}
       disabled={mutation.isPending || props.disabled}
     >
-      {mutation.isPending ? "Signing out..." : children ?? "Sign out"}
+      {mutation.isPending ? "Signing out..." : (children ?? "Sign out")}
     </Button>
   );
 }

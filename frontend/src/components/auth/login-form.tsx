@@ -4,12 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-
-import { clientApi } from "@/lib/client/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 function sanitizeReturnUrl(value?: string) {
   if (!value) {
@@ -57,16 +61,21 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
       if (!email || !password) {
         throw new Error("Email and password are required.");
       }
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3001"}/api/v1/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3001"}/api/v1/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+          credentials: "include",
+        },
+      );
       const data = await response.json();
       if (!response.ok) {
         if (data.requiresVerification) {
-          router.replace(`/verify-email?email=${encodeURIComponent(data.email)}`);
+          router.replace(
+            `/verify-email?email=${encodeURIComponent(data.email)}`,
+          );
           return;
         }
         throw new Error(data.error || "Login failed");
@@ -80,7 +89,9 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
       router.replace(resolvedReturnUrl ?? "/dashboard");
     },
     onError: (error: unknown) => {
-      setFormError(error instanceof Error ? error.message : "Unable to sign in.");
+      setFormError(
+        error instanceof Error ? error.message : "Unable to sign in.",
+      );
     },
   });
 
@@ -112,15 +123,14 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
             <FieldLabel htmlFor="password">Password</FieldLabel>
             <Link
               href="/forgot-password"
-              className="text-sm font-medium text-primary transition hover:text-primary/80"
+              className="text-primary hover:text-primary/80 text-sm font-medium transition"
             >
               Forgot password?
             </Link>
           </div>
-          <Input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             placeholder="••••••••"
             autoComplete="current-password"
             value={password}
@@ -128,7 +138,9 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
             aria-invalid={!!formError && !password}
             required
           />
-          {!password && formError && <FieldError>Password is required.</FieldError>}
+          {!password && formError && (
+            <FieldError>Password is required.</FieldError>
+          )}
         </Field>
       </FieldGroup>
 
@@ -143,11 +155,11 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
         {mutation.isPending ? "Signing in..." : "Sign in"}
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-center text-sm">
         New to Leadly?{" "}
         <Link
           href="/register"
-          className="font-semibold text-primary transition hover:text-primary/80"
+          className="text-primary hover:text-primary/80 font-semibold transition"
         >
           Create an account
         </Link>

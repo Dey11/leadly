@@ -22,16 +22,18 @@ export function DashboardPageHeader({
       } sm:flex-row sm:items-start sm:justify-between sm:text-left`}
     >
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-foreground sm:text-3xl">
+        <h1 className="font-display text-foreground text-2xl font-semibold sm:text-3xl">
           {title}
         </h1>
         {description ? (
-          <p className="max-w-3xl text-sm text-muted-foreground sm:text-base">
+          <p className="text-muted-foreground max-w-3xl text-sm sm:text-base">
             {description}
           </p>
         ) : null}
       </div>
-      {action ? <div className="flex shrink-0 items-center">{action}</div> : null}
+      {action ? (
+        <div className="flex shrink-0 items-center">{action}</div>
+      ) : null}
     </header>
   );
 }

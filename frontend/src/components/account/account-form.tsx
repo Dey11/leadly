@@ -7,7 +7,13 @@ import { useMutation } from "@tanstack/react-query";
 import { clientApi } from "@/lib/client/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -38,7 +44,9 @@ export function AccountForm({ defaultName, defaultEmail }: AccountFormProps) {
     },
     onError: (error: unknown) => {
       setSuccessMessage(null);
-      setErrorMessage(error instanceof Error ? error.message : "Unable to update.");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Unable to update.",
+      );
     },
   });
 
@@ -46,7 +54,9 @@ export function AccountForm({ defaultName, defaultEmail }: AccountFormProps) {
     mutationFn: () => clientApi.forgotPassword({ email: defaultEmail }),
     onSuccess: () => setPasswordResetSent(true),
     onError: (error: unknown) => {
-      setErrorMessage(error instanceof Error ? error.message : "Failed to send reset email.");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to send reset email.",
+      );
     },
   });
 
@@ -59,7 +69,13 @@ export function AccountForm({ defaultName, defaultEmail }: AccountFormProps) {
           <CardDescription>Manage your account information</CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
-          <form onSubmit={(e) => { e.preventDefault(); profileMutation.mutate(); }} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              profileMutation.mutate();
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="account-name">Full name</Label>
               <Input
@@ -78,7 +94,7 @@ export function AccountForm({ defaultName, defaultEmail }: AccountFormProps) {
             )}
 
             {successMessage && (
-              <Alert variant="success">
+              <Alert className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
                 <AlertTitle>Success</AlertTitle>
                 <AlertDescription>{successMessage}</AlertDescription>
               </Alert>
@@ -98,12 +114,16 @@ export function AccountForm({ defaultName, defaultEmail }: AccountFormProps) {
           <CardDescription>Your account email</CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
-          <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+          <div className="border-border bg-muted/30 flex items-center justify-between rounded-lg border px-4 py-3">
             <div>
-              <p className="text-sm font-medium text-foreground">{defaultEmail}</p>
-              <p className="text-xs text-muted-foreground">Current email</p>
+              <p className="text-foreground text-sm font-medium">
+                {defaultEmail}
+              </p>
+              <p className="text-muted-foreground text-xs">Current email</p>
             </div>
-            <span className="text-xs font-medium text-green-600 bg-green-500/10 px-2 py-1 rounded-full">Verified</span>
+            <span className="rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-600">
+              Verified
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -116,15 +136,16 @@ export function AccountForm({ defaultName, defaultEmail }: AccountFormProps) {
         </CardHeader>
         <CardContent className="pt-4">
           {passwordResetSent ? (
-            <Alert variant="success">
+            <Alert className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
               <AlertTitle>Reset link sent!</AlertTitle>
               <AlertDescription>
-                Check your email ({defaultEmail}) for a link to reset your password.
+                Check your email ({defaultEmail}) for a link to reset your
+                password.
               </AlertDescription>
             </Alert>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 We&apos;ll send a password reset link to your email address.
               </p>
               <Button
@@ -132,7 +153,9 @@ export function AccountForm({ defaultName, defaultEmail }: AccountFormProps) {
                 onClick={() => passwordResetMutation.mutate()}
                 disabled={passwordResetMutation.isPending}
               >
-                {passwordResetMutation.isPending ? "Sending..." : "Send password reset email"}
+                {passwordResetMutation.isPending
+                  ? "Sending..."
+                  : "Send password reset email"}
               </Button>
             </div>
           )}

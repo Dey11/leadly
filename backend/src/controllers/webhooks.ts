@@ -8,6 +8,7 @@ import { getRedis } from "../lib/redis";
 import db from "../lib/db";
 import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
 import { initializeOrResetUsagePeriod } from "../lib/usage";
+import { sendTransactionToDiscord } from "../lib/discord";
 
 /**x
  * Dodo Payments Webhook Handler
@@ -76,7 +77,14 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     const type: string = payload?.type || payload?.event_type || "";
     // Common fields we may use
     const data = payload?.data ?? payload?.object ?? {};
-    const customerId = (data?.customer_id as string | undefined) ?? undefined;
+
+    // Extract customer_id from multiple possible paths in Dodo payload
+    const customerId: string | undefined =
+      (data?.customer_id as string | undefined) ??
+      (data?.customer?.customer_id as string | undefined) ??
+      (payload?.customer_id as string | undefined) ??
+      undefined;
+
     const subscriptionId: string | undefined =
       data?.subscription_id || data?.id;
     const planCode: string | undefined =
@@ -88,7 +96,8 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
         type,
         subscriptionId,
         planCode,
-      })
+        customerId, // Added for debugging
+      }),
     );
 
     const userId = (data?.metadata?.user_id as string | undefined) ?? undefined;
@@ -151,7 +160,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     };
 
     const billingDetails = getBillingDetails(data);
-
+    console.log("[Dodo Webhook] billingDetails:", JSON.stringify(billingDetails));
     const attachCustomerId = async (userId: string, id?: string) => {
       if (!id) return;
       try {
@@ -191,15 +200,33 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               },
             });
 
-            // Initialize/reset usage window on activation
             await initializeOrResetUsagePeriod(
               tx,
               userId,
               tier,
               undefined,
-              periodEnd
+              periodEnd,
             );
           });
+
+          // Notify Discord
+          db.user
+            .findUnique({
+              where: { id: userId },
+              select: { name: true, email: true, isDeleted: true },
+            })
+            .then((user) => {
+              if (user && !user.isDeleted) {
+                sendTransactionToDiscord({
+                  type: "subscription.active",
+                  tier,
+                  user: { name: user.name, email: user.email },
+                  subscriptionId,
+                  periodEnd,
+                });
+              }
+            })
+            .catch((e) => console.error("Discord notify failed", e));
 
           console.log(
             JSON.stringify({
@@ -208,14 +235,14 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               tier,
               subscriptionId,
               periodEnd,
-            })
+            }),
           );
         } else {
           console.warn(
             JSON.stringify({
               warn: "subscription.active.no_user_id",
               subscriptionId,
-            })
+            }),
           );
         }
         break;
@@ -265,9 +292,28 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               userId,
               tierForReset,
               undefined,
-              periodEnd
+              periodEnd,
             );
           });
+
+          // Notify Discord
+          db.user
+            .findUnique({
+              where: { id: userId },
+              select: { name: true, email: true, isDeleted: true },
+            })
+            .then((user) => {
+              if (user && !user.isDeleted) {
+                sendTransactionToDiscord({
+                  type: "subscription.renewed",
+                  tier: tierForReset,
+                  user: { name: user.name, email: user.email },
+                  subscriptionId,
+                  periodEnd,
+                });
+              }
+            })
+            .catch((e) => console.error("Discord notify failed", e));
 
           console.log(
             JSON.stringify({
@@ -276,7 +322,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               subscriptionId,
               periodEnd,
               tierForReset,
-            })
+            }),
           );
           await attachCustomerId(userId, customerId);
         } else {
@@ -284,7 +330,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
             JSON.stringify({
               warn: "subscription.renewed.no_user_id",
               subscriptionId,
-            })
+            }),
           );
         }
         break;
@@ -322,9 +368,28 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 userId,
                 tier,
                 undefined,
-                end
+                end,
               );
             });
+
+            // Notify Discord
+            db.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, isDeleted: true },
+              })
+              .then((user) => {
+                if (user && !user.isDeleted) {
+                  sendTransactionToDiscord({
+                    type: "subscription.plan_changed",
+                    tier,
+                    user: { name: user.name, email: user.email },
+                    subscriptionId,
+                    periodEnd: end,
+                  });
+                }
+              })
+              .catch((e) => console.error("Discord notify failed", e));
 
             console.log(
               JSON.stringify({
@@ -333,7 +398,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 tier,
                 subscriptionId,
                 periodEnd: end,
-              })
+              }),
             );
             await attachCustomerId(userId, customerId);
           } else {
@@ -342,7 +407,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 warn: "subscription.plan_changed.unknown_plan",
                 userId,
                 planCode,
-              })
+              }),
             );
           }
         } else {
@@ -351,65 +416,144 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               warn: "subscription.plan_changed.no_user_id",
               subscriptionId,
               planCode,
-            })
+            }),
           );
         }
         break;
       }
       case "subscription.on_hold": {
-        if (userId) {
-          await db.subscription
-            .update({
-              where: { userId },
-              data: { status: SubscriptionStatus.PAST_DUE },
-            })
-            .catch(() => {});
-          console.log(
-            JSON.stringify({
-              evt: "subscription.on_hold.persisted",
-              userId,
-              subscriptionId,
-            })
-          );
+        if (userId && subscriptionId) {
+          const existing = await db.subscription.findUnique({
+            where: { userId },
+          });
+          if (existing?.subscriptionId === subscriptionId) {
+            await db.subscription
+              .update({
+                where: { userId },
+                data: { status: SubscriptionStatus.PAST_DUE },
+              })
+              .catch(() => {});
+
+            db.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, isDeleted: true },
+              })
+              .then((user) => {
+                if (user && !user.isDeleted) {
+                  sendTransactionToDiscord({
+                    type: "subscription.on_hold",
+                    tier: existing.tier ?? "UNKNOWN",
+                    user: { name: user.name, email: user.email },
+                    subscriptionId,
+                  });
+                }
+              })
+              .catch((e) => console.error("Discord notify failed", e));
+
+            console.log(
+              JSON.stringify({
+                evt: "subscription.on_hold.persisted",
+                userId,
+                subscriptionId,
+              }),
+            );
+          }
         }
         break;
       }
       case "subscription.cancelled": {
-        if (userId) {
-          await db.subscription
-            .update({
-              where: { userId },
-              data: {
-                status: SubscriptionStatus.CANCELED,
-                tier: SubscriptionTier.FREE,
-              },
-            })
-            .catch(() => {});
-          console.log(
-            JSON.stringify({
-              evt: "subscription.cancelled.persisted",
-              userId,
-              subscriptionId,
-            })
-          );
+        if (userId && subscriptionId) {
+          const existing = await db.subscription.findUnique({
+            where: { userId },
+          });
+          if (existing?.subscriptionId === subscriptionId) {
+            await db.subscription
+              .update({
+                where: { userId },
+                data: {
+                  status: SubscriptionStatus.CANCELED,
+                  tier: SubscriptionTier.FREE,
+                },
+              })
+              .catch(() => {});
+
+            db.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, isDeleted: true },
+              })
+              .then((user) => {
+                if (user && !user.isDeleted) {
+                  sendTransactionToDiscord({
+                    type: "subscription.cancelled",
+                    tier: existing.tier ?? "UNKNOWN",
+                    user: { name: user.name, email: user.email },
+                    subscriptionId,
+                  });
+                }
+              })
+              .catch((e) => console.error("Discord notify failed", e));
+
+            console.log(
+              JSON.stringify({
+                evt: "subscription.cancelled.persisted",
+                userId,
+                subscriptionId,
+              }),
+            );
+          } else {
+            console.log(
+              JSON.stringify({
+                evt: "subscription.cancelled.skipped",
+                reason: "subscriptionId_mismatch",
+                userId,
+                webhookSubscriptionId: subscriptionId,
+                storedSubscriptionId: existing?.subscriptionId,
+              }),
+            );
+          }
         }
         break;
       }
       case "subscription.failed": {
-        if (userId) {
-          await db.subscription
-            .update({
-              where: { userId },
-              data: { status: SubscriptionStatus.INCOMPLETE },
-            })
-            .catch(() => {});
-          console.log(
-            JSON.stringify({
-              evt: "subscription.failed.persisted",
-              userId,
-              subscriptionId,
-            })
-          );
+        if (userId && subscriptionId) {
+          const existing = await db.subscription.findUnique({
+            where: { userId },
+          });
+          if (existing?.subscriptionId === subscriptionId) {
+            await db.subscription
+              .update({
+                where: { userId },
+                data: { status: SubscriptionStatus.INCOMPLETE },
+              })
+              .catch(() => {});
+
+            db.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, isDeleted: true },
+              })
+              .then((user) => {
+                if (user && !user.isDeleted) {
+                  sendTransactionToDiscord({
+                    type: "subscription.failed",
+                    tier: existing.tier ?? "UNKNOWN",
+                    user: { name: user.name, email: user.email },
+                    subscriptionId,
+                  });
+                }
+              })
+              .catch((e) => console.error("Discord notify failed", e));
+
+            console.log(
+              JSON.stringify({
+                evt: "subscription.failed.persisted",
+                userId,
+                subscriptionId,
+              }),
+            );
+          }
         }
         break;
       }

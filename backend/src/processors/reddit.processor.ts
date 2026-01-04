@@ -5,7 +5,11 @@ import type { Job } from "bullmq";
 import type { LeadStatus } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { env } from "../env";
-import { MAX_SCRAPE_POSTS_LIMIT, MAX_SCRAPE_RETRY_COUNT, SCRAPE_RETRY_DELAY_MS } from "../lib/constants";
+import {
+  MAX_SCRAPE_POSTS_LIMIT,
+  MAX_SCRAPE_RETRY_COUNT,
+  SCRAPE_RETRY_DELAY_MS,
+} from "../lib/constants";
 
 export async function processScrapeJob(job: Job) {
   console.log("Processing job with data:", job.data);
@@ -30,10 +34,15 @@ export async function processScrapeJob(job: Job) {
     throw new Error("ScrapeJob or Monitor not found");
   }
 
+  if (monitor.user.isDeleted) {
+    console.log(`Skipping job ${job.data.jobId} because user is deleted`);
+    return;
+  }
+
   try {
     const redditClient = new Reddit(
       env.REDDIT_CLIENT_ID,
-      env.REDDIT_CLIENT_SECRET
+      env.REDDIT_CLIENT_SECRET,
     );
     await db.scrapeJob.update({
       where: { id: job.data.jobId },
@@ -48,7 +57,7 @@ export async function processScrapeJob(job: Job) {
     const posts = await redditClient.fetchPosts(
       target,
       MAX_SCRAPE_POSTS_LIMIT,
-      monitor.cursor
+      monitor.cursor,
     );
 
     if (!monitor.icp) {
@@ -110,15 +119,22 @@ export async function processScrapeJob(job: Job) {
     console.error("Job processing failed:", error);
 
     const currentRetryCount = (scrapeJob?.retryCount ?? 0) + 1;
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
-    console.log(`Job ${job.data.jobId} failed. Retry count: ${currentRetryCount}/${MAX_SCRAPE_RETRY_COUNT}`);
+    console.log(
+      `Job ${job.data.jobId} failed. Retry count: ${currentRetryCount}/${MAX_SCRAPE_RETRY_COUNT}`,
+    );
 
     try {
       if (currentRetryCount < MAX_SCRAPE_RETRY_COUNT) {
         // Schedule for retry
         const nextRetryAt = new Date(Date.now() + SCRAPE_RETRY_DELAY_MS);
-        console.log(`Scheduling retry for job ${job.data.jobId} at ${nextRetryAt.toISOString()}`);
+        console.log(
+          `Scheduling retry for job ${
+            job.data.jobId
+          } at ${nextRetryAt.toISOString()}`,
+        );
 
         await db.scrapeJob.update({
           where: { id: job.data.jobId },
@@ -131,7 +147,9 @@ export async function processScrapeJob(job: Job) {
         });
       } else {
         // Permanently failed - move to FailedScrapeJob
-        console.log(`Job ${job.data.jobId} permanently failed after ${MAX_SCRAPE_RETRY_COUNT} retries`);
+        console.log(
+          `Job ${job.data.jobId} permanently failed after ${MAX_SCRAPE_RETRY_COUNT} retries`,
+        );
 
         await db.$transaction([
           db.failedScrapeJob.create({

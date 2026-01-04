@@ -37,11 +37,16 @@ export function DashboardStatCard({
   className,
 }: DashboardStatCardProps) {
   return (
-    <Card className={cn("relative overflow-hidden rounded-3xl border border-border/60 bg-card/90 shadow-sm backdrop-blur", className)}>
-      <div className="pointer-events-none absolute -right-5 top-0 h-24 w-24 rounded-full bg-primary/15 blur-3xl" />
+    <Card
+      className={cn(
+        "border-border/60 bg-card/90 relative overflow-hidden rounded-3xl border shadow-sm backdrop-blur",
+        className,
+      )}
+    >
+      <div className="bg-primary/15 pointer-events-none absolute top-0 -right-5 h-24 w-24 rounded-full blur-3xl" />
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div className="space-y-1">
-          <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <CardTitle className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
             {label}
           </CardTitle>
           {trendLabel ? (
@@ -56,12 +61,12 @@ export function DashboardStatCard({
             </span>
           ) : null}
         </div>
-        <span className="inline-flex size-11 items-center justify-center rounded-2xl bg-primary/12 text-primary shadow-sm">
+        <span className="bg-primary/12 text-primary inline-flex size-11 items-center justify-center rounded-2xl shadow-sm">
           <Icon className="size-5" aria-hidden />
         </span>
       </CardHeader>
       <CardContent className="space-y-2">
-        <p className="text-3xl font-semibold text-foreground md:text-4xl">
+        <p className="text-foreground text-3xl font-semibold md:text-4xl">
           {value}
         </p>
         {hint ? (

@@ -15,31 +15,31 @@ export default function AuthLayout({
 }) {
   return (
     <div className="flex min-h-screen">
-      <div className="relative hidden flex-1 bg-primary lg:block">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-accent opacity-90" />
-        <div className="relative flex h-full flex-col justify-between p-12 text-primary-foreground">
+      <div className="bg-primary relative hidden flex-1 lg:block">
+        <div className="from-primary via-primary/90 to-accent absolute inset-0 bg-gradient-to-br opacity-90" />
+        <div className="text-primary-foreground relative flex h-full flex-col justify-between p-12">
           <div>
-            <span className="inline-flex items-center rounded-full bg-primary-foreground/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary-foreground">
+            <span className="bg-primary-foreground/10 text-primary-foreground inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase">
               Lead Intelligence
             </span>
-            <h1 className="mt-6 max-w-md text-4xl font-semibold leading-tight">
+            <h1 className="mt-6 max-w-md text-4xl leading-tight font-semibold">
               Understand your market by listening to the conversations that
               matter.
             </h1>
           </div>
-          <p className="max-w-sm text-sm text-primary-foreground/80">
+          <p className="text-primary-foreground/80 max-w-sm text-sm">
             Leadly tailors monitoring to your ICP, so you can reach out with the
             right message at the right time.
           </p>
         </div>
       </div>
-      <div className="flex w-full flex-1 items-center justify-center bg-background/70 px-6 py-12 backdrop-blur-md sm:px-8 lg:max-w-xl">
+      <div className="bg-background/70 flex w-full flex-1 items-center justify-center px-6 py-12 backdrop-blur-md sm:px-8 lg:max-w-xl">
         <div className="w-full max-w-md space-y-10">
           <div className="space-y-2 text-center">
-            <h1 className="text-2xl font-semibold text-foreground">
+            <h1 className="text-foreground text-2xl font-semibold">
               Welcome to {siteConfig.name}
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Monitor communities. Spot intent. Close more deals.
             </p>
           </div>
@@ -49,4 +49,3 @@ export default function AuthLayout({
     </div>
   );
 }
-

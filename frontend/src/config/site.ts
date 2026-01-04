@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Leadly",
   description:
     "Leadly is the AI-powered Reddit lead generation platform. Monitor subreddits, score buying intent, and generate qualified B2B leads automatically.",
-  url: "https://leadly.live",
+  url: process.env.NEXT_PUBLIC_APP_URL || "https://leadly.live",
   ogImage: "/assets/og-image.png",
   author: "Leadly",
   keywords: [
@@ -42,9 +42,8 @@ export const siteConfig = {
     "leadly app",
   ],
   links: {
-    leadly: "https://leadly.live"
+    leadly: process.env.NEXT_PUBLIC_APP_URL || "https://leadly.live",
   },
 };
 
 export type SiteConfig = typeof siteConfig;
-

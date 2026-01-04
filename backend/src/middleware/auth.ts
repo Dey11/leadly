@@ -16,7 +16,7 @@ function getClearCookieOptions() {
 export async function authMiddleware(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   const sessionToken = req.cookies.session_token;
   if (!sessionToken) {
@@ -72,4 +72,3 @@ export async function authMiddleware(
 
   next();
 }
-
