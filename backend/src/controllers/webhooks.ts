@@ -10,27 +10,6 @@ import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
 import { initializeOrResetUsagePeriod } from "../lib/usage";
 import { sendTransactionToDiscord } from "../lib/discord";
 
-/**x
- * Dodo Payments Webhook Handler
- *
- * Security:
- * - Verifies signature using standardwebhooks (docs: https://docs.dodopayments.com/developer-resources/webhooks)
- * - Uses raw request body (index registers express.raw before json parser)
- * - Idempotency via Redis on "webhook-id" header
- *
- * Events handled (source-of-truth):
- * - subscription.active
- * - subscription.renewed
- * - subscription.plan_changed
- * - subscription.on_hold
- * - subscription.cancelled
- * - subscription.failed
- *
- * References:
- * - Node client init: https://context7.com/dodopayments/dodopayments-node/llms.txt
- * - Webhooks setup and secret retrieval: https://context7.com/dodopayments/dodopayments-node/llms.txt
- * - Express verify example: https://docs.dodopayments.com/developer-resources/webhooks
- */
 export async function dodoWebhookHandler(req: Request, res: Response) {
   try {
     const headers: WebhookUnbrandedRequiredHeaders = {
