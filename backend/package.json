@@ -16,7 +16,7 @@
     "typecheck": "tsc",
     "lint": "bunx prettier --check .",
     "lint:fix": "bunx prettier --write . && bunx ts-remove-unused-imports ./src",
-    "build": "bun build ./src/index.ts ./src/workers/reddit.worker.ts --outdir ./dist --minify --target bun --external '*'"
+    "build": "bun build ./src/index.ts ./src/workers/reddit.worker.ts --outdir ./dist --minify --target bun"
   },
   "keywords": [],
   "author": "",
