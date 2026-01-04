@@ -66,6 +66,8 @@ services:
       - REDDIT_USERNAME
       - GOOGLE_GENERATIVE_AI_API_KEY
       - RESEND_API_KEY
+      - DISCORD_WEBHOOK_URL
+      - DISCORD_PAYMENT_WEBHOOK_URL
     depends_on:
       - leadly_redis
 
@@ -97,6 +99,8 @@ services:
       - REDDIT_USERNAME
       - GOOGLE_GENERATIVE_AI_API_KEY
       - RESEND_API_KEY
+      - DISCORD_WEBHOOK_URL
+      - DISCORD_PAYMENT_WEBHOOK_URL
     depends_on:
       - leadly_backend
       - leadly_redis
