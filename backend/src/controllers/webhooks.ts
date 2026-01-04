@@ -160,7 +160,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     };
 
     const billingDetails = getBillingDetails(data);
-
+    console.log("[Dodo Webhook] billingDetails:", JSON.stringify(billingDetails));
     const attachCustomerId = async (userId: string, id?: string) => {
       if (!id) return;
       try {
@@ -433,6 +433,24 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 data: { status: SubscriptionStatus.PAST_DUE },
               })
               .catch(() => {});
+
+            db.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, isDeleted: true },
+              })
+              .then((user) => {
+                if (user && !user.isDeleted) {
+                  sendTransactionToDiscord({
+                    type: "subscription.on_hold",
+                    tier: existing.tier ?? "UNKNOWN",
+                    user: { name: user.name, email: user.email },
+                    subscriptionId,
+                  });
+                }
+              })
+              .catch((e) => console.error("Discord notify failed", e));
+
             console.log(
               JSON.stringify({
                 evt: "subscription.on_hold.persisted",
@@ -459,6 +477,24 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 },
               })
               .catch(() => {});
+
+            db.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, isDeleted: true },
+              })
+              .then((user) => {
+                if (user && !user.isDeleted) {
+                  sendTransactionToDiscord({
+                    type: "subscription.cancelled",
+                    tier: existing.tier ?? "UNKNOWN",
+                    user: { name: user.name, email: user.email },
+                    subscriptionId,
+                  });
+                }
+              })
+              .catch((e) => console.error("Discord notify failed", e));
+
             console.log(
               JSON.stringify({
                 evt: "subscription.cancelled.persisted",
@@ -492,6 +528,24 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 data: { status: SubscriptionStatus.INCOMPLETE },
               })
               .catch(() => {});
+
+            db.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, isDeleted: true },
+              })
+              .then((user) => {
+                if (user && !user.isDeleted) {
+                  sendTransactionToDiscord({
+                    type: "subscription.failed",
+                    tier: existing.tier ?? "UNKNOWN",
+                    user: { name: user.name, email: user.email },
+                    subscriptionId,
+                  });
+                }
+              })
+              .catch((e) => console.error("Discord notify failed", e));
+
             console.log(
               JSON.stringify({
                 evt: "subscription.failed.persisted",

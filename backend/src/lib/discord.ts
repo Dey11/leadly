@@ -107,6 +107,7 @@ const TRANSACTION_COLORS: Record<string, number> = {
   "subscription.renewed": 0x3b82f6, // blue
   "subscription.plan_changed": 0xa855f7, // purple
   "subscription.cancelled": 0xf97316, // orange
+  "subscription.on_hold": 0xeab308, // yellow
   "subscription.failed": 0xdc2626, // red
 };
 
@@ -115,6 +116,7 @@ const TRANSACTION_TITLES: Record<string, string> = {
   "subscription.renewed": "🔄 Subscription Renewed",
   "subscription.plan_changed": "⬆️ Plan Changed",
   "subscription.cancelled": "⚠️ Subscription Cancelled",
+  "subscription.on_hold": "⏸️ Subscription On Hold",
   "subscription.failed": "❌ Payment Failed",
 };
 

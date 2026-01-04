@@ -96,34 +96,61 @@ router.post(
           "[Subscribe] Using changePlan for:",
           existingSubscriptionId,
         );
-        try {
+
+        const attemptChangePlan = async () => {
           await client.subscriptions.changePlan(existingSubscriptionId, {
             product_id: productId,
             quantity: 1,
             proration_billing_mode: "prorated_immediately",
           });
+        };
 
-          const newTier = plan === "pro" ? "PRO" : "PREMIUM";
-          await db.subscription.update({
-            where: { userId },
-            data: { tier: newTier as any },
-          });
-          console.log("[Subscribe] Plan changed and DB updated to:", newTier);
-
-          return res.status(200).json({
-            success: true,
-            message: "Plan changed successfully",
-            planChanged: true,
-          });
+        try {
+          await attemptChangePlan();
         } catch (changePlanError: any) {
-          if (changePlanError?.error?.code === "PREVIOUS_PAYMENT_PENDING") {
+          const errorCode = changePlanError?.error?.code;
+
+          if (errorCode === "PREVIOUS_PAYMENT_PENDING") {
             return res.status(409).json({
               error: "Plan changes are available after your trial ends.",
               code: "PAYMENT_PENDING",
             });
           }
-          throw changePlanError;
+
+          if (errorCode === "PLAN_CHANGE_NOT_ALLOWED_FOR_SCHEDULED_CANCELLATION") {
+            console.log("[Subscribe] Subscription scheduled for cancellation, resuming first...");
+            await client.subscriptions.update(existingSubscriptionId, {
+              cancel_at_next_billing_date: false,
+            });
+            console.log("[Subscribe] Subscription resumed, retrying plan change...");
+            try {
+              await attemptChangePlan();
+            } catch (retryError: any) {
+              if (retryError?.error?.code === "PREVIOUS_PAYMENT_PENDING") {
+                return res.status(409).json({
+                  error: "Plan changes are available after your trial ends.",
+                  code: "PAYMENT_PENDING",
+                });
+              }
+              throw retryError;
+            }
+          } else {
+            throw changePlanError;
+          }
         }
+
+        const newTier = plan === "pro" ? "PRO" : "PREMIUM";
+        await db.subscription.update({
+          where: { userId },
+          data: { tier: newTier as any },
+        });
+        console.log("[Subscribe] Plan changed and DB updated to:", newTier);
+
+        return res.status(200).json({
+          success: true,
+          message: "Plan changed successfully",
+          planChanged: true,
+        });
       }
 
       console.log("[Subscribe] Creating new checkout (no active subscription)");
@@ -140,9 +167,8 @@ router.post(
             quantity: 1,
           },
         ],
-        ...(existingCustomerId
-          ? { customer_id: existingCustomerId }
-          : { customer: { email: user.email, name: user.name } }),
+        ...(existingCustomerId && { customer_id: existingCustomerId }),
+        customer: { email: user.email, name: user.name },
         return_url: returnUrl,
         show_saved_payment_methods: true,
         metadata: {
