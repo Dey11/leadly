@@ -52,11 +52,17 @@
 ## Todo
 
 - [ ] billing checks
+- [ ] update offerings properly in backend & readme
+
+- [ ] sub cancel discord msg not sent
+- [ ] sub failure redirect didnt happen
 
 * global rate limits ok, in memory
 
 ## Future scope
 
+- [ ] deleting monitors shouldnt delete the leads
+- [ ] add the source of leads (which monitor they came from)
 - [ ] Notification system
 - [ ] Cold dm builder
 - [ ] Error logging using sentry

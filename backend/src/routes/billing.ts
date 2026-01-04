@@ -79,17 +79,23 @@ router.post(
       const existingSubscriptionId = user.subscription?.subscriptionId;
       const isActive = user.subscription?.status === "ACTIVE";
 
-      console.log("[Subscribe] Debug:", JSON.stringify({
-        userId,
-        plan,
-        existingSubscriptionId,
-        isActive,
-        subscriptionStatus: user.subscription?.status,
-        tier: user.subscription?.tier,
-      }));
+      console.log(
+        "[Subscribe] Debug:",
+        JSON.stringify({
+          userId,
+          plan,
+          existingSubscriptionId,
+          isActive,
+          subscriptionStatus: user.subscription?.status,
+          tier: user.subscription?.tier,
+        }),
+      );
 
       if (existingSubscriptionId && isActive) {
-        console.log("[Subscribe] Using changePlan for:", existingSubscriptionId);
+        console.log(
+          "[Subscribe] Using changePlan for:",
+          existingSubscriptionId,
+        );
         try {
           await client.subscriptions.changePlan(existingSubscriptionId, {
             product_id: productId,
@@ -104,14 +110,14 @@ router.post(
           });
           console.log("[Subscribe] Plan changed and DB updated to:", newTier);
 
-          return res.status(200).json({ 
-            success: true, 
+          return res.status(200).json({
+            success: true,
             message: "Plan changed successfully",
             planChanged: true,
           });
         } catch (changePlanError: any) {
           if (changePlanError?.error?.code === "PREVIOUS_PAYMENT_PENDING") {
-            return res.status(409).json({ 
+            return res.status(409).json({
               error: "Plan changes are available after your trial ends.",
               code: "PAYMENT_PENDING",
             });
@@ -126,7 +132,7 @@ router.post(
       const returnUrl = `${baseReturn.replace(/\/+$/, "")}/billing/result`;
 
       const existingCustomerId = user.subscription?.subscriptionCustomerId;
-      
+
       const session = await client.checkoutSessions.create({
         product_cart: [
           {
@@ -134,17 +140,16 @@ router.post(
             quantity: 1,
           },
         ],
-        ...(existingCustomerId 
+        ...(existingCustomerId
           ? { customer_id: existingCustomerId }
-          : { customer: { email: user.email, name: user.name } }
-        ),
+          : { customer: { email: user.email, name: user.name } }),
         return_url: returnUrl,
         show_saved_payment_methods: true,
         metadata: {
           user_id: userId,
           plan_code: plan,
           source: "backend_subscribe_endpoint",
-        }
+        },
       });
 
       const s: any = session as any;
