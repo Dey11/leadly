@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
@@ -159,20 +160,28 @@ export function Hero() {
             {/* Glassy border container */}
             <div className="rounded-t-xl border border-b-0 border-white/40 bg-white/20 p-2 pb-0 shadow-2xl backdrop-blur-sm sm:rounded-t-2xl sm:p-3 sm:pb-0 dark:border-white/10 dark:bg-white/5">
               <div className="bg-card relative overflow-hidden rounded-t-lg sm:rounded-t-xl">
-                <div className="relative w-full">
-                  <img
+                <div className="relative w-full aspect-[3720/1718]">
+                  <Image
                     src="/dashboard.png"
                     alt="Leadly Dashboard Light"
-                    className={`-mt-[5px] block h-auto w-full transition-opacity duration-500 ${
+                    width={3720}
+                    height={1718}
+                    priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
+                    className={`-mt-[5px] object-cover transition-opacity duration-500 ${
                       mounted && resolvedTheme === "dark"
                         ? "absolute inset-0 opacity-0"
                         : "relative opacity-100"
                     }`}
                   />
-                  <img
+                  <Image
                     src="/dashboard-dark.png"
                     alt="Leadly Dashboard Dark"
-                    className={`-mt-[5px] block h-auto w-full transition-opacity duration-500 ${
+                    width={3720}
+                    height={1718}
+                    priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
+                    className={`-mt-[5px] object-cover transition-opacity duration-500 ${
                       mounted && resolvedTheme === "dark"
                         ? "relative opacity-100"
                         : "absolute inset-0 opacity-0"
