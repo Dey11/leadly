@@ -28,9 +28,7 @@ export function PricingRedesigned() {
             Simple, predictable pricing
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-            Start with a{" "}
-            <span className="text-primary font-semibold">3-day free trial</span>
-            . Lock in these prices forever.
+            Lock in these prices forever as a beta user.
           </p>
         </motion.div>
 
@@ -150,8 +148,7 @@ export function PricingRedesigned() {
         </div>
 
         <p className="text-muted-foreground mt-10 text-center text-sm">
-          All plans include a 3-day free trial. No credit card required to sign
-          up.
+          No credit card required to sign up.
         </p>
       </div>
     </section>

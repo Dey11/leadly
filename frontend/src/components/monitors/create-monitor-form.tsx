@@ -107,7 +107,6 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
 
   const handleSelectSuggestion = (subreddit: string) => {
     setTarget(subreddit);
-    setSuggestions([]);
   };
 
   if (icps.length === 0) {

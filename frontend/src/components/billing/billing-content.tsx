@@ -53,13 +53,9 @@ export async function BillingContent() {
           </p>
 
           {isFreeTier && (
-            <div className="mt-4 max-w-2xl rounded-xl border border-green-500/20 bg-green-500/10 p-4">
-              <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                🎉 New subscribers get a <strong>3-day free trial</strong> on
-                paid plans!
-              </p>
-              <p className="mt-1 text-xs text-green-600/80 dark:text-green-400/80">
-                Beta users lock in their discounted price for life.
+            <div className="mt-4 max-w-2xl rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
+              <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                🎉 Beta users lock in their discounted price for life.
               </p>
             </div>
           )}
