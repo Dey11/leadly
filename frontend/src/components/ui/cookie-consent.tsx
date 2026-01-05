@@ -64,7 +64,7 @@ export function CookieConsent() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 100, scale: 0.9 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed right-4 bottom-4 z-50 w-full max-w-md"
+          className="fixed inset-x-4 bottom-4 z-50 max-w-md sm:inset-x-auto sm:right-4 sm:w-auto"
         >
           <div className="bg-card/95 border-border/60 overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-xl">
             {/* Header */}
