@@ -13,7 +13,7 @@ export const SEO_CONFIG = {
       "keyword tracking",
       "lead scoring",
     ],
-    ogImage: "/assets/og-home.png",
+    ogImage: "/assets/og-image.png",
   },
   auth: {
     login: {
