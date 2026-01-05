@@ -140,8 +140,7 @@ export default function TermsPage() {
           <h3 className="text-foreground text-lg font-medium">Pricing</h3>
           <p className="text-muted-foreground leading-relaxed">
             Leadly offers Free, Pro ($9/month), and Premium ($24/month) plans.
-            All new plans come with a 3-day free trial. Prices are subject to
-            change with 30 days notice to existing subscribers.
+            Prices are subject to change with 30 days notice to existing subscribers.
           </p>
 
           <h3 className="text-foreground mt-4 text-lg font-medium">Billing</h3>

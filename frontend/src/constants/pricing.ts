@@ -17,7 +17,6 @@ export const BILLING_PLANS: Record<
     href: string;
     originalPrice?: string;
     discountLabel?: string;
-    trialInfo?: string;
     betaLockIn?: string;
   }
 > = {
@@ -55,11 +54,10 @@ export const BILLING_PLANS: Record<
       "Advanced AI filters w/ reasoning",
       "Priority email support",
     ],
-    ctaLabel: "Start 3-Day Trial",
+    ctaLabel: "Get Started",
     href: "/dashboard/billing",
     originalPrice: "$9",
     discountLabel: "50% Beta Discount",
-    trialInfo: "3-day free trial",
     betaLockIn: "Lock in this price forever",
   },
   PREMIUM: {
@@ -79,11 +77,10 @@ export const BILLING_PLANS: Record<
       "Priority feature access",
       "Free credits on new features",
     ],
-    ctaLabel: "Start 3-Day Trial",
+    ctaLabel: "Get Started",
     href: "/dashboard/billing",
     originalPrice: "$24",
     discountLabel: "50% Beta Discount",
-    trialInfo: "3-day free trial",
     betaLockIn: "Lock in this price forever",
   },
 };

@@ -99,17 +99,12 @@ export function Pricing() {
                         )}
                       </div>
 
-                      {/* Trial and Beta Lock-in badges */}
-                      {plan.trialInfo && (
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-600 dark:text-green-400">
-                            {plan.trialInfo}
+                      {/* Beta Lock-in badge */}
+                      {plan.betaLockIn && (
+                        <div className="mt-2">
+                          <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                            {plan.betaLockIn}
                           </span>
-                          {plan.betaLockIn && (
-                            <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                              {plan.betaLockIn}
-                            </span>
-                          )}
                         </div>
                       )}
                     </div>

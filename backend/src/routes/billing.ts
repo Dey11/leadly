@@ -112,7 +112,7 @@ router.post(
 
           if (errorCode === "PREVIOUS_PAYMENT_PENDING") {
             return res.status(409).json({
-              error: "Plan changes are available after your trial ends.",
+              error: "Please wait for your previous payment to complete before changing plans.",
               code: "PAYMENT_PENDING",
             });
           }
@@ -128,7 +128,7 @@ router.post(
             } catch (retryError: any) {
               if (retryError?.error?.code === "PREVIOUS_PAYMENT_PENDING") {
                 return res.status(409).json({
-                  error: "Plan changes are available after your trial ends.",
+                  error: "Please wait for your previous payment to complete before changing plans.",
                   code: "PAYMENT_PENDING",
                 });
               }
