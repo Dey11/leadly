@@ -26,9 +26,7 @@ interface LeadsFilterBarProps {
   onFilterChange: (filters: Partial<FilterState>) => void;
   tier: SubscriptionTier;
   hasLeads: boolean;
-  isExporting: boolean;
   onExport: () => void;
-  exportError: string | null;
 }
 
 const leadStatusOptions: { label: string; value: LeadStatus }[] = [
@@ -44,9 +42,7 @@ export function LeadsFilterBar({
   onFilterChange,
   tier,
   hasLeads,
-  isExporting,
   onExport,
-  exportError,
 }: LeadsFilterBarProps) {
   return (
     <div className="border-border/60 bg-card/80 rounded-3xl border p-6 shadow-sm">
@@ -162,7 +158,7 @@ export function LeadsFilterBar({
                       if (tier !== "PREMIUM") return;
                       onExport();
                     }}
-                    disabled={!hasLeads || isExporting || tier !== "PREMIUM"}
+                    disabled={!hasLeads || tier !== "PREMIUM"}
                     className={`flex items-center gap-1.5 ${
                       tier !== "PREMIUM" ? "opacity-50" : ""
                     }`}
@@ -181,11 +177,6 @@ export function LeadsFilterBar({
               )}
             </Tooltip>
           </TooltipProvider>
-          {exportError && (
-            <span className="text-destructive text-sm" role="alert">
-              {exportError}
-            </span>
-          )}
         </div>
       </div>
     </div>

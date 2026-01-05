@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SearchX } from "lucide-react";
 
 import { clientApi } from "@/lib/client/api";
-import type { LeadStatus, LeadSummary } from "@/types/backend";
+import type { LeadStatus } from "@/types/backend";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,42 +13,13 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { LeadsTable } from "@/components/leads/leads-table";
 import { LeadsFilterBar } from "@/components/leads/leads-filter-bar";
 import { LeadDetailDialog } from "@/components/leads/lead-detail-dialog";
+import { ExportCsvDialog } from "@/components/leads/export-csv-dialog";
 import { DATA_REFRESH_INTERVAL } from "@/constants/config";
 import type { LeadsViewProps, FilterState } from "@/types/components/leads";
 
-function exportLeadsToCsv(leads: LeadSummary[], filename: string) {
-  const headers = ["Type", "Status", "Content", "URL", "Author", "Created At"];
-  const escapeField = (field: string) => {
-    if (field.includes('"') || field.includes(",") || field.includes("\n")) {
-      return `"${field.replace(/"/g, '""')}"`;
-    }
-    return field;
-  };
-
-  const rows = leads.map((lead) => [
-    lead.leadType,
-    lead.status,
-    escapeField(lead.content),
-    lead.url,
-    lead.author || "",
-    new Date(lead.createdAt).toISOString(),
-  ]);
-
-  const csv = [headers.join(","), ...rows.map((row) => row.join(","))].join(
-    "\n",
-  );
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
 export function LeadsView({ monitors, tier }: LeadsViewProps) {
   const queryClient = useQueryClient();
-  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     monitorId: "",
     status: "",
@@ -197,13 +168,7 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
         }}
         tier={tier}
         hasLeads={leads.length > 0}
-        isExporting={leadsQuery.isLoading}
-        exportError={exportError}
-        onExport={() => {
-          setExportError(null);
-          const filename = `leads-${new Date().toISOString().split("T")[0]}.csv`;
-          exportLeadsToCsv(leads, filename);
-        }}
+        onExport={() => setExportDialogOpen(true)}
       />
 
       {feedback && (
@@ -332,6 +297,18 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
         tone="destructive"
         loading={!!deleteTarget && deletingLeadId === deleteTarget.id}
         onConfirm={confirmDeleteLead}
+      />
+
+      <ExportCsvDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        currentPage={filters.page}
+        totalPages={totalPages}
+        currentFilters={{
+          monitorId: filters.monitorId || undefined,
+          status: filters.status,
+          leadType: filters.leadType,
+        }}
       />
     </div>
   );
