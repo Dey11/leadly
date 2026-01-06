@@ -81,10 +81,20 @@ export async function incrementRateLimit(
   const email = req.body?.email?.toLowerCase() || "";
   const key = `${config.keyPrefix}:${ip}:${email}`;
 
-  const current = await redis.incr(key);
-  if (current === 1) {
-    await redis.pexpire(key, config.windowMs);
-  }
+  const luaScript = `
+    local current = redis.call("INCR", KEYS[1])
+    if current == 1 then
+      redis.call("PEXPIRE", KEYS[1], ARGV[1])
+    end
+    return current
+  `;
+
+  const current = (await redis.eval(
+    luaScript,
+    1,
+    key,
+    config.windowMs,
+  )) as number;
   return current;
 }
 
@@ -98,10 +108,20 @@ export function rateLimit(action: keyof typeof rateLimitConfigs) {
       const email = req.body?.email?.toLowerCase() || "";
       const key = `${config.keyPrefix}:${ip}:${email}`;
 
-      const current = await redis.incr(key);
-      if (current === 1) {
-        await redis.pexpire(key, config.windowMs);
-      }
+      const luaScript = `
+        local current = redis.call("INCR", KEYS[1])
+        if current == 1 then
+          redis.call("PEXPIRE", KEYS[1], ARGV[1])
+        end
+        return current
+      `;
+
+      const current = (await redis.eval(
+        luaScript,
+        1,
+        key,
+        config.windowMs,
+      )) as number;
 
       const ttl = await redis.pttl(key);
       res.setHeader("X-RateLimit-Limit", config.maxRequests);
@@ -189,10 +209,20 @@ export function userRateLimit(action: UserRateLimitAction) {
       const redis = getRedis();
       const key = `${config.keyPrefix}:${userId}`;
 
-      const current = await redis.incr(key);
-      if (current === 1) {
-        await redis.pexpire(key, config.windowMs);
-      }
+      const luaScript = `
+        local current = redis.call("INCR", KEYS[1])
+        if current == 1 then
+          redis.call("PEXPIRE", KEYS[1], ARGV[1])
+        end
+        return current
+      `;
+
+      const current = (await redis.eval(
+        luaScript,
+        1,
+        key,
+        config.windowMs,
+      )) as number;
 
       const ttl = await redis.pttl(key);
       res.setHeader("X-RateLimit-Limit", config.maxRequests);
