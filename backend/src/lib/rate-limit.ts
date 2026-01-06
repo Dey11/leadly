@@ -202,13 +202,15 @@ export function userRateLimit(action: UserRateLimitAction) {
       const redis = getRedis();
       const key = `${config.keyPrefix}:${userId}`;
 
-      const current = (await redis.eval(
-        RATE_LIMIT_LUA_SCRIPT,
-        1,
-        key,
-        config.windowMs,
-      )) as number;
+      const luaScript = `
+        local current = redis.call("INCR", KEYS[1])
+        if current == 1 then
+          redis.call("PEXPIRE", KEYS[1], ARGV[1])
+        end
+        return current
+      `;
 
+      const current = (await redis.eval(luaScript, 1, key, config.windowMs)) as number;
       const ttl = await redis.pttl(key);
       res.setHeader("X-RateLimit-Limit", config.maxRequests);
       res.setHeader(
