@@ -3,11 +3,11 @@ import { getRedis } from "./redis";
 
 // Lua script for atomic rate limit increment with expiry
 const RATE_LIMIT_LUA_SCRIPT = `
-  local current = redis.call("INCR", KEYS[1])
-  if current == 1 then
-    redis.call("PEXPIRE", KEYS[1], ARGV[1])
-  end
-  return current
+local current = redis.call("INCR", KEYS[1])
+if current == 1 then
+  redis.call("PEXPIRE", KEYS[1], ARGV[1])
+end
+return current
 `;
 
 type RateLimitConfig = {
