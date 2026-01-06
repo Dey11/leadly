@@ -126,7 +126,12 @@ export function rateLimit(action: keyof typeof rateLimitConfigs) {
   };
 }
 
-export type UserRateLimitAction = "read" | "write" | "delete" | "ai" | "billing";
+export type UserRateLimitAction =
+  | "read"
+  | "write"
+  | "delete"
+  | "ai"
+  | "billing";
 
 type UserRateLimitConfig = {
   windowMs: number;
@@ -135,7 +140,10 @@ type UserRateLimitConfig = {
   message: string;
 };
 
-export const userRateLimitConfigs: Record<UserRateLimitAction, UserRateLimitConfig> = {
+export const userRateLimitConfigs: Record<
+  UserRateLimitAction,
+  UserRateLimitConfig
+> = {
   read: {
     windowMs: 60 * 1000,
     maxRequests: 100,

@@ -12,10 +12,29 @@ router.post(
   userRateLimit("ai"),
   monitorAiController.suggestSubreddits,
 );
-router.post("/", authMiddleware, userRateLimit("write"), monitorController.createMonitor);
-router.get("/", authMiddleware, userRateLimit("read"), monitorController.getMonitors);
-router.put("/:id", authMiddleware, userRateLimit("write"), monitorController.updateMonitor);
-router.delete("/:id", authMiddleware, userRateLimit("delete"), monitorController.deleteMonitor);
+router.post(
+  "/",
+  authMiddleware,
+  userRateLimit("write"),
+  monitorController.createMonitor,
+);
+router.get(
+  "/",
+  authMiddleware,
+  userRateLimit("read"),
+  monitorController.getMonitors,
+);
+router.put(
+  "/:id",
+  authMiddleware,
+  userRateLimit("write"),
+  monitorController.updateMonitor,
+);
+router.delete(
+  "/:id",
+  authMiddleware,
+  userRateLimit("delete"),
+  monitorController.deleteMonitor,
+);
 
 export default router;
-

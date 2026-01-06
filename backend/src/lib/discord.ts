@@ -28,7 +28,7 @@ export async function sendBugReportToDiscord(
   }
 
   const color = report.severity
-    ? SEVERITY_COLORS[report.severity] ?? 0x6b7280
+    ? (SEVERITY_COLORS[report.severity] ?? 0x6b7280)
     : 0x6b7280;
 
   const categoryLabel = CATEGORY_LABELS[report.category] ?? report.category;

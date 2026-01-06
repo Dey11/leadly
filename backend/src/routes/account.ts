@@ -16,10 +16,29 @@ accountRouter.get("/", authMiddleware, userRateLimit("read"), getAccount);
 
 accountRouter.patch("/", authMiddleware, userRateLimit("write"), patchAccount);
 
-accountRouter.delete("/", authMiddleware, userRateLimit("delete"), deleteAccount);
+accountRouter.delete(
+  "/",
+  authMiddleware,
+  userRateLimit("delete"),
+  deleteAccount,
+);
 
-accountRouter.get("/sessions", authMiddleware, userRateLimit("read"), getAccountSessions);
+accountRouter.get(
+  "/sessions",
+  authMiddleware,
+  userRateLimit("read"),
+  getAccountSessions,
+);
 
-accountRouter.get("/usage", authMiddleware, userRateLimit("read"), getUsageSummary);
-accountRouter.patch("/walkthrough", authMiddleware, userRateLimit("write"), updateWalkthroughStatus);
-
+accountRouter.get(
+  "/usage",
+  authMiddleware,
+  userRateLimit("read"),
+  getUsageSummary,
+);
+accountRouter.patch(
+  "/walkthrough",
+  authMiddleware,
+  userRateLimit("write"),
+  updateWalkthroughStatus,
+);

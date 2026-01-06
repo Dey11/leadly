@@ -160,7 +160,7 @@ export function Hero() {
             {/* Glassy border container */}
             <div className="rounded-t-xl border border-b-0 border-white/40 bg-white/20 p-2 pb-0 shadow-2xl backdrop-blur-sm sm:rounded-t-2xl sm:p-3 sm:pb-0 dark:border-white/10 dark:bg-white/5">
               <div className="bg-card relative overflow-hidden rounded-t-lg sm:rounded-t-xl">
-                <div className="relative w-full aspect-[3720/1718]">
+                <div className="relative aspect-[3720/1718] w-full">
                   <Image
                     src="/dashboard.png"
                     alt="Leadly Dashboard Light"

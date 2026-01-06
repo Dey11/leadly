@@ -178,7 +178,9 @@ export function BetaPerks() {
             >
               <Link href="/register">
                 <span className="md:hidden">Join the beta →</span>
-                <span className="hidden md:inline">Join the beta and lock in pricing forever →</span>
+                <span className="hidden md:inline">
+                  Join the beta and lock in pricing forever →
+                </span>
               </Link>
             </Button>
           </motion.div>

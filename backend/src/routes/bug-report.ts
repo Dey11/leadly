@@ -5,8 +5,12 @@ import { userRateLimit } from "../lib/rate-limit";
 
 const bugReportRouter = Router();
 
-bugReportRouter.post("/", authMiddleware, userRateLimit("write"), createBugReport);
+bugReportRouter.post(
+  "/",
+  authMiddleware,
+  userRateLimit("write"),
+  createBugReport,
+);
 bugReportRouter.get("/", authMiddleware, userRateLimit("read"), listBugReports);
 
 export default bugReportRouter;
-

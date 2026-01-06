@@ -114,23 +114,31 @@ router.post(
 
           if (errorCode === "PREVIOUS_PAYMENT_PENDING") {
             return res.status(409).json({
-              error: "Please wait for your previous payment to complete before changing plans.",
+              error:
+                "Please wait for your previous payment to complete before changing plans.",
               code: "PAYMENT_PENDING",
             });
           }
 
-          if (errorCode === "PLAN_CHANGE_NOT_ALLOWED_FOR_SCHEDULED_CANCELLATION") {
-            console.log("[Subscribe] Subscription scheduled for cancellation, resuming first...");
+          if (
+            errorCode === "PLAN_CHANGE_NOT_ALLOWED_FOR_SCHEDULED_CANCELLATION"
+          ) {
+            console.log(
+              "[Subscribe] Subscription scheduled for cancellation, resuming first...",
+            );
             await client.subscriptions.update(existingSubscriptionId, {
               cancel_at_next_billing_date: false,
             });
-            console.log("[Subscribe] Subscription resumed, retrying plan change...");
+            console.log(
+              "[Subscribe] Subscription resumed, retrying plan change...",
+            );
             try {
               await attemptChangePlan();
             } catch (retryError: any) {
               if (retryError?.error?.code === "PREVIOUS_PAYMENT_PENDING") {
                 return res.status(409).json({
-                  error: "Please wait for your previous payment to complete before changing plans.",
+                  error:
+                    "Please wait for your previous payment to complete before changing plans.",
                   code: "PAYMENT_PENDING",
                 });
               }

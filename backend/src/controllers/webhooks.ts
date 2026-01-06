@@ -32,8 +32,8 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     const raw = Buffer.isBuffer(req.body)
       ? req.body.toString("utf8")
       : typeof req.body === "string"
-      ? req.body
-      : JSON.stringify(req.body ?? {});
+        ? req.body
+        : JSON.stringify(req.body ?? {});
     const redis = getRedis();
     const idemKey = `dodo:webhooks:${headers["webhook-id"]}`;
     const created = await redis.setnx(idemKey, "1"); // 1 if key set, 0 if exists
@@ -129,7 +129,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
       const address =
         addressFields && typeof addressFields === "object"
           ? JSON.stringify(addressFields)
-          : addressFields ?? undefined;
+          : (addressFields ?? undefined);
       return {
         billingName: name ?? undefined,
         billingEmail: email ?? undefined,
@@ -139,7 +139,10 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     };
 
     const billingDetails = getBillingDetails(data);
-    console.log("[Dodo Webhook] billingDetails:", JSON.stringify(billingDetails));
+    console.log(
+      "[Dodo Webhook] billingDetails:",
+      JSON.stringify(billingDetails),
+    );
     const attachCustomerId = async (userId: string, id?: string) => {
       if (!id) return;
       try {
