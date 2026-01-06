@@ -12,6 +12,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ThemeFavicon } from "@/components/providers/ThemeFavicon";
 import { CookieConsent } from "@/components/ui/cookie-consent";
+import { Toaster } from "@/components/ui/sonner";
 import {
   UmamiScript,
   GoogleAnalytics,
@@ -134,6 +135,7 @@ export default function RootLayout({
             )}
             {children}
             <CookieConsent />
+            <Toaster richColors position="top-right" />
           </QueryProvider>
         </ThemeProvider>
       </body>

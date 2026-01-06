@@ -8,16 +8,37 @@ import {
   updateWalkthroughStatus,
 } from "../controllers/account";
 import { authMiddleware } from "../middleware/auth";
+import { userRateLimit } from "../lib/rate-limit";
 
 export const accountRouter = Router();
 
-accountRouter.get("/", authMiddleware, getAccount);
+accountRouter.get("/", authMiddleware, userRateLimit("read"), getAccount);
 
-accountRouter.patch("/", authMiddleware, patchAccount);
+accountRouter.patch("/", authMiddleware, userRateLimit("write"), patchAccount);
 
-accountRouter.delete("/", authMiddleware, deleteAccount);
+accountRouter.delete(
+  "/",
+  authMiddleware,
+  userRateLimit("delete"),
+  deleteAccount,
+);
 
-accountRouter.get("/sessions", authMiddleware, getAccountSessions);
+accountRouter.get(
+  "/sessions",
+  authMiddleware,
+  userRateLimit("read"),
+  getAccountSessions,
+);
 
-accountRouter.get("/usage", authMiddleware, getUsageSummary);
-accountRouter.patch("/walkthrough", authMiddleware, updateWalkthroughStatus);
+accountRouter.get(
+  "/usage",
+  authMiddleware,
+  userRateLimit("read"),
+  getUsageSummary,
+);
+accountRouter.patch(
+  "/walkthrough",
+  authMiddleware,
+  userRateLimit("write"),
+  updateWalkthroughStatus,
+);

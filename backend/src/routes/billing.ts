@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { z } from "zod";
 import db from "../lib/db";
 import { authMiddleware } from "../middleware/auth";
+import { userRateLimit } from "../lib/rate-limit";
 import client from "../lib/dodo";
 import { env } from "../env";
 import type { Customer } from "dodopayments/resources/customers";
@@ -59,6 +60,7 @@ async function ensureCustomerId(
 router.post(
   "/subscribe",
   authMiddleware,
+  userRateLimit("billing"),
   async (req: Request, res: Response) => {
     try {
       const parse = subscribeSchema.safeParse(req.body);
@@ -112,23 +114,31 @@ router.post(
 
           if (errorCode === "PREVIOUS_PAYMENT_PENDING") {
             return res.status(409).json({
-              error: "Please wait for your previous payment to complete before changing plans.",
+              error:
+                "Please wait for your previous payment to complete before changing plans.",
               code: "PAYMENT_PENDING",
             });
           }
 
-          if (errorCode === "PLAN_CHANGE_NOT_ALLOWED_FOR_SCHEDULED_CANCELLATION") {
-            console.log("[Subscribe] Subscription scheduled for cancellation, resuming first...");
+          if (
+            errorCode === "PLAN_CHANGE_NOT_ALLOWED_FOR_SCHEDULED_CANCELLATION"
+          ) {
+            console.log(
+              "[Subscribe] Subscription scheduled for cancellation, resuming first...",
+            );
             await client.subscriptions.update(existingSubscriptionId, {
               cancel_at_next_billing_date: false,
             });
-            console.log("[Subscribe] Subscription resumed, retrying plan change...");
+            console.log(
+              "[Subscribe] Subscription resumed, retrying plan change...",
+            );
             try {
               await attemptChangePlan();
             } catch (retryError: any) {
               if (retryError?.error?.code === "PREVIOUS_PAYMENT_PENDING") {
                 return res.status(409).json({
-                  error: "Please wait for your previous payment to complete before changing plans.",
+                  error:
+                    "Please wait for your previous payment to complete before changing plans.",
                   code: "PAYMENT_PENDING",
                 });
               }
@@ -217,6 +227,7 @@ async function createCustomerCancelUrl(userId: string) {
 router.post(
   "/portal/manage",
   authMiddleware,
+  userRateLimit("billing"),
   async (req: Request, res: Response) => {
     try {
       const userId = req.userId!;
@@ -232,6 +243,7 @@ router.post(
 router.post(
   "/portal/cancel",
   authMiddleware,
+  userRateLimit("billing"),
   async (req: Request, res: Response) => {
     try {
       const userId = req.userId!;

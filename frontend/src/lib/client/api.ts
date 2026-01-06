@@ -1,4 +1,5 @@
 import { apiBaseUrl } from "../env";
+import { toast } from "sonner";
 import type {
   LeadDetailResponse,
   LeadListResponse,
@@ -65,6 +66,21 @@ async function request<T = unknown>(
       (typeof payload === "string" && payload.trim().length > 0
         ? payload
         : response.statusText || "Request failed");
+
+    if (response.status === 429) {
+      const retryAfter =
+        payload &&
+        typeof payload === "object" &&
+        "retryAfter" in payload &&
+        typeof (payload as Record<string, unknown>).retryAfter === "number"
+          ? (payload as Record<string, number>).retryAfter
+          : 60;
+      toast.error("Rate limit exceeded", {
+        description: `Please wait ${retryAfter} seconds before trying again.`,
+        duration: 5000,
+      });
+    }
+
     throw new Error(message as string);
   }
 

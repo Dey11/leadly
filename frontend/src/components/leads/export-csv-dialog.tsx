@@ -88,9 +88,7 @@ export function ExportCsvDialog({
       setPageRangeMode("all");
       setCustomStart(1);
       setCustomEnd(totalPages);
-      setStatusFilter(
-        currentFilters.status ? currentFilters.status : "all",
-      );
+      setStatusFilter(currentFilters.status ? currentFilters.status : "all");
       setLeadTypeFilter(
         currentFilters.leadType ? currentFilters.leadType : "all",
       );
