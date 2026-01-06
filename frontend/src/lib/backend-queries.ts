@@ -15,7 +15,7 @@ export async function getAccountSummary() {
     const response = await backendJson<AccountResponse>("/account");
     return response.payload.data;
   } catch (error) {
-    if (error instanceof BackendError && error.status === 401) {
+    if (error instanceof BackendError && (error.status === 401 || error.status === 429)) {
       return null;
     }
     throw error;
@@ -30,7 +30,7 @@ export async function getAccountSessions() {
     }>("/account/sessions");
     return response.payload;
   } catch (error) {
-    if (error instanceof BackendError && error.status === 401) {
+    if (error instanceof BackendError && (error.status === 401 || error.status === 429)) {
       return [];
     }
     throw error;
@@ -41,7 +41,7 @@ export async function getIcps() {
   try {
     return await backendJson<Icp[]>("/icps");
   } catch (error) {
-    if (error instanceof BackendError && error.status === 401) {
+    if (error instanceof BackendError && (error.status === 401 || error.status === 429)) {
       return [];
     }
     throw error;
@@ -56,7 +56,7 @@ export async function getMonitors() {
   try {
     return await backendJson<Monitor[]>("/monitors");
   } catch (error) {
-    if (error instanceof BackendError && error.status === 401) {
+    if (error instanceof BackendError && (error.status === 401 || error.status === 429)) {
       return [];
     }
     throw error;
@@ -67,7 +67,7 @@ export async function getSchedule() {
   try {
     return await backendJson<Schedule>("/schedule");
   } catch (error) {
-    if (error instanceof BackendError && error.status === 401) {
+    if (error instanceof BackendError && (error.status === 401 || error.status === 429)) {
       return null;
     }
     throw error;
@@ -78,7 +78,7 @@ export async function getScheduleLimits() {
   try {
     return await backendJson<ScheduleLimitsResponse>("/schedule/limits");
   } catch (error) {
-    if (error instanceof BackendError && error.status === 401) {
+    if (error instanceof BackendError && (error.status === 401 || error.status === 429)) {
       return null;
     }
     throw error;
@@ -89,7 +89,7 @@ export async function getUsageSummary() {
   try {
     return await backendJson<UsageSummaryResponse>("/account/usage");
   } catch (error) {
-    if (error instanceof BackendError && error.status === 401) {
+    if (error instanceof BackendError && (error.status === 401 || error.status === 429)) {
       return null;
     }
     throw error;
@@ -117,7 +117,7 @@ export async function getLeads(
     const response = await backendJson<LeadListResponse>(path);
     return response.payload;
   } catch (error) {
-    if (error instanceof BackendError && error.status === 401) {
+    if (error instanceof BackendError && (error.status === 401 || error.status === 429)) {
       return null;
     }
     throw error;
