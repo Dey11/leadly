@@ -126,82 +126,85 @@ export function rateLimit(action: keyof typeof rateLimitConfigs) {
   };
 }
 
-// In-Memory Rate Limiting (for AI features)
+export type UserRateLimitAction = "read" | "write" | "delete" | "ai" | "billing";
 
-const memoryRateLimitMap = new Map<
-  string,
-  { count: number; windowStart: number }
->();
-let lastCleanup = Date.now();
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-
-function cleanupExpiredEntries(maxWindowMs: number) {
-  const now = Date.now();
-  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
-
-  lastCleanup = now;
-  for (const [key, entry] of memoryRateLimitMap) {
-    if (now - entry.windowStart >= maxWindowMs) {
-      memoryRateLimitMap.delete(key);
-    }
-  }
-}
-
-export type InMemoryRateLimitConfig = {
+type UserRateLimitConfig = {
   windowMs: number;
   maxRequests: number;
-  message?: string;
+  keyPrefix: string;
+  message: string;
 };
 
-export type InMemoryRateLimitResult = {
-  allowed: boolean;
-  retryAfterMs: number;
-  retryAfterSeconds: number;
+export const userRateLimitConfigs: Record<UserRateLimitAction, UserRateLimitConfig> = {
+  read: {
+    windowMs: 60 * 1000,
+    maxRequests: 100,
+    keyPrefix: "rl:user:read",
+    message: "Too many requests. Please slow down.",
+  },
+  write: {
+    windowMs: 60 * 1000,
+    maxRequests: 30,
+    keyPrefix: "rl:user:write",
+    message: "Too many write requests. Please slow down.",
+  },
+  delete: {
+    windowMs: 60 * 1000,
+    maxRequests: 20,
+    keyPrefix: "rl:user:delete",
+    message: "Too many delete requests. Please slow down.",
+  },
+  ai: {
+    windowMs: 60 * 1000,
+    maxRequests: 5,
+    keyPrefix: "rl:user:ai",
+    message: "AI rate limit exceeded. Please wait before trying again.",
+  },
+  billing: {
+    windowMs: 60 * 1000,
+    maxRequests: 10,
+    keyPrefix: "rl:user:billing",
+    message: "Too many billing requests. Please slow down.",
+  },
 };
 
-export function checkInMemoryRateLimit(
-  key: string,
-  config: InMemoryRateLimitConfig,
-): InMemoryRateLimitResult {
-  const now = Date.now();
+export function userRateLimit(action: UserRateLimitAction) {
+  const config = userRateLimitConfigs[action];
 
-  // Cleanup expired entries periodically
-  cleanupExpiredEntries(config.windowMs);
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.userId;
+      if (!userId) {
+        return next();
+      }
 
-  const entry = memoryRateLimitMap.get(key);
+      const redis = getRedis();
+      const key = `${config.keyPrefix}:${userId}`;
 
-  if (!entry || now - entry.windowStart >= config.windowMs) {
-    memoryRateLimitMap.set(key, { count: 1, windowStart: now });
-    return { allowed: true, retryAfterMs: 0, retryAfterSeconds: 0 };
-  }
+      const current = await redis.incr(key);
+      if (current === 1) {
+        await redis.pexpire(key, config.windowMs);
+      }
 
-  if (entry.count >= config.maxRequests) {
-    const retryAfterMs = config.windowMs - (now - entry.windowStart);
-    return {
-      allowed: false,
-      retryAfterMs,
-      retryAfterSeconds: Math.ceil(retryAfterMs / 1000),
-    };
-  }
+      const ttl = await redis.pttl(key);
+      res.setHeader("X-RateLimit-Limit", config.maxRequests);
+      res.setHeader(
+        "X-RateLimit-Remaining",
+        Math.max(0, config.maxRequests - current),
+      );
+      res.setHeader("X-RateLimit-Reset", Math.ceil(Date.now() + ttl));
 
-  entry.count++;
-  return { allowed: true, retryAfterMs: 0, retryAfterSeconds: 0 };
-}
+      if (current > config.maxRequests) {
+        return res.status(429).json({
+          error: config.message,
+          retryAfter: Math.ceil(ttl / 1000),
+        });
+      }
 
-export function createRateLimitResponse(
-  retryAfterSeconds: number,
-  message?: string,
-) {
-  return {
-    error:
-      message ||
-      `Rate limit exceeded. Please wait ${retryAfterSeconds} seconds before trying again.`,
-    retryAfter: retryAfterSeconds,
+      next();
+    } catch (error) {
+      console.error("User rate limit error:", error);
+      next();
+    }
   };
 }
-
-export const AI_RATE_LIMIT_CONFIG: InMemoryRateLimitConfig = {
-  windowMs: 60 * 1000,
-  maxRequests: 3,
-  message: "Rate limit exceeded. Please wait before trying again.",
-};

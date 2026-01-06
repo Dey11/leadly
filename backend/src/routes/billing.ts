@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { z } from "zod";
 import db from "../lib/db";
 import { authMiddleware } from "../middleware/auth";
+import { userRateLimit } from "../lib/rate-limit";
 import client from "../lib/dodo";
 import { env } from "../env";
 import type { Customer } from "dodopayments/resources/customers";
@@ -59,6 +60,7 @@ async function ensureCustomerId(
 router.post(
   "/subscribe",
   authMiddleware,
+  userRateLimit("billing"),
   async (req: Request, res: Response) => {
     try {
       const parse = subscribeSchema.safeParse(req.body);
@@ -217,6 +219,7 @@ async function createCustomerCancelUrl(userId: string) {
 router.post(
   "/portal/manage",
   authMiddleware,
+  userRateLimit("billing"),
   async (req: Request, res: Response) => {
     try {
       const userId = req.userId!;
@@ -232,6 +235,7 @@ router.post(
 router.post(
   "/portal/cancel",
   authMiddleware,
+  userRateLimit("billing"),
   async (req: Request, res: Response) => {
     try {
       const userId = req.userId!;

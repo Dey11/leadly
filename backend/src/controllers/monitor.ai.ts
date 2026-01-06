@@ -2,11 +2,6 @@ import { Request, Response } from "express";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { modelLite, AI_PROVIDER_OPTIONS, handleAiError } from "../lib/ai";
-import {
-  checkInMemoryRateLimit,
-  createRateLimitResponse,
-  AI_RATE_LIMIT_CONFIG,
-} from "../lib/rate-limit";
 import db from "../lib/db";
 
 const requestSchema = z.object({
@@ -47,16 +42,6 @@ export async function suggestSubreddits(req: Request, res: Response) {
     const userId = req.userId;
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const rateLimit = checkInMemoryRateLimit(
-      `ai:subreddit:${userId}`,
-      AI_RATE_LIMIT_CONFIG,
-    );
-    if (!rateLimit.allowed) {
-      return res
-        .status(429)
-        .json(createRateLimitResponse(rateLimit.retryAfterSeconds));
     }
 
     const parseResult = requestSchema.safeParse(req.body);
