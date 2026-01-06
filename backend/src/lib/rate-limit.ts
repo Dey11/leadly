@@ -104,17 +104,19 @@ export function rateLimit(action: keyof typeof rateLimitConfigs) {
       }
 
       const ttl = await redis.pttl(key);
+      // Handle negative TTL values: -1 (no expiry) or -2 (key doesn't exist)
+      const effectiveTtl = ttl > 0 ? ttl : config.windowMs;
       res.setHeader("X-RateLimit-Limit", config.maxRequests);
       res.setHeader(
         "X-RateLimit-Remaining",
         Math.max(0, config.maxRequests - current),
       );
-      res.setHeader("X-RateLimit-Reset", Math.ceil(Date.now() + ttl));
+      res.setHeader("X-RateLimit-Reset", Math.ceil(Date.now() + effectiveTtl));
 
       if (current > config.maxRequests) {
         return res.status(429).json({
           error: config.message || "Too many requests. Please try again later.",
-          retryAfter: Math.ceil(ttl / 1000),
+          retryAfter: Math.ceil(effectiveTtl / 1000),
         });
       }
 
@@ -197,19 +199,26 @@ export function userRateLimit(action: UserRateLimitAction) {
         return current
       `;
 
-      const current = (await redis.eval(luaScript, 1, key, config.windowMs)) as number;
+      const current = (await redis.eval(
+        luaScript,
+        1,
+        key,
+        config.windowMs,
+      )) as number;
       const ttl = await redis.pttl(key);
+      // Handle negative TTL values: -1 (no expiry) or -2 (key doesn't exist)
+      const effectiveTtl = ttl > 0 ? ttl : config.windowMs;
       res.setHeader("X-RateLimit-Limit", config.maxRequests);
       res.setHeader(
         "X-RateLimit-Remaining",
         Math.max(0, config.maxRequests - current),
       );
-      res.setHeader("X-RateLimit-Reset", Math.ceil(Date.now() + ttl));
+      res.setHeader("X-RateLimit-Reset", Math.ceil(Date.now() + effectiveTtl));
 
       if (current > config.maxRequests) {
         return res.status(429).json({
           error: config.message,
-          retryAfter: Math.ceil(ttl / 1000),
+          retryAfter: Math.ceil(effectiveTtl / 1000),
         });
       }
 
