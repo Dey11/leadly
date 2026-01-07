@@ -107,6 +107,7 @@ export interface ScheduleLimitsResponse {
     scrapesPerDay: number;
     selectableHours: number;
     monthlyScrapeLimit: number;
+    maxIcps: number;
   };
   currentSchedule: Schedule | null;
 }

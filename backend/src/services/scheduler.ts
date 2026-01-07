@@ -113,6 +113,34 @@ export async function runScheduler() {
       }),
     );
 
+    if (user.monitors.length === 0) {
+      continue;
+    }
+
+    const { allowed, reason, summary } = await tryConsumeScrapeCredit(
+      user.id,
+      tier,
+      user.subscription.currentPeriodEnd,
+      env.FEATURE_BILLING_ENFORCEMENT, // "off" | "log" | "on"
+    );
+
+    if (!allowed) {
+      // Block when enforcement is "on"
+      console.warn(
+        JSON.stringify({
+          evt: "scheduler.blocked",
+          userId: user.id,
+          reason,
+          monitorCount: user.monitors.length,
+          dailyUsed: summary.dailyUsed,
+          dailyLimit: summary.dailyLimit,
+          monthlyUsed: summary.monthlyUsed,
+          monthlyLimit: summary.monthlyLimit,
+        }),
+      );
+      continue;
+    }
+
     for (const monitor of user.monitors) {
       try {
         const existingJob = await db.scrapeJob.findFirst({
@@ -127,31 +155,6 @@ export async function runScheduler() {
         if (existingJob) {
           console.log(
             `Skipping monitor ${monitor.id} because a job is already ${existingJob.status}`,
-          );
-          continue;
-        }
-
-        // Check and consume a credit per monitor run
-        const { allowed, reason, summary } = await tryConsumeScrapeCredit(
-          user.id,
-          tier,
-          user.subscription.currentPeriodEnd,
-          env.FEATURE_BILLING_ENFORCEMENT, // "off" | "log" | "on"
-        );
-
-        if (!allowed) {
-          // Block when enforcement is "on"
-          console.warn(
-            JSON.stringify({
-              evt: "scheduler.blocked",
-              userId: user.id,
-              monitorId: monitor.id,
-              reason,
-              dailyUsed: summary.dailyUsed,
-              dailyLimit: summary.dailyLimit,
-              monthlyUsed: summary.monthlyUsed,
-              monthlyLimit: summary.monthlyLimit,
-            }),
           );
           continue;
         }

@@ -32,6 +32,7 @@ export const TIER_LIMITS: Record<
     scrapesPerDay: number;
     selectableHours: number; // maximum hours user can select in schedule
     monthlyScrapeLimit: number; // derived monthly limit
+    maxIcps: number; // maximum ICPs user can create
   }
 > = {
   FREE: {
@@ -39,18 +40,21 @@ export const TIER_LIMITS: Record<
     scrapesPerDay: 1,
     selectableHours: 1,
     monthlyScrapeLimit: 30,
+    maxIcps: 25,
   },
   PRO: {
     monitors: 10,
     scrapesPerDay: 6,
     selectableHours: 6,
     monthlyScrapeLimit: 180,
+    maxIcps: 50,
   },
   PREMIUM: {
     monitors: 20,
     scrapesPerDay: 24,
     selectableHours: 24,
     monthlyScrapeLimit: 720,
+    maxIcps: 100,
   },
 } as const;
 

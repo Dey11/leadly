@@ -5,6 +5,7 @@ import {
   icpIdParamSchema,
   updateIcpSchema,
 } from "../types/icp";
+import { TIER_LIMITS } from "../lib/constants";
 
 export const createIcp = async (req: Request, res: Response) => {
   try {
@@ -12,6 +13,28 @@ export const createIcp = async (req: Request, res: Response) => {
 
     if (!payload.success) {
       return res.status(400).json({ error: "Invalid request body" });
+    }
+
+    const user = await db.user.findUnique({
+      where: { id: req.userId! },
+      include: { subscription: true },
+    });
+
+    if (!user?.subscription) {
+      return res.status(400).json({ error: "User has no active subscription" });
+    }
+
+    const tier = user.subscription.tier;
+    const tierLimits = TIER_LIMITS[tier];
+
+    const currentIcpCount = await db.icp.count({
+      where: { userId: req.userId! },
+    });
+
+    if (currentIcpCount >= tierLimits.maxIcps) {
+      return res.status(400).json({
+        error: `ICP limit reached. Maximum ${tierLimits.maxIcps} ICPs allowed.`,
+      });
     }
 
     const icp = await db.icp.create({
