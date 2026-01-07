@@ -197,7 +197,12 @@ export function userRateLimit(action: UserRateLimitAction) {
         return current
       `;
 
-      const current = (await redis.eval(luaScript, 1, key, config.windowMs)) as number;
+      const current = (await redis.eval(
+        luaScript,
+        1,
+        key,
+        config.windowMs,
+      )) as number;
       const ttl = await redis.pttl(key);
       res.setHeader("X-RateLimit-Limit", config.maxRequests);
       res.setHeader(

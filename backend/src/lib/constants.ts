@@ -65,3 +65,6 @@ export const CRON_INTERVAL = "0 * * * *";
 // Retry settings for failed scrape jobs
 export const MAX_SCRAPE_RETRY_COUNT = 3;
 export const SCRAPE_RETRY_DELAY_MS = 60 * 60 * 1000;
+
+// Stuck pending job threshold (6 hours) - jobs stuck in PENDING bypass Redis
+export const STUCK_PENDING_THRESHOLD_MS = 6 * 60 * 60 * 1000;

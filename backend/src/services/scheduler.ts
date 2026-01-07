@@ -1,8 +1,13 @@
 import { scrapeJobsQueue } from "../lib/queue";
 import db from "../lib/db";
 import { env } from "../env";
-import { TIER_LIMITS, MAX_SCRAPE_RETRY_COUNT } from "../lib/constants";
+import {
+  TIER_LIMITS,
+  MAX_SCRAPE_RETRY_COUNT,
+  STUCK_PENDING_THRESHOLD_MS,
+} from "../lib/constants";
 import { tryConsumeScrapeCredit, previewUsage } from "../lib/usage";
+import { processStuckJob } from "../processors/reddit.processor";
 
 async function pickupRetryJobs() {
   const now = new Date();
@@ -50,10 +55,67 @@ async function pickupRetryJobs() {
   }
 }
 
+async function processStuckPendingJobs() {
+  const stuckThreshold = new Date(Date.now() - STUCK_PENDING_THRESHOLD_MS);
+
+  const stuckJobs = await db.scrapeJob.findMany({
+    where: {
+      status: "PENDING",
+      createdAt: { lte: stuckThreshold },
+      monitor: {
+        user: {
+          isDeleted: false,
+        },
+      },
+    },
+    include: {
+      monitor: { include: { icp: true, user: true } },
+    },
+  });
+
+  console.log(`Found ${stuckJobs.length} stuck PENDING jobs (>6 hours old)`);
+
+  for (const job of stuckJobs) {
+    try {
+      console.log(
+        JSON.stringify({
+          evt: "scheduler.stuck_job_processing",
+          jobId: job.id,
+          monitorId: job.monitorId,
+          createdAt: job.createdAt.toISOString(),
+          ageHours: Math.round(
+            (Date.now() - job.createdAt.getTime()) / (1000 * 60 * 60),
+          ),
+        }),
+      );
+
+      await processStuckJob(job.monitorId, job.id);
+
+      console.log(
+        JSON.stringify({
+          evt: "scheduler.stuck_job_completed",
+          jobId: job.id,
+        }),
+      );
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          evt: "scheduler.stuck_job_failed",
+          jobId: job.id,
+          error: error instanceof Error ? error.message : "Unknown error",
+        }),
+      );
+    }
+  }
+}
+
 export async function runScheduler() {
   console.log("Running scheduler");
 
-  // Pick up retry jobs first
+  // Process stuck pending jobs first
+  await processStuckPendingJobs();
+
+  // Pick up retry jobs
   await pickupRetryJobs();
 
   const currentHour = new Date().getUTCHours();
