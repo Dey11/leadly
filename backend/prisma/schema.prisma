@@ -39,7 +39,7 @@ enum LeadStatus {
 
 enum SubscriptionStatus {
   ACTIVE
-  CANCELED
+  CANCELLED
   PAST_DUE
   INCOMPLETE
 }

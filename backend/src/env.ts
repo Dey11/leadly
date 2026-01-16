@@ -10,6 +10,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   SESSION_SECRET: z.string(),
   FRONTEND_URL: z.string(),
+  NODE_ENV: z.enum(["development", "production"]).default("development"),
 
   NITTER_URL: z.string(),
   REDIS_URL: z.string().default("redis://localhost:6379"),
@@ -28,7 +29,6 @@ const envSchema = z.object({
     .min(1, "DODO_PREMIUM_PRODUCT_ID is required"),
 
   // URLs
-  APP_BASE_URL: z.string().url().optional(),
   WEBHOOK_PUBLIC_URL: z.string().url().optional(),
 
   // Feature flags

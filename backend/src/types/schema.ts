@@ -57,3 +57,7 @@ export function formatZodError(error: z.ZodError): string {
   const firstIssue = error.issues[0];
   return firstIssue?.message || "Validation failed";
 }
+
+export const billingSubscribeSchema = z.object({
+  plan: z.enum(["free", "pro", "premium"]).default("free"),
+});
