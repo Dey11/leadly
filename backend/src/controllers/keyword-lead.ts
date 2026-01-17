@@ -295,7 +295,7 @@ export async function exportKeywordLeads(req: Request, res: Response) {
         lead.matchedKeywords.join("; "),
         lead.status,
         new Date(lead.createdAt).toISOString(),
-      ].join(",")
+      ].join(","),
     );
 
     const csv = [headers.join(","), ...rows].join("\n");
@@ -303,7 +303,7 @@ export async function exportKeywordLeads(req: Request, res: Response) {
     res.setHeader("Content-Type", "text/csv");
     res.setHeader(
       "Content-Disposition",
-      "attachment; filename=keyword-leads.csv"
+      "attachment; filename=keyword-leads.csv",
     );
     res.send(csv);
   } catch (err) {

@@ -57,7 +57,7 @@ export async function createKeywordSet(req: Request, res: Response) {
     console.error(err);
     res.status(500).json({ error: "Failed to create KeywordSet" });
   }
-};
+}
 
 export async function getKeywordSets(req: Request, res: Response) {
   try {
@@ -80,7 +80,7 @@ export async function getKeywordSets(req: Request, res: Response) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch KeywordSets" });
   }
-};
+}
 
 export async function getKeywordSet(req: Request, res: Response) {
   try {
@@ -146,7 +146,9 @@ export async function updateKeywordSet(req: Request, res: Response) {
     if (payload.data.keywords) {
       const user = keywordSet.user;
       if (!user.subscription) {
-        return res.status(400).json({ error: "User has no active subscription" });
+        return res
+          .status(400)
+          .json({ error: "User has no active subscription" });
       }
 
       const tier = user.subscription.tier;
@@ -194,4 +196,4 @@ export async function deleteKeywordSet(req: Request, res: Response) {
   } catch (err) {
     res.status(500).json({ error: "Failed to delete KeywordSet" });
   }
-};
+}

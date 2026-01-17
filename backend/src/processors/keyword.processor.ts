@@ -6,9 +6,11 @@ import { filterPostsByKeywords, getMatchedKeywords } from "../lib/keywords";
 
 export async function processKeywordScrapeJob(
   keywordMonitorId: string,
-  jobId: string
+  jobId: string,
 ) {
-  console.log(`[Keyword Processor] Starting job ${jobId} for monitor ${keywordMonitorId}`);
+  console.log(
+    `[Keyword Processor] Starting job ${jobId} for monitor ${keywordMonitorId}`,
+  );
 
   const monitor = await db.keywordMonitor.findUnique({
     where: { id: keywordMonitorId },
@@ -38,22 +40,29 @@ export async function processKeywordScrapeJob(
   try {
     const redditClient = new Reddit(
       env.REDDIT_CLIENT_ID,
-      env.REDDIT_CLIENT_SECRET
+      env.REDDIT_CLIENT_SECRET,
     );
 
     const target = monitor.target.replace("r/", "");
     const posts = await redditClient.fetchPosts(
       target,
       MAX_SCRAPE_POSTS_LIMIT,
-      monitor.cursor
+      monitor.cursor,
     );
 
-    console.log(`[Keyword Processor] Fetched ${posts.length} posts from r/${target}`);
+    console.log(
+      `[Keyword Processor] Fetched ${posts.length} posts from r/${target}`,
+    );
 
     // Filter posts by keywords
-    const matchedPosts = filterPostsByKeywords(posts, monitor.keywordSet.keywords);
+    const matchedPosts = filterPostsByKeywords(
+      posts,
+      monitor.keywordSet.keywords,
+    );
 
-    console.log(`[Keyword Processor] ${matchedPosts.length}/${posts.length} posts matched keywords`);
+    console.log(
+      `[Keyword Processor] ${matchedPosts.length}/${posts.length} posts matched keywords`,
+    );
 
     // Create leads for matched posts
     const leads = matchedPosts.map((post) => ({
@@ -75,7 +84,9 @@ export async function processKeywordScrapeJob(
       } catch (err: any) {
         if (err.code === "P2002") {
           // Unique constraint violation - URL already exists
-          console.log(`[Keyword Processor] Skipping duplicate URL: ${lead.url}`);
+          console.log(
+            `[Keyword Processor] Skipping duplicate URL: ${lead.url}`,
+          );
         } else {
           throw err;
         }
@@ -83,7 +94,8 @@ export async function processKeywordScrapeJob(
     }
 
     // Update cursor for pagination
-    const newCursor = posts.length > 0 ? posts[posts.length - 1].postId : monitor.cursor;
+    const newCursor =
+      posts.length > 0 ? posts[posts.length - 1].postId : monitor.cursor;
 
     await db.keywordMonitor.update({
       where: { id: keywordMonitorId },
@@ -104,7 +116,7 @@ export async function processKeywordScrapeJob(
     });
 
     console.log(
-      `[Keyword Processor] Job ${jobId} completed. Created ${createdCount} leads from ${matchedPosts.length} matches.`
+      `[Keyword Processor] Job ${jobId} completed. Created ${createdCount} leads from ${matchedPosts.length} matches.`,
     );
 
     return { matchCount: createdCount, postsScraped: posts.length };

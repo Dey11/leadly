@@ -74,15 +74,20 @@ export function KeywordLeadDetailDialog({
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="text-lg">Keyword Match Details</DialogTitle>
+              <DialogTitle className="text-lg">
+                Keyword Match Details
+              </DialogTitle>
               <DialogDescription>
-                Posted {formatRelative(lead.createdAt)} by {lead.author || "Unknown"}
+                Posted {formatRelative(lead.createdAt)} by{" "}
+                {lead.author || "Unknown"}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="bg-secondary/30 rounded-xl p-4">
-                <p className="text-foreground leading-relaxed">{lead.content}</p>
+                <p className="text-foreground leading-relaxed">
+                  {lead.content}
+                </p>
               </div>
 
               <div className="space-y-2">

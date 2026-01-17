@@ -20,7 +20,7 @@ export const updateMonitorSchema = z
   .strict()
   .refine(
     (data) => Object.keys(data).length > 0,
-    "At least one field must be provided to update the monitor."
+    "At least one field must be provided to update the monitor.",
   );
 
 export const monitorIdParamSchema = z

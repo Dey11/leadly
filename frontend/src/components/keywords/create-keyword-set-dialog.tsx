@@ -42,7 +42,9 @@ export function CreateKeywordSetDialog({
       onSuccess();
     },
     onError: (err: unknown) => {
-      setError(err instanceof Error ? err.message : "Failed to create keyword set");
+      setError(
+        err instanceof Error ? err.message : "Failed to create keyword set",
+      );
     },
   });
 
@@ -117,8 +119,8 @@ export function CreateKeywordSetDialog({
           <DialogHeader>
             <DialogTitle>Create Keyword Set</DialogTitle>
             <DialogDescription>
-              Define a group of keywords to monitor. These will be matched against
-              content in your target subreddits.
+              Define a group of keywords to monitor. These will be matched
+              against content in your target subreddits.
             </DialogDescription>
           </DialogHeader>
 
@@ -145,7 +147,11 @@ export function CreateKeywordSetDialog({
                   onKeyDown={handleKeyDown}
                   maxLength={50}
                 />
-                <Button type="button" variant="outline" onClick={() => addKeyword()}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => addKeyword()}
+                >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -175,9 +181,7 @@ export function CreateKeywordSetDialog({
               )}
             </div>
 
-            {error && (
-              <p className="text-destructive text-sm">{error}</p>
-            )}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
 
           <DialogFooter>

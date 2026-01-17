@@ -301,8 +301,7 @@ export const exportLeads = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid query parameters" });
     }
 
-    const { monitorId, platform, leadType, status, search } =
-      queryResult.data;
+    const { monitorId, platform, leadType, status, search } = queryResult.data;
 
     const whereClause: any = {
       scrapeJob: {
@@ -381,7 +380,7 @@ export const exportLeads = async (req: Request, res: Response) => {
         lead.author || "",
         lead.status,
         new Date(lead.createdAt).toISOString(),
-      ].join(",")
+      ].join(","),
     );
 
     const csv = [headers.join(","), ...rows].join("\n");

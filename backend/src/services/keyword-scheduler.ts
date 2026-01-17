@@ -31,7 +31,9 @@ export async function runKeywordScheduler() {
     },
   });
 
-  console.log(`[Keyword Scheduler] Found ${keywordMonitors.length} active keyword monitors`);
+  console.log(
+    `[Keyword Scheduler] Found ${keywordMonitors.length} active keyword monitors`,
+  );
 
   for (const monitor of keywordMonitors) {
     try {
@@ -45,7 +47,7 @@ export async function runKeywordScheduler() {
 
       if (existingJob) {
         console.log(
-          `[Keyword Scheduler] Skipping monitor ${monitor.id} - job already ${existingJob.status}`
+          `[Keyword Scheduler] Skipping monitor ${monitor.id} - job already ${existingJob.status}`,
         );
         continue;
       }
@@ -66,13 +68,13 @@ export async function runKeywordScheduler() {
       } catch (err) {
         console.error(
           `[Keyword Scheduler] Failed to process monitor ${monitor.id}:`,
-          err
+          err,
         );
       }
     } catch (err) {
       console.error(
         `[Keyword Scheduler] Error scheduling monitor ${monitor.id}:`,
-        err
+        err,
       );
     }
   }

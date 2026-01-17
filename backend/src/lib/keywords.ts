@@ -6,7 +6,7 @@ import { RedditPost, RedditComment } from "../types/reddit";
  */
 export function filterPostsByKeywords(
   posts: RedditPost[],
-  keywords: string[]
+  keywords: string[],
 ): RedditPost[] {
   if (!keywords || keywords.length === 0) {
     return posts; // No keywords = return all posts
@@ -18,7 +18,7 @@ export function filterPostsByKeywords(
   return posts.filter((post) => {
     const searchableText = buildSearchableText(post).toLowerCase();
     return normalizedKeywords.some((keyword) =>
-      searchableText.includes(keyword)
+      searchableText.includes(keyword),
     );
   });
 }
@@ -48,11 +48,11 @@ function buildSearchableText(post: RedditPost): string {
  */
 export function getMatchedKeywords(
   post: RedditPost,
-  keywords: string[]
+  keywords: string[],
 ): string[] {
   const searchableText = buildSearchableText(post).toLowerCase();
   return keywords.filter((keyword) =>
-    searchableText.includes(keyword.toLowerCase().trim())
+    searchableText.includes(keyword.toLowerCase().trim()),
   );
 }
 
@@ -61,12 +61,12 @@ export function getMatchedKeywords(
  */
 export function postMatchesKeywords(
   post: RedditPost,
-  keywords: string[]
+  keywords: string[],
 ): boolean {
   if (!keywords || keywords.length === 0) return true;
 
   const searchableText = buildSearchableText(post).toLowerCase();
   return keywords.some((keyword) =>
-    searchableText.includes(keyword.toLowerCase().trim())
+    searchableText.includes(keyword.toLowerCase().trim()),
   );
 }

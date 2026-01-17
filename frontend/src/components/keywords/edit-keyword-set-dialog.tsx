@@ -53,7 +53,9 @@ export function EditKeywordSetDialog({
       onSuccess();
     },
     onError: (err: unknown) => {
-      setError(err instanceof Error ? err.message : "Failed to update keyword set");
+      setError(
+        err instanceof Error ? err.message : "Failed to update keyword set",
+      );
     },
   });
 
@@ -154,7 +156,11 @@ export function EditKeywordSetDialog({
                   onKeyDown={handleKeyDown}
                   maxLength={50}
                 />
-                <Button type="button" variant="outline" onClick={() => addKeyword()}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => addKeyword()}
+                >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -181,9 +187,7 @@ export function EditKeywordSetDialog({
               )}
             </div>
 
-            {error && (
-              <p className="text-destructive text-sm">{error}</p>
-            )}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
 
           <DialogFooter>

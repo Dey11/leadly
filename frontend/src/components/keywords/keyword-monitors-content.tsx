@@ -25,7 +25,9 @@ import type { KeywordMonitor, KeywordSet } from "@/types/keyword";
 export function KeywordMonitorsContent() {
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [deletingMonitor, setDeletingMonitor] = useState<KeywordMonitor | null>(null);
+  const [deletingMonitor, setDeletingMonitor] = useState<KeywordMonitor | null>(
+    null,
+  );
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -47,7 +49,9 @@ export function KeywordMonitorsContent() {
       setFeedback("Monitor status updated.");
     },
     onError: (err: unknown) => {
-      setErrorMessage(err instanceof Error ? err.message : "Failed to update monitor");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Failed to update monitor",
+      );
     },
   });
 
@@ -59,7 +63,9 @@ export function KeywordMonitorsContent() {
       setDeletingMonitor(null);
     },
     onError: (err: unknown) => {
-      setErrorMessage(err instanceof Error ? err.message : "Failed to delete monitor");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Failed to delete monitor",
+      );
     },
   });
 
@@ -67,10 +73,13 @@ export function KeywordMonitorsContent() {
   const keywordSets = (keywordSetsQuery.data ?? []) as KeywordSet[];
 
   // Memoize handler per Rule 5.5
-  const toggleStatus = useCallback((monitor: KeywordMonitor) => {
-    const newStatus = monitor.status === "ACTIVE" ? "PAUSED" : "ACTIVE";
-    updateMutation.mutate({ id: monitor.id, status: newStatus });
-  }, [updateMutation]);
+  const toggleStatus = useCallback(
+    (monitor: KeywordMonitor) => {
+      const newStatus = monitor.status === "ACTIVE" ? "PAUSED" : "ACTIVE";
+      updateMutation.mutate({ id: monitor.id, status: newStatus });
+    },
+    [updateMutation],
+  );
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8">
@@ -106,7 +115,10 @@ export function KeywordMonitorsContent() {
         <div className="grid gap-6 md:grid-cols-2">
           {monitorsQuery.isLoading ? (
             Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="bg-muted/70 h-48 animate-pulse rounded-2xl" />
+              <div
+                key={i}
+                className="bg-muted/70 h-48 animate-pulse rounded-2xl"
+              />
             ))
           ) : monitors.length === 0 ? (
             <div className="md:col-span-2">
@@ -138,12 +150,17 @@ export function KeywordMonitorsContent() {
             </div>
           ) : (
             monitors.map((monitor) => (
-              <Card key={monitor.id} className="border-border/60 bg-background/85">
+              <Card
+                key={monitor.id}
+                className="border-border/60 bg-background/85"
+              >
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">{monitor.target}</CardTitle>
                     <Badge
-                      variant={monitor.status === "ACTIVE" ? "default" : "secondary"}
+                      variant={
+                        monitor.status === "ACTIVE" ? "default" : "secondary"
+                      }
                     >
                       {monitor.status}
                     </Badge>
@@ -155,7 +172,9 @@ export function KeywordMonitorsContent() {
                 <CardContent className="space-y-3 text-sm">
                   <div className="bg-secondary/30 flex items-center justify-between rounded-xl p-3">
                     <span className="text-muted-foreground">Platform</span>
-                    <span className="text-foreground font-medium">{monitor.platform}</span>
+                    <span className="text-foreground font-medium">
+                      {monitor.platform}
+                    </span>
                   </div>
                   <div className="bg-secondary/30 flex items-center justify-between rounded-xl p-3">
                     <span className="text-muted-foreground">Last scraped</span>
@@ -235,7 +254,9 @@ export function KeywordMonitorsContent() {
         confirmLabel="Delete"
         tone="destructive"
         loading={deleteMutation.isPending}
-        onConfirm={() => deletingMonitor && deleteMutation.mutate(deletingMonitor.id)}
+        onConfirm={() =>
+          deletingMonitor && deleteMutation.mutate(deletingMonitor.id)
+        }
       />
     </div>
   );

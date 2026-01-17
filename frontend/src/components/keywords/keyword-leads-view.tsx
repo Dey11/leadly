@@ -15,7 +15,10 @@ import { KeywordLeadsFilterBar } from "./keyword-leads-filter-bar";
 import { KeywordLeadDetailDialog } from "./keyword-lead-detail-dialog";
 import { DATA_REFRESH_INTERVAL } from "@/constants/config";
 import type { KeywordLeadSummary } from "@/types/keyword";
-import type { KeywordFilterState, KeywordMonitorOption } from "@/types/components/keyword";
+import type {
+  KeywordFilterState,
+  KeywordMonitorOption,
+} from "@/types/components/keyword";
 
 interface KeywordLeadsViewProps {
   monitors: KeywordMonitorOption[];
@@ -52,7 +55,13 @@ export function KeywordLeadsView({ monitors, tier }: KeywordLeadsViewProps) {
       filters.limit,
       filters.search,
     ],
-    [filters.keywordMonitorId, filters.status, filters.page, filters.limit, filters.search],
+    [
+      filters.keywordMonitorId,
+      filters.status,
+      filters.page,
+      filters.limit,
+      filters.search,
+    ],
   );
 
   const leadsQuery = useQuery({
@@ -112,15 +121,21 @@ export function KeywordLeadsView({ monitors, tier }: KeywordLeadsViewProps) {
   });
 
   // Memoize handlers with useCallback per Rule 5.5
-  const handleStatusChange = useCallback((leadId: string, status: LeadStatus) => {
-    setUpdatingLeadId(leadId);
-    updateLeadMutation.mutate({ leadId, status });
-  }, [updateLeadMutation]);
+  const handleStatusChange = useCallback(
+    (leadId: string, status: LeadStatus) => {
+      setUpdatingLeadId(leadId);
+      updateLeadMutation.mutate({ leadId, status });
+    },
+    [updateLeadMutation],
+  );
 
-  const handleDeleteLead = useCallback((lead: { id: string; label: string }) => {
-    setDeleteTarget(lead);
-    setIsConfirmOpen(true);
-  }, []);
+  const handleDeleteLead = useCallback(
+    (lead: { id: string; label: string }) => {
+      setDeleteTarget(lead);
+      setIsConfirmOpen(true);
+    },
+    [],
+  );
 
   const confirmDeleteLead = useCallback(() => {
     if (!deleteTarget) return;

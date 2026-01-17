@@ -19,8 +19,16 @@ const leadGenNavItems: DashboardNavItem[] = [
 const keywordNavItems: DashboardNavItem[] = [
   { href: "/dashboard", label: "Overview", icon: "overview" },
   { href: "/dashboard/keyword-leads", label: "Leads", icon: "keywordLeads" },
-  { href: "/dashboard/keyword-sets", label: "Keyword Sets", icon: "keywordSets" },
-  { href: "/dashboard/keyword-monitors", label: "Monitors", icon: "keywordMonitors" },
+  {
+    href: "/dashboard/keyword-sets",
+    label: "Keyword Sets",
+    icon: "keywordSets",
+  },
+  {
+    href: "/dashboard/keyword-monitors",
+    label: "Monitors",
+    icon: "keywordMonitors",
+  },
   { href: "/dashboard/schedule", label: "Schedule", icon: "schedule" },
   { href: "/dashboard/billing", label: "Billing", icon: "billing" },
   { href: "/dashboard/account", label: "Account", icon: "account" },

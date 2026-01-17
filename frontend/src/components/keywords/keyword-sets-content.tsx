@@ -46,7 +46,9 @@ export function KeywordSetsContent() {
     },
     onError: (error: unknown) => {
       setErrorMessage(
-        error instanceof Error ? error.message : "Failed to delete keyword set.",
+        error instanceof Error
+          ? error.message
+          : "Failed to delete keyword set.",
       );
     },
   });
@@ -102,8 +104,8 @@ export function KeywordSetsContent() {
                 Create your first keyword set
               </h3>
               <p className="text-muted-foreground mt-2 max-w-sm text-center text-sm leading-relaxed">
-                Define groups of keywords to monitor. Each set can track multiple
-                terms across your chosen platforms.
+                Define groups of keywords to monitor. Each set can track
+                multiple terms across your chosen platforms.
               </p>
               <Button
                 className="mt-5"
@@ -121,7 +123,10 @@ export function KeywordSetsContent() {
                 <CardHeader>
                   <div className="flex flex-wrap items-center gap-3">
                     <CardTitle className="text-lg">{keywordSet.name}</CardTitle>
-                    <Badge variant="outline" className="bg-primary/10 text-primary">
+                    <Badge
+                      variant="outline"
+                      className="bg-primary/10 text-primary"
+                    >
                       {keywordSet.keywords.length} keywords
                     </Badge>
                   </div>
@@ -154,25 +159,27 @@ export function KeywordSetsContent() {
                         Linked Monitors
                       </p>
                       <ul className="space-y-2">
-                        {keywordSet.keywordMonitors.slice(0, 3).map((monitor) => (
-                          <li
-                            key={monitor.id}
-                            className="border-border/60 bg-card/80 flex items-center justify-between rounded-xl border px-4 py-2"
-                          >
-                            <p className="text-foreground font-medium">
-                              {monitor.target}
-                            </p>
-                            <Badge
-                              variant={
-                                monitor.status === "ACTIVE"
-                                  ? "default"
-                                  : "secondary"
-                              }
+                        {keywordSet.keywordMonitors
+                          .slice(0, 3)
+                          .map((monitor) => (
+                            <li
+                              key={monitor.id}
+                              className="border-border/60 bg-card/80 flex items-center justify-between rounded-xl border px-4 py-2"
                             >
-                              {monitor.status}
-                            </Badge>
-                          </li>
-                        ))}
+                              <p className="text-foreground font-medium">
+                                {monitor.target}
+                              </p>
+                              <Badge
+                                variant={
+                                  monitor.status === "ACTIVE"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                              >
+                                {monitor.status}
+                              </Badge>
+                            </li>
+                          ))}
                       </ul>
                       {keywordSet.keywordMonitors.length > 3 && (
                         <p className="text-muted-foreground text-xs">
@@ -249,7 +256,9 @@ export function KeywordSetsContent() {
         confirmLabel="Delete"
         tone="destructive"
         loading={deleteSetMutation.isPending}
-        onConfirm={() => deletingSet && deleteSetMutation.mutate(deletingSet.id)}
+        onConfirm={() =>
+          deletingSet && deleteSetMutation.mutate(deletingSet.id)
+        }
       />
     </div>
   );

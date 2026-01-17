@@ -77,9 +77,13 @@ const leadGenScheduler = cron.schedule(CRON_INTERVAL, runScheduler, {
 
 // Keyword scheduler (hourly at xx:30)
 import { runKeywordScheduler } from "./services/keyword-scheduler";
-const keywordScheduler = cron.schedule(KEYWORD_CRON_INTERVAL, runKeywordScheduler, {
-  timezone: "UTC",
-});
+const keywordScheduler = cron.schedule(
+  KEYWORD_CRON_INTERVAL,
+  runKeywordScheduler,
+  {
+    timezone: "UTC",
+  },
+);
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

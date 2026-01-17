@@ -60,7 +60,9 @@ export function useProductMode(): [ProductMode, (mode: ProductMode) => void] {
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("leadly-product-mode") as ProductMode | null;
+    const stored = localStorage.getItem(
+      "leadly-product-mode",
+    ) as ProductMode | null;
     if (stored === "leadgen" || stored === "keyword") {
       setMode(stored);
     }

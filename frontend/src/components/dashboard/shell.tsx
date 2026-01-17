@@ -59,8 +59,9 @@ export function DashboardShell({
   const [isHydrated, setIsHydrated] = useState(false);
   const pathname = usePathname();
   const [productMode, setProductMode] = useProductMode();
-  
-  const navItems = productMode === "keyword" ? keywordNavItems : leadGenNavItems;
+
+  const navItems =
+    productMode === "keyword" ? keywordNavItems : leadGenNavItems;
 
   useEffect(() => {
     setIsHydrated(true);

@@ -25,11 +25,11 @@ type FailureContext = {
 async function executeCoreScrapeLogic(
   monitorId: string,
   jobId: string,
-  monitor: MonitorWithIcpAndUser
+  monitor: MonitorWithIcpAndUser,
 ) {
   const redditClient = new Reddit(
     env.REDDIT_CLIENT_ID,
-    env.REDDIT_CLIENT_SECRET
+    env.REDDIT_CLIENT_SECRET,
   );
 
   await db.scrapeJob.update({
@@ -44,7 +44,7 @@ async function executeCoreScrapeLogic(
   const posts = await redditClient.fetchPosts(
     target,
     MAX_SCRAPE_POSTS_LIMIT,
-    monitor.cursor
+    monitor.cursor,
   );
 
   if (!monitor.icp) {
@@ -111,15 +111,14 @@ async function handleJobFailure(
   context: FailureContext,
   error: unknown,
   currentRetryCount: number,
-  skipRetry: boolean
+  skipRetry: boolean,
 ) {
-  const errorMessage =
-    error instanceof Error ? error.message : "Unknown error";
+  const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
   if (!skipRetry && currentRetryCount < MAX_SCRAPE_RETRY_COUNT) {
     const nextRetryAt = new Date(Date.now() + SCRAPE_RETRY_DELAY_MS);
     console.log(
-      `Scheduling retry for job ${jobId} at ${nextRetryAt.toISOString()}`
+      `Scheduling retry for job ${jobId} at ${nextRetryAt.toISOString()}`,
     );
 
     await db.scrapeJob.update({
@@ -133,7 +132,7 @@ async function handleJobFailure(
     });
   } else {
     console.log(
-      `Job ${jobId} failed permanently after ${MAX_SCRAPE_RETRY_COUNT} retries: ${errorMessage}`
+      `Job ${jobId} failed permanently after ${MAX_SCRAPE_RETRY_COUNT} retries: ${errorMessage}`,
     );
 
     await db.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -198,7 +197,7 @@ export async function processRedditScrape(job: Job) {
     const leadsCreated = await executeCoreScrapeLogic(
       monitorId,
       jobId,
-      monitor as MonitorWithIcpAndUser
+      monitor as MonitorWithIcpAndUser,
     );
 
     console.log(
@@ -207,7 +206,7 @@ export async function processRedditScrape(job: Job) {
         jobId,
         monitorId,
         leadsCreated,
-      })
+      }),
     );
   } catch (error) {
     console.error("Scrape failed:", error);
@@ -217,7 +216,7 @@ export async function processRedditScrape(job: Job) {
       { monitorId, jobId, source: "bullmq" },
       error,
       scrapeJob.retryCount + 1,
-      false
+      false,
     );
   }
 }
@@ -255,7 +254,7 @@ export async function processStuckJob(monitorId: string, jobId: string) {
     const leadsCreated = await executeCoreScrapeLogic(
       monitorId,
       jobId,
-      monitor as MonitorWithIcpAndUser
+      monitor as MonitorWithIcpAndUser,
     );
 
     console.log(
@@ -264,7 +263,7 @@ export async function processStuckJob(monitorId: string, jobId: string) {
         jobId,
         monitorId,
         leadsCreated,
-      })
+      }),
     );
   } catch (error) {
     console.error("Stuck job processing failed:", error);
@@ -274,7 +273,7 @@ export async function processStuckJob(monitorId: string, jobId: string) {
       { monitorId, jobId, source: "stuck_job_fallback" },
       error,
       scrapeJob.retryCount + 1,
-      true
+      true,
     );
   }
 }

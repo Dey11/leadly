@@ -19,7 +19,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { LeadStatus } from "@/types/backend";
-import type { KeywordFilterState, KeywordMonitorOption } from "@/types/components/keyword";
+import type {
+  KeywordFilterState,
+  KeywordMonitorOption,
+} from "@/types/components/keyword";
 import { clientApi } from "@/lib/client/api";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -79,7 +82,9 @@ export function KeywordLeadsFilterBar({
     <div className="border-border/60 bg-card/80 rounded-3xl border p-6 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-foreground text-2xl font-semibold">Keyword Leads</h1>
+          <h1 className="text-foreground text-2xl font-semibold">
+            Keyword Leads
+          </h1>
           <p className="text-muted-foreground text-sm">
             Review and manage posts matching your keyword sets.
           </p>

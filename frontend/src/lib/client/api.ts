@@ -283,8 +283,10 @@ export const clientApi = {
   },
   createKeywordSet: (body: { name: string; keywords: string[] }) =>
     request(`${apiBaseUrl}/keyword-sets`, { method: "POST", body }),
-  updateKeywordSet: (id: string, body: { name?: string; keywords?: string[] }) =>
-    request(`${apiBaseUrl}/keyword-sets/${id}`, { method: "PATCH", body }),
+  updateKeywordSet: (
+    id: string,
+    body: { name?: string; keywords?: string[] },
+  ) => request(`${apiBaseUrl}/keyword-sets/${id}`, { method: "PATCH", body }),
   deleteKeywordSet: (id: string) =>
     request(`${apiBaseUrl}/keyword-sets/${id}`, { method: "DELETE" }),
 
@@ -305,7 +307,8 @@ export const clientApi = {
   updateKeywordMonitor: (
     id: string,
     body: { keywordSetId?: string; target?: string; status?: string },
-  ) => request(`${apiBaseUrl}/keyword-monitors/${id}`, { method: "PATCH", body }),
+  ) =>
+    request(`${apiBaseUrl}/keyword-monitors/${id}`, { method: "PATCH", body }),
   deleteKeywordMonitor: (id: string) =>
     request(`${apiBaseUrl}/keyword-monitors/${id}`, { method: "DELETE" }),
 
@@ -325,7 +328,12 @@ export const clientApi = {
       message: string;
       payload: {
         data: any[];
-        pagination: { total: number; page: number; limit: number; totalPages: number };
+        pagination: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
       };
     }>(`${apiBaseUrl}/keyword-leads${query}`);
     return response.payload;

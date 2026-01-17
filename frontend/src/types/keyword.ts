@@ -1,4 +1,10 @@
-import type { Platform, MonitorStatus, LeadStatus, SubscriptionTier, PaginationMeta } from "./backend";
+import type {
+  Platform,
+  MonitorStatus,
+  LeadStatus,
+  SubscriptionTier,
+  PaginationMeta,
+} from "./backend";
 
 // ==================== Keyword Set ====================
 

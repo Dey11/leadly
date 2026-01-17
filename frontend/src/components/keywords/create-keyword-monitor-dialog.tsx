@@ -43,8 +43,11 @@ export function CreateKeywordMonitorDialog({
   const [error, setError] = useState<string | null>(null);
 
   const createMutation = useMutation({
-    mutationFn: (data: { keywordSetId: string; target: string; platform: string }) =>
-      clientApi.createKeywordMonitor(data),
+    mutationFn: (data: {
+      keywordSetId: string;
+      target: string;
+      platform: string;
+    }) => clientApi.createKeywordMonitor(data),
     onSuccess: () => {
       resetForm();
       onSuccess();
@@ -99,7 +102,8 @@ export function CreateKeywordMonitorDialog({
           <DialogHeader>
             <DialogTitle>Add Keyword Monitor</DialogTitle>
             <DialogDescription>
-              Choose a keyword set and specify a subreddit to monitor for matches.
+              Choose a keyword set and specify a subreddit to monitor for
+              matches.
             </DialogDescription>
           </DialogHeader>
 
@@ -138,7 +142,11 @@ export function CreateKeywordMonitorDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => handleClose(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleClose(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={createMutation.isPending}>
