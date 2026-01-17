@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
 import Redis from "ioredis";
 import { env } from "../env";
-import { processScrapeJob } from "../processors/reddit.processor";
+import { processRedditScrape } from "../processors/reddit.processor";
 
 const connection = new Redis(env.REDIS_URL, {
   maxRetriesPerRequest: null,
@@ -11,7 +11,7 @@ const worker = new Worker(
   "scrapeJobs",
   async (job) => {
     console.log("Processing job:", job.data);
-    await processScrapeJob(job);
+    await processRedditScrape(job);
   },
   { connection },
 );

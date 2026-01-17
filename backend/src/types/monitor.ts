@@ -1,38 +1,20 @@
-import { MonitorMode, MonitorStatus, Platform } from "@prisma/client";
+import { MonitorStatus, Platform } from "@prisma/client";
 import { z } from "zod/v4";
 
-const monitorBaseSchema = z
+export const createMonitorSchema = z
   .object({
-    mode: z.enum(MonitorMode).default("LEAD_GEN"),
-    icpId: z.string().cuid().nullable().optional(),
-    keywordSetId: z.string().cuid().nullable().optional(),
+    icpId: z.string().cuid(),
     platform: z.enum(Platform),
     target: z.string().min(1),
-    cursor: z.string().nullable().optional(),
   })
   .strict();
 
-export const createMonitorSchema = monitorBaseSchema.refine(
-  (data) => {
-    // LEAD_GEN mode requires icpId
-    if (data.mode === "LEAD_GEN" && !data.icpId) {
-      return false;
-    }
-    // KEYWORD mode requires keywordSetId
-    if (data.mode === "KEYWORD" && !data.keywordSetId) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message:
-      "LEAD_GEN mode requires icpId, KEYWORD mode requires keywordSetId",
-  }
-);
-
-export const updateMonitorSchema = monitorBaseSchema
-  .partial()
-  .extend({
+export const updateMonitorSchema = z
+  .object({
+    icpId: z.string().cuid().optional(),
+    platform: z.enum(Platform).optional(),
+    target: z.string().min(1).optional(),
+    cursor: z.string().nullable().optional(),
     status: z.enum(MonitorStatus).optional(),
   })
   .strict()
@@ -46,4 +28,3 @@ export const monitorIdParamSchema = z
     id: z.string().cuid(),
   })
   .strict();
-

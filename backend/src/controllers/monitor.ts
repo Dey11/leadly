@@ -41,34 +41,18 @@ export const createMonitor = async (req: Request, res: Response) => {
       });
     }
 
-    const { mode, icpId, keywordSetId } = payload.data;
+    // Validate ICP ownership
+    const icp = await db.icp.findUnique({
+      where: { id: payload.data.icpId },
+    });
 
-    // Validate ICP if provided (required for LEAD_GEN, optional for KEYWORD)
-    if (icpId) {
-      const icp = await db.icp.findUnique({
-        where: { id: icpId },
-      });
-
-      if (!icp || icp.userId !== req.userId!) {
-        return res
-          .status(400)
-          .json({ error: "ICP not found or not owned by user" });
-      }
+    if (!icp || icp.userId !== req.userId!) {
+      return res
+        .status(400)
+        .json({ error: "ICP not found or not owned by user" });
     }
 
-    // Validate KeywordSet if provided (required for KEYWORD mode)
-    if (keywordSetId) {
-      const keywordSet = await db.keywordSet.findUnique({
-        where: { id: keywordSetId },
-      });
-
-      if (!keywordSet || keywordSet.userId !== req.userId!) {
-        return res
-          .status(400)
-          .json({ error: "KeywordSet not found or not owned by user" });
-      }
-    }
-
+    // Validate subreddit
     if (payload.data.platform === "REDDIT") {
       const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
       const isValid = await reddit.validateSubreddit(payload.data.target);
@@ -80,12 +64,9 @@ export const createMonitor = async (req: Request, res: Response) => {
 
     const monitor = await db.monitor.create({
       data: {
-        mode,
-        icpId: icpId || null,
-        keywordSetId: keywordSetId || null,
+        icpId: payload.data.icpId,
         platform: payload.data.platform,
         target: payload.data.target,
-        cursor: payload.data.cursor || null,
         userId: req.userId!,
       },
     });
@@ -103,7 +84,33 @@ export const getMonitors = async (req: Request, res: Response) => {
       where: { userId: req.userId },
       include: {
         icp: true,
-        keywordSet: true,
+        scrapeJobs: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 10,
+        },
+      },
+    });
+    res.json(monitors);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch monitors" });
+  }
+};
+
+export const getMonitor = async (req: Request, res: Response) => {
+  try {
+    const idResult = monitorIdParamSchema.safeParse(req.params);
+    if (!idResult.success) {
+      return res.status(400).json({ error: "Invalid monitor id" });
+    }
+
+    const { id } = idResult.data;
+
+    const monitor = await db.monitor.findFirst({
+      where: { id, userId: req.userId },
+      include: {
+        icp: true,
         scrapeJobs: {
           orderBy: { createdAt: "desc" },
           take: 10,
@@ -111,10 +118,13 @@ export const getMonitors = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(monitors);
+    if (!monitor) {
+      return res.status(404).json({ error: "Monitor not found" });
+    }
+
+    res.json(monitor);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch monitors" });
+    res.status(500).json({ error: "Failed to fetch monitor" });
   }
 };
 
@@ -132,11 +142,13 @@ export const updateMonitor = async (req: Request, res: Response) => {
 
     const { id } = idResult.data;
 
-    const monitor = await db.monitor.findUnique({ where: { id } });
+    const existing = await db.monitor.findFirst({
+      where: { id, userId: req.userId },
+    });
 
-    if (!monitor) return res.status(404).json({ error: "Monitor not found" });
-    if (monitor.userId !== req.userId)
-      return res.status(403).json({ error: "Not authorized" });
+    if (!existing) {
+      return res.status(404).json({ error: "Monitor not found" });
+    }
 
     // Validate ICP if being updated
     if (payload.data.icpId) {
@@ -151,19 +163,7 @@ export const updateMonitor = async (req: Request, res: Response) => {
       }
     }
 
-    // Validate KeywordSet if being updated
-    if (payload.data.keywordSetId) {
-      const keywordSet = await db.keywordSet.findUnique({
-        where: { id: payload.data.keywordSetId },
-        select: { id: true, userId: true },
-      });
-      if (!keywordSet || keywordSet.userId !== req.userId) {
-        return res.status(400).json({
-          error: "KeywordSet not found or not owned by the current user.",
-        });
-      }
-    }
-
+    // Validate subreddit if being updated
     if (payload.data.target && payload.data.platform === "REDDIT") {
       const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
       const isValid = await reddit.validateSubreddit(payload.data.target);
@@ -175,9 +175,7 @@ export const updateMonitor = async (req: Request, res: Response) => {
 
     const updatedMonitor = await db.monitor.update({
       where: { id },
-      data: {
-        ...payload.data,
-      },
+      data: payload.data,
     });
 
     res.json(updatedMonitor);
@@ -208,4 +206,3 @@ export const deleteMonitor = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to delete monitor" });
   }
 };
-

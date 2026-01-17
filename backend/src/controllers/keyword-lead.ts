@@ -1,42 +1,36 @@
 import { Request, Response } from "express";
 import db from "../lib/db";
 import {
-  getLeadsQuerySchema,
-  leadIdParamSchema,
-  updateLeadSchema,
-  getScrapeJobsQuerySchema,
-  monitorIdParamSchema,
-} from "../types/lead";
+  getKeywordLeadsQuerySchema,
+  keywordLeadIdParamSchema,
+  updateKeywordLeadSchema,
+} from "../types/keyword-lead";
 
-export const getLeads = async (req: Request, res: Response) => {
+export async function getKeywordLeads(req: Request, res: Response) {
   try {
-    const queryResult = getLeadsQuerySchema.safeParse(req.query);
+    const queryResult = getKeywordLeadsQuerySchema.safeParse(req.query);
     if (!queryResult.success) {
       return res.status(400).json({ error: "Invalid query parameters" });
     }
 
-    const { monitorId, platform, leadType, status, search, page, limit } =
+    const { keywordMonitorId, platform, status, search, page, limit } =
       queryResult.data;
     const skip = (page - 1) * limit;
 
     const whereClause: any = {
       scrapeJob: {
-        monitor: {
+        keywordMonitor: {
           userId: req.userId!,
         },
       },
     };
 
-    if (monitorId) {
-      whereClause.scrapeJob.monitorId = monitorId;
+    if (keywordMonitorId) {
+      whereClause.scrapeJob.keywordMonitorId = keywordMonitorId;
     }
 
     if (platform) {
       whereClause.platform = platform;
-    }
-
-    if (leadType) {
-      whereClause.leadType = leadType;
     }
 
     if (status) {
@@ -51,15 +45,15 @@ export const getLeads = async (req: Request, res: Response) => {
     }
 
     const [leads, total] = await Promise.all([
-      db.lead.findMany({
+      db.keywordLead.findMany({
         where: whereClause,
         select: {
           id: true,
           platform: true,
-          leadType: true,
           content: true,
           url: true,
           author: true,
+          matchedKeywords: true,
           status: true,
           createdAt: true,
         },
@@ -67,13 +61,13 @@ export const getLeads = async (req: Request, res: Response) => {
         skip,
         take: limit,
       }),
-      db.lead.count({ where: whereClause }),
+      db.keywordLead.count({ where: whereClause }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
 
     res.json({
-      message: "Leads retrieved successfully.",
+      message: "Keyword leads retrieved successfully.",
       payload: {
         data: leads,
         pagination: {
@@ -86,24 +80,24 @@ export const getLeads = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch leads" });
+    res.status(500).json({ error: "Failed to fetch keyword leads" });
   }
-};
+}
 
-export const getLead = async (req: Request, res: Response) => {
+export async function getKeywordLead(req: Request, res: Response) {
   try {
-    const idResult = leadIdParamSchema.safeParse(req.params);
+    const idResult = keywordLeadIdParamSchema.safeParse(req.params);
     if (!idResult.success) {
       return res.status(400).json({ error: "Invalid lead id" });
     }
 
     const { id } = idResult.data;
 
-    const lead = await db.lead.findFirst({
+    const lead = await db.keywordLead.findFirst({
       where: {
         id,
         scrapeJob: {
-          monitor: {
+          keywordMonitor: {
             userId: req.userId!,
           },
         },
@@ -111,12 +105,11 @@ export const getLead = async (req: Request, res: Response) => {
       select: {
         id: true,
         platform: true,
-        leadType: true,
         content: true,
         url: true,
         author: true,
+        matchedKeywords: true,
         status: true,
-        reasoning: true,
         createdAt: true,
       },
     });
@@ -128,7 +121,7 @@ export const getLead = async (req: Request, res: Response) => {
     let status = lead.status;
 
     if (status === "NEW") {
-      const updated = await db.lead.update({
+      const updated = await db.keywordLead.update({
         where: { id },
         data: { status: "VIEWED" },
         select: { status: true },
@@ -144,26 +137,26 @@ export const getLead = async (req: Request, res: Response) => {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch lead" });
   }
-};
+}
 
-export const updateLead = async (req: Request, res: Response) => {
+export async function updateKeywordLead(req: Request, res: Response) {
   try {
-    const idResult = leadIdParamSchema.safeParse(req.params);
+    const idResult = keywordLeadIdParamSchema.safeParse(req.params);
     if (!idResult.success) {
       return res.status(400).json({ error: "Invalid lead id" });
     }
 
-    const payload = updateLeadSchema.safeParse(req.body);
+    const payload = updateKeywordLeadSchema.safeParse(req.body);
     if (!payload.success) {
       return res.status(400).json({ error: "Invalid request body" });
     }
 
     const { id } = idResult.data;
-    const updatedLead = await db.lead.updateMany({
+    const updatedLead = await db.keywordLead.updateMany({
       where: {
         id,
         scrapeJob: {
-          monitor: {
+          keywordMonitor: {
             userId: req.userId!,
           },
         },
@@ -185,22 +178,22 @@ export const updateLead = async (req: Request, res: Response) => {
     console.error(err);
     res.status(500).json({ error: "Failed to update lead" });
   }
-};
+}
 
-export const deleteLead = async (req: Request, res: Response) => {
+export async function deleteKeywordLead(req: Request, res: Response) {
   try {
-    const idResult = leadIdParamSchema.safeParse(req.params);
+    const idResult = keywordLeadIdParamSchema.safeParse(req.params);
     if (!idResult.success) {
       return res.status(400).json({ error: "Invalid lead id" });
     }
 
     const { id } = idResult.data;
 
-    const deleted = await db.lead.deleteMany({
+    const deleted = await db.keywordLead.deleteMany({
       where: {
         id,
         scrapeJob: {
-          monitor: {
+          keywordMonitor: {
             userId: req.userId!,
           },
         },
@@ -219,109 +212,31 @@ export const deleteLead = async (req: Request, res: Response) => {
     console.error(err);
     res.status(500).json({ error: "Failed to delete lead" });
   }
-};
+}
 
-export const getScrapeJobs = async (req: Request, res: Response) => {
+export async function exportKeywordLeads(req: Request, res: Response) {
   try {
-    const monitorIdResult = monitorIdParamSchema.safeParse(req.params);
-    if (!monitorIdResult.success) {
-      return res.status(400).json({ error: "Invalid monitor id" });
-    }
-
-    const queryResult = getScrapeJobsQuerySchema.safeParse(req.query);
+    const queryResult = getKeywordLeadsQuerySchema.safeParse(req.query);
     if (!queryResult.success) {
       return res.status(400).json({ error: "Invalid query parameters" });
     }
 
-    const { monitorId } = monitorIdResult.data;
-    const { page, limit } = queryResult.data;
-    const skip = (page - 1) * limit;
-
-    const monitor = await db.monitor.findUnique({
-      where: { id: monitorId },
-    });
-
-    if (!monitor) {
-      return res.status(404).json({ error: "Monitor not found" });
-    }
-
-    if (monitor.userId !== req.userId!) {
-      return res.status(403).json({ error: "Not authorized" });
-    }
-
-    const [scrapeJobs, total] = await Promise.all([
-      db.scrapeJob.findMany({
-        where: { monitorId },
-        select: {
-          id: true,
-          status: true,
-          warmLeads: true,
-          coldLeads: true,
-          neutralLeads: true,
-          startedAt: true,
-          completedAt: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limit,
-      }),
-      db.scrapeJob.count({ where: { monitorId } }),
-    ]);
-
-    const jobsWithMetadata = scrapeJobs.map((job) => ({
-      ...job,
-      leadCount: job.warmLeads + job.coldLeads + job.neutralLeads,
-    }));
-
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      message: "Scrape jobs retrieved successfully.",
-      payload: {
-        data: jobsWithMetadata,
-        pagination: {
-          total,
-          page,
-          limit,
-          totalPages,
-        },
-      },
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch scrape jobs" });
-  }
-};
-
-export const exportLeads = async (req: Request, res: Response) => {
-  try {
-    const queryResult = getLeadsQuerySchema.safeParse(req.query);
-    if (!queryResult.success) {
-      return res.status(400).json({ error: "Invalid query parameters" });
-    }
-
-    const { monitorId, platform, leadType, status, search } =
-      queryResult.data;
+    const { keywordMonitorId, platform, status, search } = queryResult.data;
 
     const whereClause: any = {
       scrapeJob: {
-        monitor: {
+        keywordMonitor: {
           userId: req.userId!,
         },
       },
     };
 
-    if (monitorId) {
-      whereClause.scrapeJob.monitorId = monitorId;
+    if (keywordMonitorId) {
+      whereClause.scrapeJob.keywordMonitorId = keywordMonitorId;
     }
 
     if (platform) {
       whereClause.platform = platform;
-    }
-
-    if (leadType) {
-      whereClause.leadType = leadType;
     }
 
     if (status) {
@@ -335,30 +250,29 @@ export const exportLeads = async (req: Request, res: Response) => {
       };
     }
 
-    const leads = await db.lead.findMany({
+    const leads = await db.keywordLead.findMany({
       where: whereClause,
       select: {
         id: true,
         platform: true,
-        leadType: true,
         content: true,
         url: true,
         author: true,
+        matchedKeywords: true,
         status: true,
         createdAt: true,
       },
       orderBy: { createdAt: "desc" },
-      take: 1000, // Limit export to 1000 leads
+      take: 1000,
     });
 
-    // Build CSV
     const headers = [
       "ID",
       "Platform",
-      "Lead Type",
       "Content",
       "URL",
       "Author",
+      "Matched Keywords",
       "Status",
       "Created At",
     ];
@@ -375,10 +289,10 @@ export const exportLeads = async (req: Request, res: Response) => {
       [
         lead.id,
         lead.platform,
-        lead.leadType,
         escapeCSV(lead.content),
         lead.url,
         lead.author || "",
+        lead.matchedKeywords.join("; "),
         lead.status,
         new Date(lead.createdAt).toISOString(),
       ].join(",")
@@ -387,10 +301,13 @@ export const exportLeads = async (req: Request, res: Response) => {
     const csv = [headers.join(","), ...rows].join("\n");
 
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", "attachment; filename=leads.csv");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=keyword-leads.csv"
+    );
     res.send(csv);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to export leads" });
+    res.status(500).json({ error: "Failed to export keyword leads" });
   }
-};
+}

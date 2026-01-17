@@ -2,7 +2,7 @@ import db from "../lib/db";
 import { Reddit } from "../services/reddit";
 import { processLeads, LeadData } from "./ai.processor";
 import type { Job } from "bullmq";
-import type { LeadStatus, Monitor, Icp, User, KeywordSet } from "@prisma/client";
+import type { LeadStatus, Monitor, Icp, User } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { env } from "../env";
 import {
@@ -10,12 +10,9 @@ import {
   MAX_SCRAPE_RETRY_COUNT,
   SCRAPE_RETRY_DELAY_MS,
 } from "../lib/constants";
-import { filterPostsByKeywords } from "../lib/keywords";
-import { RedditPost } from "../types/reddit";
 
 type MonitorWithIcpAndUser = Monitor & {
-  icp: Icp | null;
-  keywordSet: KeywordSet | null;
+  icp: Icp;
   user: User;
 };
 
@@ -25,29 +22,14 @@ type FailureContext = {
   source: "bullmq" | "stuck_job_fallback";
 };
 
-/**
- * Create basic leads from keyword-matched posts (no ICP scoring)
- * Used when KEYWORD mode has no ICP attached
- */
-function createBasicLeadsFromPosts(posts: RedditPost[]): LeadData[] {
-  return posts.map((post) => ({
-    platform: "REDDIT" as const,
-    leadType: "NEUTRAL" as const, // Default to NEUTRAL without ICP scoring
-    content: post.title,
-    url: post.urlToPost,
-    author: post.posterId,
-    reasoning: "Matched keyword filter",
-  }));
-}
-
 async function executeCoreScrapeLogic(
   monitorId: string,
   jobId: string,
-  monitor: MonitorWithIcpAndUser,
+  monitor: MonitorWithIcpAndUser
 ) {
   const redditClient = new Reddit(
     env.REDDIT_CLIENT_ID,
-    env.REDDIT_CLIENT_SECRET,
+    env.REDDIT_CLIENT_SECRET
   );
 
   await db.scrapeJob.update({
@@ -62,57 +44,22 @@ async function executeCoreScrapeLogic(
   const posts = await redditClient.fetchPosts(
     target,
     MAX_SCRAPE_POSTS_LIMIT,
-    monitor.cursor,
+    monitor.cursor
   );
 
-  let leads: LeadData[] = [];
-  let postsToProcess = posts;
-
-  if (monitor.mode === "KEYWORD") {
-    // KEYWORD mode: filter by keywords first
-    if (!monitor.keywordSet) {
-      throw new Error("KEYWORD mode monitor is missing KeywordSet");
-    }
-
-    postsToProcess = filterPostsByKeywords(posts, monitor.keywordSet.keywords);
-    console.log(
-      `[KEYWORD mode] Fetched ${posts.length} posts, ${postsToProcess.length} matched keywords`
-    );
-
-    if (postsToProcess.length === 0) {
-      // No matches, still complete the job
-      console.log(`[KEYWORD mode] No keyword matches found`);
-    } else if (monitor.icp) {
-      // Has ICP: do full scoring on filtered posts
-      leads = await processLeads(postsToProcess, {
-        name: monitor.icp.name,
-        summary: monitor.icp.summary,
-        targetPersona: monitor.icp.targetPersona,
-        pains: monitor.icp.pains,
-        valueProposition: monitor.icp.valueProposition,
-        qualifyingSignals: monitor.icp.qualifyingSignals,
-        disqualifyingSignals: monitor.icp.disqualifyingSignals,
-      });
-    } else {
-      // No ICP: create basic leads from keyword matches
-      leads = createBasicLeadsFromPosts(postsToProcess);
-    }
-  } else {
-    // LEAD_GEN mode: require ICP, process all posts
-    if (!monitor.icp) {
-      throw new Error("LEAD_GEN mode monitor is missing associated ICP");
-    }
-
-    leads = await processLeads(posts, {
-      name: monitor.icp.name,
-      summary: monitor.icp.summary,
-      targetPersona: monitor.icp.targetPersona,
-      pains: monitor.icp.pains,
-      valueProposition: monitor.icp.valueProposition,
-      qualifyingSignals: monitor.icp.qualifyingSignals,
-      disqualifyingSignals: monitor.icp.disqualifyingSignals,
-    });
+  if (!monitor.icp) {
+    throw new Error("Monitor is missing associated ICP");
   }
+
+  const leads = await processLeads(posts, {
+    name: monitor.icp.name,
+    summary: monitor.icp.summary,
+    targetPersona: monitor.icp.targetPersona,
+    pains: monitor.icp.pains,
+    valueProposition: monitor.icp.valueProposition,
+    qualifyingSignals: monitor.icp.qualifyingSignals,
+    disqualifyingSignals: monitor.icp.disqualifyingSignals,
+  });
 
   const lastPostId = posts[0]?.postId;
 
@@ -159,20 +106,20 @@ async function executeCoreScrapeLogic(
   return leads.length;
 }
 
-
 async function handleJobFailure(
   jobId: string,
   context: FailureContext,
   error: unknown,
   currentRetryCount: number,
-  skipRetry: boolean,
+  skipRetry: boolean
 ) {
-  const errorMessage = error instanceof Error ? error.message : "Unknown error";
+  const errorMessage =
+    error instanceof Error ? error.message : "Unknown error";
 
   if (!skipRetry && currentRetryCount < MAX_SCRAPE_RETRY_COUNT) {
     const nextRetryAt = new Date(Date.now() + SCRAPE_RETRY_DELAY_MS);
     console.log(
-      `Scheduling retry for job ${jobId} at ${nextRetryAt.toISOString()}`,
+      `Scheduling retry for job ${jobId} at ${nextRetryAt.toISOString()}`
     );
 
     await db.scrapeJob.update({
@@ -186,140 +133,148 @@ async function handleJobFailure(
     });
   } else {
     console.log(
-      `Job ${jobId} permanently failed (retryCount: ${currentRetryCount}, source: ${context.source})`,
+      `Job ${jobId} failed permanently after ${MAX_SCRAPE_RETRY_COUNT} retries: ${errorMessage}`
     );
 
-    await db.$transaction([
-      db.failedScrapeJob.create({
+    await db.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.failedScrapeJob.create({
         data: {
           monitorId: context.monitorId,
           originalJobId: jobId,
           errorMessage,
-          metadata: {
-            stack: error instanceof Error ? error.stack : null,
-            context,
-            retryCount: currentRetryCount,
-          },
         },
-      }),
-      db.scrapeJob.update({
+      });
+
+      await tx.scrapeJob.update({
         where: { id: jobId },
         data: {
           status: "FAILED",
+          errorMessage,
           retryCount: currentRetryCount,
           nextRetryAt: null,
-          errorMessage,
         },
-      }),
-    ]);
+      });
+    });
   }
 }
 
-export async function processScrapeJob(job: Job) {
-  console.log("Processing job with data:", job.data);
-
-  if (!job.data.monitorId || !job.data.jobId) {
-    throw new Error("Missing monitorId or jobId in job data");
-  }
-
+export async function processRedditScrape(job: Job) {
   const { monitorId, jobId } = job.data;
 
-  let scrapeJob = await db.scrapeJob.findUnique({
+  console.log(`Processing scrape job: ${jobId} for monitor: ${monitorId}`);
+
+  const scrapeJob = await db.scrapeJob.findUnique({
     where: { id: jobId },
-    include: { monitor: { include: { icp: true } } },
   });
+
+  if (!scrapeJob) {
+    console.log("Scrape job not found:", jobId);
+    return;
+  }
 
   const monitor = await db.monitor.findUnique({
     where: { id: monitorId },
-    include: { user: true, icp: true, keywordSet: true },
+    include: { icp: true, user: true },
   });
 
-  console.log("Found scrapeJob:", !!scrapeJob, "Found monitor:", !!monitor);
-
-  if (!scrapeJob || !monitor) {
-    throw new Error("ScrapeJob or Monitor not found");
+  if (!monitor) {
+    console.log("Monitor not found:", monitorId);
+    return;
   }
 
-  if (monitor.user.isDeleted) {
-    console.log(`Skipping job ${jobId} because user is deleted`);
+  if (!monitor.icp) {
+    console.log("Monitor has no ICP:", monitorId);
+    await db.scrapeJob.update({
+      where: { id: jobId },
+      data: {
+        status: "FAILED",
+        errorMessage: "Monitor has no associated ICP",
+      },
+    });
     return;
   }
 
   try {
-    await executeCoreScrapeLogic(monitorId, jobId, monitor);
-  } catch (error) {
-    console.error("Job processing failed:", error);
-
-    const currentRetryCount = (scrapeJob?.retryCount ?? 0) + 1;
-    console.log(
-      `Job ${jobId} failed. Retry count: ${currentRetryCount}/${MAX_SCRAPE_RETRY_COUNT}`,
+    const leadsCreated = await executeCoreScrapeLogic(
+      monitorId,
+      jobId,
+      monitor as MonitorWithIcpAndUser
     );
 
-    try {
-      await handleJobFailure(
+    console.log(
+      JSON.stringify({
+        evt: "scrape.completed",
         jobId,
-        { monitorId, jobId, source: "bullmq" },
-        error,
-        currentRetryCount,
-        false,
-      );
-    } catch (updateError) {
-      console.error("Failed to update scrapeJob status:", updateError);
-    }
+        monitorId,
+        leadsCreated,
+      })
+    );
+  } catch (error) {
+    console.error("Scrape failed:", error);
+
+    await handleJobFailure(
+      jobId,
+      { monitorId, jobId, source: "bullmq" },
+      error,
+      scrapeJob.retryCount + 1,
+      false
+    );
   }
 }
 
 export async function processStuckJob(monitorId: string, jobId: string) {
-  console.log(
-    JSON.stringify({
-      evt: "stuck_job.processing",
-      monitorId,
-      jobId,
-    }),
-  );
-
-  let scrapeJob = await db.scrapeJob.findUnique({
-    where: { id: jobId },
-    include: { monitor: { include: { icp: true } } },
-  });
+  console.log(`Processing stuck job: ${jobId} for monitor: ${monitorId}`);
 
   const monitor = await db.monitor.findUnique({
     where: { id: monitorId },
-    include: { user: true, icp: true, keywordSet: true },
+    include: { icp: true, user: true },
   });
 
-  if (!scrapeJob || !monitor) {
-    throw new Error("ScrapeJob or Monitor not found");
+  if (!monitor || !monitor.icp) {
+    console.log("Invalid monitor for stuck job:", monitorId);
+    await db.scrapeJob.update({
+      where: { id: jobId },
+      data: {
+        status: "FAILED",
+        errorMessage: "Monitor or ICP not found",
+      },
+    });
+    return;
   }
 
-  if (monitor.user.isDeleted) {
-    console.log(`Skipping stuck job ${jobId} because user is deleted`);
+  const scrapeJob = await db.scrapeJob.findUnique({
+    where: { id: jobId },
+  });
+
+  if (!scrapeJob) {
+    console.log("Stuck job not found:", jobId);
     return;
   }
 
   try {
-    const leadsCount = await executeCoreScrapeLogic(monitorId, jobId, monitor);
+    const leadsCreated = await executeCoreScrapeLogic(
+      monitorId,
+      jobId,
+      monitor as MonitorWithIcpAndUser
+    );
 
     console.log(
       JSON.stringify({
-        evt: "stuck_job.completed",
+        evt: "stuck_scrape.completed",
         jobId,
-        leadsCount,
-      }),
+        monitorId,
+        leadsCreated,
+      })
     );
   } catch (error) {
     console.error("Stuck job processing failed:", error);
-
-    const currentRetryCount = (scrapeJob?.retryCount ?? 0) + 1;
 
     await handleJobFailure(
       jobId,
       { monitorId, jobId, source: "stuck_job_fallback" },
       error,
-      currentRetryCount,
-      true,
+      scrapeJob.retryCount + 1,
+      true
     );
-
-    throw error;
   }
 }

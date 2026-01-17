@@ -7,6 +7,12 @@ const router = Router();
 
 router.get("/", authMiddleware, userRateLimit("read"), leadController.getLeads);
 router.get(
+  "/export",
+  authMiddleware,
+  userRateLimit("read"),
+  leadController.exportLeads,
+);
+router.get(
   "/:id",
   authMiddleware,
   userRateLimit("read"),

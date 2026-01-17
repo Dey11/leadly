@@ -5,6 +5,7 @@ import {
   keywordSetIdParamSchema,
   updateKeywordSetSchema,
 } from "../types/keyword-set";
+import { TIER_LIMITS } from "../lib/constants";
 
 export async function createKeywordSet(req: Request, res: Response) {
   try {
@@ -12,6 +13,36 @@ export async function createKeywordSet(req: Request, res: Response) {
 
     if (!payload.success) {
       return res.status(400).json({ error: "Invalid request body" });
+    }
+
+    const user = await db.user.findUnique({
+      where: { id: req.userId! },
+      include: { subscription: true },
+    });
+
+    if (!user?.subscription) {
+      return res.status(400).json({ error: "User has no active subscription" });
+    }
+
+    const tier = user.subscription.tier;
+    const tierLimits = TIER_LIMITS[tier];
+
+    // Check max keyword sets limit
+    const currentCount = await db.keywordSet.count({
+      where: { userId: req.userId! },
+    });
+
+    if (currentCount >= tierLimits.maxKeywordSets) {
+      return res.status(400).json({
+        error: `Keyword Set limit reached. Your ${tier} plan allows ${tierLimits.maxKeywordSets} keyword sets.`,
+      });
+    }
+
+    // Check keywords per set limit
+    if (payload.data.keywords.length > tierLimits.maxKeywordsPerSet) {
+      return res.status(400).json({
+        error: `Too many keywords. Your ${tier} plan allows ${tierLimits.maxKeywordsPerSet} keywords per set.`,
+      });
     }
 
     const keywordSet = await db.keywordSet.create({
@@ -33,7 +64,7 @@ export async function getKeywordSets(req: Request, res: Response) {
     const keywordSets = await db.keywordSet.findMany({
       where: { userId: req.userId },
       include: {
-        monitors: {
+        keywordMonitors: {
           select: {
             id: true,
             target: true,
@@ -63,7 +94,7 @@ export async function getKeywordSet(req: Request, res: Response) {
     const keywordSet = await db.keywordSet.findUnique({
       where: { id },
       include: {
-        monitors: {
+        keywordMonitors: {
           select: {
             id: true,
             target: true,
@@ -99,12 +130,34 @@ export async function updateKeywordSet(req: Request, res: Response) {
 
     const { id } = idResult.data;
 
-    const keywordSet = await db.keywordSet.findUnique({ where: { id } });
+    const keywordSet = await db.keywordSet.findUnique({
+      where: { id },
+      include: {
+        user: { include: { subscription: true } },
+      },
+    });
 
     if (!keywordSet)
       return res.status(404).json({ error: "KeywordSet not found" });
     if (keywordSet.userId !== req.userId)
       return res.status(403).json({ error: "Not authorized" });
+
+    // Check keywords per set limit if updating keywords
+    if (payload.data.keywords) {
+      const user = keywordSet.user;
+      if (!user.subscription) {
+        return res.status(400).json({ error: "User has no active subscription" });
+      }
+
+      const tier = user.subscription.tier;
+      const tierLimits = TIER_LIMITS[tier];
+
+      if (payload.data.keywords.length > tierLimits.maxKeywordsPerSet) {
+        return res.status(400).json({
+          error: `Too many keywords. Your ${tier} plan allows ${tierLimits.maxKeywordsPerSet} keywords per set.`,
+        });
+      }
+    }
 
     const updatedKeywordSet = await db.keywordSet.update({
       where: { id },
