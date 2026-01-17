@@ -31,9 +31,14 @@ import { DashboardNav, type DashboardNavItem } from "./nav";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { SUPPORT_EMAIL } from "@/constants/config";
 import { BugReportDialog } from "@/components/shared/bug-report-dialog";
+import {
+  ProductModeToggle,
+  useProductMode,
+} from "@/components/dashboard/product-mode-toggle";
 
 type DashboardShellProps = {
-  navItems: DashboardNavItem[];
+  leadGenNavItems: DashboardNavItem[];
+  keywordNavItems: DashboardNavItem[];
   tierLabel: string;
   limitsDescription: string;
   accountName?: string | null;
@@ -42,7 +47,8 @@ type DashboardShellProps = {
 };
 
 export function DashboardShell({
-  navItems,
+  leadGenNavItems,
+  keywordNavItems,
   tierLabel,
   limitsDescription,
   accountName,
@@ -52,6 +58,9 @@ export function DashboardShell({
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const pathname = usePathname();
+  const [productMode, setProductMode] = useProductMode();
+  
+  const navItems = productMode === "keyword" ? keywordNavItems : leadGenNavItems;
 
   useEffect(() => {
     setIsHydrated(true);
@@ -98,7 +107,15 @@ export function DashboardShell({
         </div>
       </Link>
 
-      <div className="px-4 pt-8 pb-6">
+      <div className="px-4 pt-6">
+        <ProductModeToggle
+          mode={productMode}
+          onModeChange={setProductMode}
+          className="w-full"
+        />
+      </div>
+
+      <div className="px-4 pt-6 pb-6">
         <DashboardNav
           items={navItems}
           orientation="vertical"
@@ -332,6 +349,14 @@ export function DashboardShell({
             >
               <X className="size-5" aria-hidden />
             </Button>
+          </div>
+
+          <div className="px-4 pt-4">
+            <ProductModeToggle
+              mode={productMode}
+              onModeChange={setProductMode}
+              className="w-full"
+            />
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-6">

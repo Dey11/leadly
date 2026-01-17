@@ -147,3 +147,18 @@ export async function getLeads(
     throw error;
   }
 }
+
+// Keyword mode queries
+export async function getKeywordMonitors() {
+  try {
+    return await backendJson<any[]>("/keyword-monitors");
+  } catch (error) {
+    if (
+      error instanceof BackendError &&
+      (error.status === 401 || error.status === 429)
+    ) {
+      return [];
+    }
+    throw error;
+  }
+}
