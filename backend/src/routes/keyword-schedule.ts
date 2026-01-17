@@ -5,13 +5,14 @@ import {
   updateKeywordSchedule,
 } from "../controllers/keyword-schedule";
 import { authMiddleware } from "../middleware/auth";
+import { userRateLimit } from "../lib/rate-limit";
 
 const router = Router();
 
 router.use(authMiddleware);
 
-router.get("/", getKeywordSchedule);
-router.post("/", createKeywordSchedule);
-router.patch("/", updateKeywordSchedule);
+router.get("/", userRateLimit("read"), getKeywordSchedule);
+router.post("/", userRateLimit("write"), createKeywordSchedule);
+router.patch("/", userRateLimit("write"), updateKeywordSchedule);
 
 export default router;
