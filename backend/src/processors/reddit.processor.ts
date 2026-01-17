@@ -1,8 +1,8 @@
 import db from "../lib/db";
 import { Reddit } from "../services/reddit";
-import { processLeads } from "./ai.processor";
+import { processLeads, LeadData } from "./ai.processor";
 import type { Job } from "bullmq";
-import type { LeadStatus, Monitor, Icp, User } from "@prisma/client";
+import type { LeadStatus, Monitor, Icp, User, KeywordSet } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { env } from "../env";
 import {
@@ -10,9 +10,12 @@ import {
   MAX_SCRAPE_RETRY_COUNT,
   SCRAPE_RETRY_DELAY_MS,
 } from "../lib/constants";
+import { filterPostsByKeywords } from "../lib/keywords";
+import { RedditPost } from "../types/reddit";
 
 type MonitorWithIcpAndUser = Monitor & {
   icp: Icp | null;
+  keywordSet: KeywordSet | null;
   user: User;
 };
 
@@ -21,6 +24,21 @@ type FailureContext = {
   jobId: string;
   source: "bullmq" | "stuck_job_fallback";
 };
+
+/**
+ * Create basic leads from keyword-matched posts (no ICP scoring)
+ * Used when KEYWORD mode has no ICP attached
+ */
+function createBasicLeadsFromPosts(posts: RedditPost[]): LeadData[] {
+  return posts.map((post) => ({
+    platform: "REDDIT" as const,
+    leadType: "NEUTRAL" as const, // Default to NEUTRAL without ICP scoring
+    content: post.title,
+    url: post.urlToPost,
+    author: post.posterId,
+    reasoning: "Matched keyword filter",
+  }));
+}
 
 async function executeCoreScrapeLogic(
   monitorId: string,
@@ -47,19 +65,55 @@ async function executeCoreScrapeLogic(
     monitor.cursor,
   );
 
-  if (!monitor.icp) {
-    throw new Error("Monitor is missing associated ICP");
+  let leads: LeadData[] = [];
+  let postsToProcess = posts;
+
+  if (monitor.mode === "KEYWORD") {
+    // KEYWORD mode: filter by keywords first
+    if (!monitor.keywordSet) {
+      throw new Error("KEYWORD mode monitor is missing KeywordSet");
+    }
+
+    postsToProcess = filterPostsByKeywords(posts, monitor.keywordSet.keywords);
+    console.log(
+      `[KEYWORD mode] Fetched ${posts.length} posts, ${postsToProcess.length} matched keywords`
+    );
+
+    if (postsToProcess.length === 0) {
+      // No matches, still complete the job
+      console.log(`[KEYWORD mode] No keyword matches found`);
+    } else if (monitor.icp) {
+      // Has ICP: do full scoring on filtered posts
+      leads = await processLeads(postsToProcess, {
+        name: monitor.icp.name,
+        summary: monitor.icp.summary,
+        targetPersona: monitor.icp.targetPersona,
+        pains: monitor.icp.pains,
+        valueProposition: monitor.icp.valueProposition,
+        qualifyingSignals: monitor.icp.qualifyingSignals,
+        disqualifyingSignals: monitor.icp.disqualifyingSignals,
+      });
+    } else {
+      // No ICP: create basic leads from keyword matches
+      leads = createBasicLeadsFromPosts(postsToProcess);
+    }
+  } else {
+    // LEAD_GEN mode: require ICP, process all posts
+    if (!monitor.icp) {
+      throw new Error("LEAD_GEN mode monitor is missing associated ICP");
+    }
+
+    leads = await processLeads(posts, {
+      name: monitor.icp.name,
+      summary: monitor.icp.summary,
+      targetPersona: monitor.icp.targetPersona,
+      pains: monitor.icp.pains,
+      valueProposition: monitor.icp.valueProposition,
+      qualifyingSignals: monitor.icp.qualifyingSignals,
+      disqualifyingSignals: monitor.icp.disqualifyingSignals,
+    });
   }
 
-  const leads = await processLeads(posts, {
-    name: monitor.icp.name,
-    summary: monitor.icp.summary,
-    targetPersona: monitor.icp.targetPersona,
-    pains: monitor.icp.pains,
-    valueProposition: monitor.icp.valueProposition,
-    qualifyingSignals: monitor.icp.qualifyingSignals,
-    disqualifyingSignals: monitor.icp.disqualifyingSignals,
-  });
   const lastPostId = posts[0]?.postId;
 
   const warmLeads = leads.filter((lead) => lead.leadType === "WARM");
@@ -104,6 +158,7 @@ async function executeCoreScrapeLogic(
 
   return leads.length;
 }
+
 
 async function handleJobFailure(
   jobId: string,
@@ -176,7 +231,7 @@ export async function processScrapeJob(job: Job) {
 
   const monitor = await db.monitor.findUnique({
     where: { id: monitorId },
-    include: { user: true, icp: true },
+    include: { user: true, icp: true, keywordSet: true },
   });
 
   console.log("Found scrapeJob:", !!scrapeJob, "Found monitor:", !!monitor);
@@ -230,7 +285,7 @@ export async function processStuckJob(monitorId: string, jobId: string) {
 
   const monitor = await db.monitor.findUnique({
     where: { id: monitorId },
-    include: { user: true, icp: true },
+    include: { user: true, icp: true, keywordSet: true },
   });
 
   if (!scrapeJob || !monitor) {

@@ -23,6 +23,11 @@ enum MonitorStatus {
   ARCHIVED
 }
 
+enum MonitorMode {
+  LEAD_GEN
+  KEYWORD
+}
+
 enum ScrapeJobStatus {
   PENDING
   RUNNING
@@ -83,10 +88,11 @@ model User {
   subscription Subscription?
   schedule     UserSchedule?
 
-  monitors   Monitor[]
-  icps       Icp[]
-  usage      Usage?
-  bugReports BugReport[]
+  monitors    Monitor[]
+  icps        Icp[]
+  keywordSets KeywordSet[]
+  usage       Usage?
+  bugReports  BugReport[]
 
   name                String
   emailVerified       Boolean   @default(false)
@@ -182,12 +188,37 @@ model UserSchedule {
   @@map("user_schedules")
 }
 
+model KeywordSet {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name     String
+  keywords String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  monitors Monitor[]
+
+  @@index([userId])
+  @@map("keyword_sets")
+}
+
 model Monitor {
   id     String @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  icpId  String
-  icp    Icp    @relation(fields: [icpId], references: [id], onDelete: Cascade)
+
+  mode MonitorMode @default(LEAD_GEN)
+
+  // Required for LEAD_GEN, optional for KEYWORD
+  icpId String?
+  icp   Icp?   @relation(fields: [icpId], references: [id], onDelete: Cascade)
+
+  // Required for KEYWORD mode
+  keywordSetId String?
+  keywordSet   KeywordSet? @relation(fields: [keywordSetId], references: [id], onDelete: SetNull)
 
   platform Platform
   target   String // Single subreddit name
@@ -205,6 +236,7 @@ model Monitor {
 
   @@index([userId])
   @@index([icpId])
+  @@index([keywordSetId])
   @@map("monitors")
 }
 

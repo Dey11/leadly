@@ -1,6 +1,7 @@
 import { env } from "../env";
 import type { BugReport, User } from "@prisma/client";
 
+
 type BugReportWithUser = BugReport & { user: Pick<User, "email" | "name"> };
 
 const SEVERITY_COLORS: Record<string, number> = {

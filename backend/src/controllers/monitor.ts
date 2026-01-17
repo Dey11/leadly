@@ -14,7 +14,9 @@ export const createMonitor = async (req: Request, res: Response) => {
     const payload = createMonitorSchema.safeParse(req.body);
 
     if (!payload.success) {
-      return res.status(400).json({ error: "Invalid request body" });
+      return res.status(400).json({
+        error: payload.error.issues[0]?.message || "Invalid request body",
+      });
     }
 
     const user = await db.user.findUnique({
@@ -39,14 +41,32 @@ export const createMonitor = async (req: Request, res: Response) => {
       });
     }
 
-    const icp = await db.icp.findUnique({
-      where: { id: payload.data.icpId },
-    });
+    const { mode, icpId, keywordSetId } = payload.data;
 
-    if (!icp || icp.userId !== req.userId!) {
-      return res
-        .status(400)
-        .json({ error: "ICP not found or not owned by user" });
+    // Validate ICP if provided (required for LEAD_GEN, optional for KEYWORD)
+    if (icpId) {
+      const icp = await db.icp.findUnique({
+        where: { id: icpId },
+      });
+
+      if (!icp || icp.userId !== req.userId!) {
+        return res
+          .status(400)
+          .json({ error: "ICP not found or not owned by user" });
+      }
+    }
+
+    // Validate KeywordSet if provided (required for KEYWORD mode)
+    if (keywordSetId) {
+      const keywordSet = await db.keywordSet.findUnique({
+        where: { id: keywordSetId },
+      });
+
+      if (!keywordSet || keywordSet.userId !== req.userId!) {
+        return res
+          .status(400)
+          .json({ error: "KeywordSet not found or not owned by user" });
+      }
     }
 
     if (payload.data.platform === "REDDIT") {
@@ -60,7 +80,12 @@ export const createMonitor = async (req: Request, res: Response) => {
 
     const monitor = await db.monitor.create({
       data: {
-        ...payload.data,
+        mode,
+        icpId: icpId || null,
+        keywordSetId: keywordSetId || null,
+        platform: payload.data.platform,
+        target: payload.data.target,
+        cursor: payload.data.cursor || null,
         userId: req.userId!,
       },
     });
@@ -78,6 +103,7 @@ export const getMonitors = async (req: Request, res: Response) => {
       where: { userId: req.userId },
       include: {
         icp: true,
+        keywordSet: true,
         scrapeJobs: {
           orderBy: { createdAt: "desc" },
           take: 10,
@@ -112,6 +138,7 @@ export const updateMonitor = async (req: Request, res: Response) => {
     if (monitor.userId !== req.userId)
       return res.status(403).json({ error: "Not authorized" });
 
+    // Validate ICP if being updated
     if (payload.data.icpId) {
       const icp = await db.icp.findUnique({
         where: { id: payload.data.icpId },
@@ -120,6 +147,19 @@ export const updateMonitor = async (req: Request, res: Response) => {
       if (!icp || icp.userId !== req.userId) {
         return res.status(400).json({
           error: "ICP not found or not owned by the current user.",
+        });
+      }
+    }
+
+    // Validate KeywordSet if being updated
+    if (payload.data.keywordSetId) {
+      const keywordSet = await db.keywordSet.findUnique({
+        where: { id: payload.data.keywordSetId },
+        select: { id: true, userId: true },
+      });
+      if (!keywordSet || keywordSet.userId !== req.userId) {
+        return res.status(400).json({
+          error: "KeywordSet not found or not owned by the current user.",
         });
       }
     }
@@ -168,3 +208,4 @@ export const deleteMonitor = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to delete monitor" });
   }
 };
+
