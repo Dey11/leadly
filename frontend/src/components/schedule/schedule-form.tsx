@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
 import { clientApi } from "@/lib/client/api";
+import { useProductMode } from "@/components/dashboard/product-mode-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,8 @@ export function ScheduleForm({
   scheduledHours,
   maxSelectable,
 }: ScheduleFormProps) {
+  const [productMode] = useProductMode();
+  
   // Initialize with UTC hours directly - no conversion needed for state
   const [selected, setSelected] = useState<Set<number>>(
     () => new Set(scheduledHours),
@@ -33,9 +36,13 @@ export function ScheduleForm({
       }
       // Since 'selected' already contains UTC hours, we just send them as is
       const utcHours = Array.from(selected.values());
-      return clientApi.updateSchedule({
-        scheduledHours: utcHours.sort((a, b) => a - b),
-      });
+      const payload = { scheduledHours: utcHours.sort((a, b) => a - b) };
+      
+      // Call the correct API based on product mode
+      if (productMode === "keyword") {
+        return clientApi.updateKeywordSchedule(payload);
+      }
+      return clientApi.updateSchedule(payload);
     },
     onSuccess: () => {
       setSuccessMessage(
@@ -93,7 +100,18 @@ export function ScheduleForm({
               const isChecked = selected.has(utcHour);
               // Format the UTC hour as local time for display
               // This handles half-hour timezones correctly (e.g. 12 UTC -> 17:30 IST)
-              const localLabel = formatUtcHourAsLocal(utcHour);
+              const date = new Date();
+              date.setUTCHours(utcHour, 0, 0, 0);
+              
+              // Shift label by 30 mins for keyword mode to match execution time (xx:30)
+              if (productMode === "keyword") {
+                date.setMinutes(date.getMinutes() + 30);
+              }
+
+              const localLabel = new Intl.DateTimeFormat("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              }).format(date);
 
               return (
                 <label

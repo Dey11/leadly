@@ -28,11 +28,16 @@ export const DEFAULT_HOURS_MAP = {
 export const TIER_LIMITS: Record<
   SubscriptionTier,
   {
-    monitors: number; // subreddit cap
+    // Lead Gen limits
+    monitors: number;
     scrapesPerDay: number;
-    selectableHours: number; // maximum hours user can select in schedule
-    monthlyScrapeLimit: number; // derived monthly limit
-    maxIcps: number; // maximum ICPs user can create
+    selectableHours: number;
+    monthlyScrapeLimit: number;
+    maxIcps: number;
+    // Keyword limits
+    keywordMonitors: number;
+    maxKeywordSets: number;
+    maxKeywordsPerSet: number;
   }
 > = {
   FREE: {
@@ -41,6 +46,9 @@ export const TIER_LIMITS: Record<
     selectableHours: 1,
     monthlyScrapeLimit: 30,
     maxIcps: 25,
+    keywordMonitors: 3,
+    maxKeywordSets: 5,
+    maxKeywordsPerSet: 10,
   },
   PRO: {
     monitors: 10,
@@ -48,6 +56,9 @@ export const TIER_LIMITS: Record<
     selectableHours: 6,
     monthlyScrapeLimit: 180,
     maxIcps: 50,
+    keywordMonitors: 10,
+    maxKeywordSets: 15,
+    maxKeywordsPerSet: 25,
   },
   PREMIUM: {
     monitors: 20,
@@ -55,12 +66,16 @@ export const TIER_LIMITS: Record<
     selectableHours: 24,
     monthlyScrapeLimit: 720,
     maxIcps: 100,
+    keywordMonitors: 20,
+    maxKeywordSets: 30,
+    maxKeywordsPerSet: 50,
   },
 } as const;
 
 export const MODEL_LITE = "gemini-2.0-flash-lite";
 export const MODEL = "gemini-flash-latest";
-export const CRON_INTERVAL = "0 * * * *";
+export const CRON_INTERVAL = "0 * * * *"; // Lead Gen: hourly at xx:00
+export const KEYWORD_CRON_INTERVAL = "30 * * * *"; // Keyword: hourly at xx:30
 
 // Retry settings for failed scrape jobs
 export const MAX_SCRAPE_RETRY_COUNT = 3;

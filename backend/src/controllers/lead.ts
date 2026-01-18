@@ -15,7 +15,7 @@ export const getLeads = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid query parameters" });
     }
 
-    const { monitorId, platform, leadType, status, page, limit } =
+    const { monitorId, platform, leadType, status, search, page, limit } =
       queryResult.data;
     const skip = (page - 1) * limit;
 
@@ -41,6 +41,13 @@ export const getLeads = async (req: Request, res: Response) => {
 
     if (status) {
       whereClause.status = status;
+    }
+
+    if (search) {
+      whereClause.content = {
+        contains: search,
+        mode: "insensitive",
+      };
     }
 
     const [leads, total] = await Promise.all([
@@ -284,5 +291,105 @@ export const getScrapeJobs = async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch scrape jobs" });
+  }
+};
+
+export const exportLeads = async (req: Request, res: Response) => {
+  try {
+    const queryResult = getLeadsQuerySchema.safeParse(req.query);
+    if (!queryResult.success) {
+      return res.status(400).json({ error: "Invalid query parameters" });
+    }
+
+    const { monitorId, platform, leadType, status, search } = queryResult.data;
+
+    const whereClause: any = {
+      scrapeJob: {
+        monitor: {
+          userId: req.userId!,
+        },
+      },
+    };
+
+    if (monitorId) {
+      whereClause.scrapeJob.monitorId = monitorId;
+    }
+
+    if (platform) {
+      whereClause.platform = platform;
+    }
+
+    if (leadType) {
+      whereClause.leadType = leadType;
+    }
+
+    if (status) {
+      whereClause.status = status;
+    }
+
+    if (search) {
+      whereClause.content = {
+        contains: search,
+        mode: "insensitive",
+      };
+    }
+
+    const leads = await db.lead.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        platform: true,
+        leadType: true,
+        content: true,
+        url: true,
+        author: true,
+        status: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 1000, // Limit export to 1000 leads
+    });
+
+    // Build CSV
+    const headers = [
+      "ID",
+      "Platform",
+      "Lead Type",
+      "Content",
+      "URL",
+      "Author",
+      "Status",
+      "Created At",
+    ];
+
+    const escapeCSV = (value: string | null) => {
+      if (!value) return "";
+      if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
+
+    const rows = leads.map((lead) =>
+      [
+        lead.id,
+        lead.platform,
+        lead.leadType,
+        escapeCSV(lead.content),
+        lead.url,
+        lead.author || "",
+        lead.status,
+        new Date(lead.createdAt).toISOString(),
+      ].join(","),
+    );
+
+    const csv = [headers.join(","), ...rows].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=leads.csv");
+    res.send(csv);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to export leads" });
   }
 };

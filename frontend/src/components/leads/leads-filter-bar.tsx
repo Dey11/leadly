@@ -137,7 +137,7 @@ export function LeadsFilterBar({
             Search content
           </Label>
           <Input
-            placeholder="Filter by keywords"
+            placeholder="Search content..."
             value={filters.search}
             onChange={(event) => {
               onFilterChange({ search: event.target.value, page: 1 });

@@ -1,20 +1,20 @@
 import { MonitorStatus, Platform } from "@prisma/client";
 import { z } from "zod/v4";
 
-const monitorBaseSchema = z
+export const createMonitorSchema = z
   .object({
     icpId: z.string().cuid(),
     platform: z.enum(Platform),
     target: z.string().min(1),
-    cursor: z.string().nullable().optional(),
   })
   .strict();
 
-export const createMonitorSchema = monitorBaseSchema;
-
-export const updateMonitorSchema = monitorBaseSchema
-  .partial()
-  .extend({
+export const updateMonitorSchema = z
+  .object({
+    icpId: z.string().cuid().optional(),
+    platform: z.enum(Platform).optional(),
+    target: z.string().min(1).optional(),
+    cursor: z.string().nullable().optional(),
     status: z.enum(MonitorStatus).optional(),
   })
   .strict()

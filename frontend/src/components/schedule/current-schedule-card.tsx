@@ -12,10 +12,12 @@ import { formatUtcHourListAsLocal } from "@/lib/format";
 
 interface CurrentScheduleCardProps {
   scheduledHours: number[];
+  productMode?: "lead_gen" | "keyword";
 }
 
 export function CurrentScheduleCard({
   scheduledHours,
+  productMode,
 }: CurrentScheduleCardProps) {
   return (
     <Card className="border-border/60 bg-background/85">
@@ -33,7 +35,19 @@ export function CurrentScheduleCard({
               {scheduledHours.length === 1 ? "window" : "windows"}
             </Badge>
             <p className="leading-relaxed">
-              {formatUtcHourListAsLocal(scheduledHours)}
+              {scheduledHours
+                .map((h) => {
+                  const date = new Date();
+                  date.setUTCHours(h, 0, 0, 0);
+                  if (productMode === "keyword") {
+                    date.setMinutes(date.getMinutes() + 30);
+                  }
+                  return new Intl.DateTimeFormat("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }).format(date);
+                })
+                .join(", ")}
             </p>
           </>
         ) : (

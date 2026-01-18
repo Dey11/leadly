@@ -80,13 +80,16 @@ model User {
   restricted   Boolean  @default(false)
   isDeleted    Boolean  @default(false)
 
-  subscription Subscription?
-  schedule     UserSchedule?
+  subscription      Subscription?
+  schedule          UserSchedule?
+  keywordSchedule   KeywordSchedule?
 
-  monitors   Monitor[]
-  icps       Icp[]
-  usage      Usage?
-  bugReports BugReport[]
+  monitors        Monitor[]
+  keywordMonitors KeywordMonitor[]
+  icps            Icp[]
+  keywordSets     KeywordSet[]
+  usage           Usage?
+  bugReports      BugReport[]
 
   name                String
   emailVerified       Boolean   @default(false)
@@ -182,16 +185,47 @@ model UserSchedule {
   @@map("user_schedules")
 }
 
+model KeywordSchedule {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  scheduledHours Int[] // Array of hours 0-23
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("keyword_schedules")
+}
+
+model KeywordSet {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name     String
+  keywords String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  keywordMonitors KeywordMonitor[]
+
+  @@index([userId])
+  @@map("keyword_sets")
+}
+
 model Monitor {
   id     String @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  icpId  String
-  icp    Icp    @relation(fields: [icpId], references: [id], onDelete: Cascade)
+
+  icpId String
+  icp   Icp    @relation(fields: [icpId], references: [id], onDelete: Cascade)
 
   platform Platform
-  target   String // Single subreddit name
-  cursor   String? // Last scraped post ID for pagination
+  target   String
+  cursor   String?
 
   status MonitorStatus @default(ACTIVE)
 
@@ -278,6 +312,101 @@ model Lead {
   @@map("leads")
 }
 
+
+model KeywordMonitor {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  keywordSetId String
+  keywordSet   KeywordSet @relation(fields: [keywordSetId], references: [id], onDelete: Cascade)
+
+  platform Platform @default(REDDIT)
+  target   String
+  cursor   String?
+
+  status MonitorStatus @default(ACTIVE)
+
+  lastScrapedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  scrapeJobs KeywordScrapeJob[]
+
+  @@index([userId])
+  @@index([keywordSetId])
+  @@map("keyword_monitors")
+
+  failedJobs FailedKeywordScrapeJob[]
+}
+
+model FailedKeywordScrapeJob {
+  id               String         @id @default(cuid())
+  keywordMonitorId String
+  keywordMonitor   KeywordMonitor @relation(fields: [keywordMonitorId], references: [id], onDelete: Cascade)
+
+  originalJobId String   @unique
+  errorMessage  String   @db.Text
+  failedAt      DateTime @default(now())
+  metadata      Json?
+
+  reviewed    Boolean @default(false)
+  reviewNotes String? @db.Text
+
+  @@index([keywordMonitorId])
+  @@index([reviewed])
+  @@map("failed_keyword_scrape_jobs")
+}
+
+model KeywordScrapeJob {
+  id               String         @id @default(cuid())
+  keywordMonitorId String
+  keywordMonitor   KeywordMonitor @relation(fields: [keywordMonitorId], references: [id], onDelete: Cascade)
+
+  status       ScrapeJobStatus @default(PENDING)
+  errorMessage String?         @db.Text
+  metadata     Json?
+  matchCount   Int             @default(0)
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  retryCount  Int       @default(0)
+  nextRetryAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  leads KeywordLead[]
+
+  @@index([keywordMonitorId])
+  @@index([status, retryCount, nextRetryAt])
+  @@index([createdAt])
+  @@map("keyword_scrape_jobs")
+}
+
+model KeywordLead {
+  id          String          @id @default(cuid())
+  scrapeJobId String
+  scrapeJob   KeywordScrapeJob @relation(fields: [scrapeJobId], references: [id], onDelete: Cascade)
+
+  platform        Platform
+  content         String   @db.Text
+  url             String   @unique
+  author          String?
+  matchedKeywords String[]
+
+  status LeadStatus @default(NEW)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([scrapeJobId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("keyword_leads")
+}
+
 model Session {
   id        String   @id
   expiresAt DateTime
@@ -308,6 +437,10 @@ model Usage {
   // Daily window (UTC day)
   dailyDate  DateTime
   dailyCount Int      @default(0)
+
+  // Keyword Usage
+  keywordScrapesUsed Int @default(0)
+  keywordDailyCount  Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

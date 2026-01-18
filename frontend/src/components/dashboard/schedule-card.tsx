@@ -15,6 +15,7 @@ import { formatUtcHourAsLocal } from "@/lib/format";
 
 interface DashboardScheduleCardProps {
   schedule: { scheduledHours: number[] } | null;
+  productMode?: "lead_gen" | "keyword";
 }
 
 /**
@@ -23,20 +24,33 @@ interface DashboardScheduleCardProps {
  */
 export function DashboardScheduleCard({
   schedule,
+  productMode,
 }: DashboardScheduleCardProps) {
   const scheduledHours = schedule?.scheduledHours ?? [];
+
+  const formatHour = (h: number) => {
+    const date = new Date();
+    date.setUTCHours(h, 0, 0, 0);
+    if (productMode === "keyword") {
+      date.setMinutes(date.getMinutes() + 30);
+    }
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(date);
+  };
 
   // Select prime hours (first 4 hours sorted)
   const primeHours = [...scheduledHours].sort((a, b) => a - b).slice(0, 4);
   const primeHoursLabel =
     primeHours.length > 0
-      ? primeHours.map((h) => formatUtcHourAsLocal(h)).join(" · ")
+      ? primeHours.map(formatHour).join(" · ")
       : "";
 
   // Format schedule hour badges
   const scheduleHourBadges = scheduledHours
     .slice(0, 8)
-    .map((h) => formatUtcHourAsLocal(h));
+    .map(formatHour);
 
   return (
     <Card className="border-border/60 bg-card/95 rounded-3xl border shadow-sm">

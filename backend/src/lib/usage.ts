@@ -29,6 +29,11 @@ function monthlyWindowForFree(now: Date = new Date()): {
  *
  * @param dbClient - Either a Prisma transaction client or the global db client
  */
+export type ScrapeType = "LEAD_GEN" | "KEYWORD";
+
+/**
+ * Initialize or reset monthly usage window for a user.
+ */
 export async function initializeOrResetUsagePeriod(
   dbClient: any, // Prisma.TransactionClient | typeof db
   userId: string,
@@ -60,6 +65,8 @@ export async function initializeOrResetUsagePeriod(
       scrapesUsed: 0,
       dailyDate: today,
       dailyCount: 0,
+      keywordScrapesUsed: 0,
+      keywordDailyCount: 0,
     },
     update: {
       periodStart: start!,
@@ -67,13 +74,14 @@ export async function initializeOrResetUsagePeriod(
       scrapesUsed: 0,
       dailyDate: today,
       dailyCount: 0,
+      keywordScrapesUsed: 0,
+      keywordDailyCount: 0,
     },
   });
 }
 
 /**
- * Ensure usage row exists. If missing, create a default based on tier.
- * For paid tiers, if no boundary passed, fallback to a 30-day rolling window from now.
+ * Ensure usage row exists.
  */
 async function getOrCreateUsage(
   userId: string,
@@ -82,16 +90,22 @@ async function getOrCreateUsage(
 ) {
   let usage = await db.usage.findUnique({ where: { userId } });
   if (!usage) {
+    const commonData = {
+      userId,
+      scrapesUsed: 0,
+      dailyDate: startOfUtcDay(),
+      dailyCount: 0,
+      keywordScrapesUsed: 0,
+      keywordDailyCount: 0,
+    };
+
     if (tier === "FREE") {
       const win = monthlyWindowForFree();
       usage = await db.usage.create({
         data: {
-          userId,
+          ...commonData,
           periodStart: win.start,
           periodEnd: win.end,
-          scrapesUsed: 0,
-          dailyDate: startOfUtcDay(),
-          dailyCount: 0,
         },
       });
     } else {
@@ -100,12 +114,9 @@ async function getOrCreateUsage(
       const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
       usage = await db.usage.create({
         data: {
-          userId,
+          ...commonData,
           periodStart: start,
           periodEnd: end,
-          scrapesUsed: 0,
-          dailyDate: startOfUtcDay(),
-          dailyCount: 0,
         },
       });
     }
@@ -128,6 +139,7 @@ export async function previewUsage(
   userId: string,
   tier: SubscriptionTier,
   currentPeriodEnd?: Date | null,
+  type: ScrapeType = "LEAD_GEN",
 ): Promise<{
   dailyUsed: number;
   dailyLimit: number;
@@ -151,6 +163,8 @@ export async function previewUsage(
           scrapesUsed: 0,
           dailyDate: startOfUtcDay(now),
           dailyCount: 0,
+          keywordScrapesUsed: 0,
+          keywordDailyCount: 0,
         },
       });
     }
@@ -159,16 +173,21 @@ export async function previewUsage(
   const { dailyLimit, monthlyLimit } = computeLimits(tier);
   const today = startOfUtcDay();
 
+  // Determine which counter to look at
+  const currentDailyCount =
+    type === "KEYWORD" ? usage.keywordDailyCount : usage.dailyCount;
+  const currentMonthlyCount =
+    type === "KEYWORD" ? usage.keywordScrapesUsed : usage.scrapesUsed;
+
   const dailyUsed =
     usage.dailyDate.toISOString() === today.toISOString()
-      ? usage.dailyCount
+      ? currentDailyCount
       : 0;
-  const monthlyUsed = usage.scrapesUsed;
 
   return {
     dailyUsed,
     dailyLimit,
-    monthlyUsed,
+    monthlyUsed: currentMonthlyCount,
     monthlyLimit,
     periodStart: usage.periodStart,
     periodEnd: usage.periodEnd,
@@ -177,15 +196,13 @@ export async function previewUsage(
 
 /**
  * Try to consume one scrape credit. Returns whether it is allowed based on enforcement, and a summary.
- * - enforcement = "on": hard block if exceeding limit (no increment).
- * - enforcement = "log": allow but log if over limit (still increments).
- * - enforcement = "off": allow and increment.
  */
 export async function tryConsumeScrapeCredit(
   userId: string,
   tier: SubscriptionTier,
   currentPeriodEnd?: Date | null,
   enforcement: Enforcement = "off",
+  type: ScrapeType = "LEAD_GEN",
 ): Promise<{
   allowed: boolean;
   reason?: string;
@@ -199,7 +216,7 @@ export async function tryConsumeScrapeCredit(
   let usage = await getOrCreateUsage(userId, tier, currentPeriodEnd);
   const now = new Date();
 
-  // Roll monthly window if ended (FREE only; for paid we expect webhook to set correct boundaries)
+  // Roll monthly window if ended
   if (now > usage.periodEnd && tier === "FREE") {
     const win = monthlyWindowForFree(now);
     usage = await db.usage.update({
@@ -210,6 +227,8 @@ export async function tryConsumeScrapeCredit(
         scrapesUsed: 0,
         dailyDate: startOfUtcDay(now),
         dailyCount: 0,
+        keywordScrapesUsed: 0,
+        keywordDailyCount: 0,
       },
     });
   }
@@ -222,14 +241,18 @@ export async function tryConsumeScrapeCredit(
       data: {
         dailyDate: today,
         dailyCount: 0,
+        keywordDailyCount: 0,
       },
     });
   }
 
   const { dailyLimit, monthlyLimit } = computeLimits(tier);
 
-  const currentDaily = usage.dailyCount;
-  const currentMonthly = usage.scrapesUsed;
+  // Determine current counters
+  const currentDaily =
+    type === "KEYWORD" ? usage.keywordDailyCount : usage.dailyCount;
+  const currentMonthly =
+    type === "KEYWORD" ? usage.keywordScrapesUsed : usage.scrapesUsed;
 
   const wouldExceedDaily = currentDaily + 1 > dailyLimit;
   const wouldExceedMonthly = currentMonthly + 1 > monthlyLimit;
@@ -250,12 +273,19 @@ export async function tryConsumeScrapeCredit(
   }
 
   // increment counters (even if logging mode)
+  // Construct partial update object based on type
+  const updateData: any = {};
+  if (type === "KEYWORD") {
+    updateData.keywordScrapesUsed = { increment: 1 };
+    updateData.keywordDailyCount = { increment: 1 };
+  } else {
+    updateData.scrapesUsed = { increment: 1 };
+    updateData.dailyCount = { increment: 1 };
+  }
+
   const updated = await db.usage.update({
     where: { userId },
-    data: {
-      scrapesUsed: { increment: 1 },
-      dailyCount: { increment: 1 },
-    },
+    data: updateData,
   });
 
   return {
@@ -267,9 +297,9 @@ export async function tryConsumeScrapeCredit(
           : "daily_limit_exceeded_logged"
         : undefined,
     summary: {
-      dailyUsed: updated.dailyCount,
+      dailyUsed: type === "KEYWORD" ? updated.keywordDailyCount : updated.dailyCount,
       dailyLimit,
-      monthlyUsed: updated.scrapesUsed,
+      monthlyUsed: type === "KEYWORD" ? updated.keywordScrapesUsed : updated.scrapesUsed,
       monthlyLimit,
     },
   };

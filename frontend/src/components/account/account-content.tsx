@@ -108,7 +108,7 @@ export async function AccountContent() {
             <CardHeader>
               <CardTitle>Danger zone</CardTitle>
               <CardDescription>
-                Removing your account deletes ICPs, monitors, and history.
+                Removing your account deletes ICPs, monitors, keywords, and history.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-muted-foreground space-y-3 text-sm">
