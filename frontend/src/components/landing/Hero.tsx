@@ -124,8 +124,8 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-muted-foreground mx-auto mb-6 max-w-xl text-sm leading-relaxed sm:mb-8 sm:text-base md:text-lg"
             >
-              Unlock seamless lead discovery with our AI that monitors Reddit
-              24/7, surfacing people actively asking for products like yours.
+              Track subreddits and keywords while our AI surfaces people
+              actively asking for products like yours — 24/7.
             </motion.p>
 
             {/* CTA button */}

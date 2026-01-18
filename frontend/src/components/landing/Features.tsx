@@ -18,7 +18,7 @@ const features = [
       "Don't waste time scrolling. Configure specific keywords and subreddits, and let Leadly filter out the noise. We only alert you when conversations match your exact Ideal Customer Profile (ICP).",
     icon: Settings2,
     highlights: [
-      { icon: Target, text: "Target specific subreddits" },
+      { icon: Target, text: "Track subreddits & keywords" },
       { icon: Zap, text: "Negative keyword filtering" },
       { icon: TrendingUp, text: "Real-time alerts" },
     ],
