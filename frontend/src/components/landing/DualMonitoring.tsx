@@ -1,41 +1,17 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Hash, Users, ArrowRight, Sparkles } from "lucide-react";
-
-const monitoringModes = [
-  {
-    icon: Users,
-    title: "Subreddit Monitoring",
-    description:
-      "Monitor entire communities where your customers hang out. Catch every relevant conversation in r/SaaS, r/startups, or any subreddit you choose.",
-    examples: ["r/SaaS", "r/startups", "r/Entrepreneur"],
-    gradient: "from-blue-500/20 to-indigo-500/20",
-    iconBg: "bg-blue-500/10",
-    iconColor: "text-blue-600 dark:text-blue-400",
-    borderColor: "border-blue-500/20 hover:border-blue-500/40",
-  },
-  {
-    icon: Hash,
-    title: "Keyword Monitoring",
-    description:
-      "Track specific terms across all of Reddit. Never miss when someone mentions your product, competitor, or pain point — anywhere.",
-    examples: ['"looking for CRM"', '"alternative to Notion"', '"help with SEO"'],
-    gradient: "from-purple-500/20 to-pink-500/20",
-    iconBg: "bg-purple-500/10",
-    iconColor: "text-purple-600 dark:text-purple-400",
-    borderColor: "border-purple-500/20 hover:border-purple-500/40",
-  },
-];
+import { Hash, Users, Sparkles } from "lucide-react";
 
 export function DualMonitoring() {
   return (
-    <section className="relative overflow-hidden px-4 py-16 sm:py-20 md:py-24 lg:py-28">
-      {/* Subtle background */}
+    <section className="relative overflow-hidden px-4 py-12 sm:py-16 md:py-20 lg:py-24">
+      {/* Rich gradient background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-muted/30 to-transparent" />
-        <div className="absolute left-1/4 top-1/2 h-[400px] w-[400px] -translate-y-1/2 rounded-full bg-blue-500/10 blur-[100px]" />
-        <div className="absolute right-1/4 top-1/2 h-[400px] w-[400px] -translate-y-1/2 rounded-full bg-purple-500/10 blur-[100px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#faf8f7] via-[#f8f0ec] to-[#faf8f7] dark:from-[#0c0a0b] dark:via-[#1a1215] dark:to-[#0c0a0b]" />
+        {/* Animated gradient blobs */}
+        <div className="absolute left-1/4 top-1/3 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-[#773344]/5 blur-[120px] dark:bg-[#773344]/20" />
+        <div className="absolute right-1/4 bottom-1/3 h-[400px] w-[400px] rounded-full bg-[#e3b5a4]/15 blur-[100px] dark:bg-[#e3b5a4]/10" />
       </div>
 
       <div className="container mx-auto">
@@ -45,103 +21,134 @@ export function DualMonitoring() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mx-auto mb-10 max-w-3xl text-center sm:mb-14 lg:mb-16"
+          className="mx-auto mb-16 max-w-3xl text-center sm:mb-20"
         >
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary sm:mb-5 sm:px-4 sm:py-2 sm:text-sm">
-            <Sparkles className="h-3.5 w-3.5" />
-            Two Ways to Find Leads
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary sm:mb-8">
+            <Sparkles className="h-4 w-4" />
+            Two Ways to Monitor
           </div>
-          <h2 className="font-display text-foreground mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
-            Monitor communities{" "}
-            <span className="from-primary to-accent inline-block bg-gradient-to-r bg-clip-text text-transparent dark:from-[#e3b5a4] dark:to-[#ff6b7d]">
-              or
-            </span>{" "}
-            track keywords
+          <h2 className="font-display text-foreground mb-6 text-4xl font-bold tracking-tight sm:mb-8 sm:text-5xl md:text-6xl">
+            Communities{" "}
+            <span className="text-muted-foreground font-light">+</span>{" "}
+            Keywords
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-            Use both together for comprehensive coverage. Most successful users
-            combine subreddit monitoring with targeted keyword tracking.
+          <p className="text-muted-foreground mx-auto max-w-xl text-lg leading-relaxed sm:text-xl">
+            Combine both approaches for comprehensive lead coverage across Reddit.
           </p>
         </motion.div>
 
-        {/* Two-column cards */}
-        <div className="mx-auto grid max-w-5xl gap-6 sm:gap-8 md:grid-cols-2">
-          {monitoringModes.map((mode, i) => (
-            <motion.div
-              key={mode.title}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
-              whileHover={{
-                y: -6,
-                transition: { duration: 0.2, ease: "easeOut" },
-              }}
-              className={`group relative overflow-hidden rounded-2xl border bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-8 ${mode.borderColor}`}
-            >
-              {/* Gradient overlay */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${mode.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
-              />
+        {/* Two-column cards with distinct styling */}
+        <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2">
+          {/* Subreddit Monitoring Card */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            whileHover={{ y: -8, transition: { duration: 0.2 } }}
+            className="group relative"
+          >
+            {/* Card glow effect */}
+            <div className="absolute -inset-0.5 rounded-[2rem] bg-gradient-to-br from-[#773344]/20 to-transparent opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
 
-              <div className="relative z-10">
-                {/* Icon */}
-                <div
-                  className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl ${mode.iconBg} ${mode.iconColor} transition-transform duration-200 group-hover:scale-110 sm:h-14 sm:w-14`}
-                >
-                  <mode.icon className="h-6 w-6 sm:h-7 sm:w-7" />
+            <div className="bg-card relative h-full overflow-hidden rounded-[1.75rem] border border-border/50 p-6 shadow-sm transition-all duration-300 group-hover:border-[#773344]/30 group-hover:shadow-xl sm:p-8">
+              <div className="relative z-10 flex h-full flex-col">
+                {/* Icon with robust coloring */}
+                <div className="bg-primary text-primary-foreground mb-8 flex aspect-square h-16 w-16 items-center justify-center rounded-2xl shadow-lg shadow-primary/20 transition-transform duration-300 group-hover:scale-110 sm:h-20 sm:w-20">
+                  <Users className="h-7 w-7 sm:h-9 sm:w-9" />
                 </div>
 
                 {/* Title */}
-                <h3 className="font-display text-foreground mb-3 text-xl font-bold sm:text-2xl">
-                  {mode.title}
+                <h3 className="font-display text-foreground mb-4 text-2xl font-bold sm:text-3xl">
+                  Subreddit Monitoring
                 </h3>
 
                 {/* Description */}
-                <p className="text-muted-foreground mb-6 text-sm leading-relaxed sm:text-base">
-                  {mode.description}
+                <p className="text-muted-foreground mb-8 flex-grow text-base leading-relaxed sm:text-lg">
+                  Track entire communities where your customers hang out. Get notified for every relevant conversation happening in real-time.
                 </p>
 
-                {/* Example tags */}
-                <div className="flex flex-wrap gap-2">
-                  {mode.examples.map((example) => (
+                {/* Example subreddits */}
+                <div className="flex flex-wrap gap-2.5">
+                  {["r/SaaS", "r/startups", "r/Entrepreneur", "r/smallbusiness"].map((sub) => (
                     <span
-                      key={example}
-                      className="rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium text-foreground/70 backdrop-blur-sm sm:text-sm"
+                      key={sub}
+                      className="rounded-full border border-border bg-muted/50 px-4 py-2 text-xs font-semibold text-foreground/80 transition-colors group-hover:border-[#773344]/20 group-hover:bg-[#773344]/5 group-hover:text-[#773344] dark:group-hover:text-[#e3b5a4]"
                     >
-                      {example}
+                      {sub}
                     </span>
                   ))}
                 </div>
               </div>
-            </motion.div>
-          ))}
+            </div>
+          </motion.div>
+
+          {/* Keyword Monitoring Card */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            whileHover={{ y: -8, transition: { duration: 0.2 } }}
+            className="group relative"
+          >
+            {/* Card glow effect */}
+            <div className="absolute -inset-0.5 rounded-[2rem] bg-gradient-to-br from-[#e3b5a4]/30 to-transparent opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
+
+            <div className="bg-card relative h-full overflow-hidden rounded-[1.75rem] border border-border/50 p-6 shadow-sm transition-all duration-300 group-hover:border-[#e3b5a4]/40 group-hover:shadow-xl sm:p-8">
+              <div className="relative z-10 flex h-full flex-col">
+                {/* Icon with robust coloring */}
+                <div className="bg-foreground text-background mb-8 flex aspect-square h-16 w-16 items-center justify-center rounded-2xl shadow-lg shadow-foreground/20 transition-transform duration-300 group-hover:scale-110 sm:h-20 sm:w-20">
+                  <Hash className="h-7 w-7 sm:h-9 sm:w-9" />
+                </div>
+
+                {/* Title */}
+                <h3 className="font-display text-foreground mb-4 text-2xl font-bold sm:text-3xl">
+                  Keyword Monitoring
+                </h3>
+
+                {/* Description */}
+                <p className="text-muted-foreground mb-8 flex-grow text-base leading-relaxed sm:text-lg">
+                  Track specific terms across all of Reddit. Never miss when someone mentions your product or asks for alternatives.
+                </p>
+
+                {/* Example keywords */}
+                <div className="flex flex-wrap gap-2.5">
+                  {['"looking for CRM"', '"Notion alternative"', '"help with SEO"'].map((keyword) => (
+                    <span
+                      key={keyword}
+                      className="rounded-full border border-border bg-muted/50 px-4 py-2 text-xs font-semibold text-foreground/80 transition-colors group-hover:border-[#e3b5a4]/30 group-hover:bg-[#e3b5a4]/10 group-hover:text-[#5c2836] dark:group-hover:text-[#e3b5a4]"
+                    >
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Bottom connector showing they work together */}
+        {/* Bottom "combine both" badge */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mx-auto mt-10 flex max-w-2xl items-center justify-center gap-4 rounded-2xl border border-border/50 bg-card/60 px-6 py-4 shadow-sm backdrop-blur-sm sm:mt-12 sm:gap-6 sm:px-8 sm:py-5"
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-12 flex justify-center sm:mt-16"
         >
-          <div className="flex -space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-blue-500/20 text-blue-600 dark:text-blue-400">
-              <Users className="h-4 w-4" />
+          <div className="inline-flex items-center gap-4 rounded-full border border-border bg-card/80 px-8 py-4 shadow-sm backdrop-blur-sm transition-transform hover:scale-105">
+            <div className="flex -space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-background">
+                <Users className="h-5 w-5" />
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background ring-2 ring-background">
+                <Hash className="h-5 w-5" />
+              </div>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-purple-500/20 text-purple-600 dark:text-purple-400">
-              <Hash className="h-4 w-4" />
-            </div>
+            <span className="text-base font-semibold text-foreground">
+              Use both for <span className="text-primary">maximum coverage</span>
+            </span>
           </div>
-          <p className="text-sm font-medium text-foreground/80 sm:text-base">
-            Combine both for{" "}
-            <span className="text-primary font-semibold">maximum coverage</span>
-          </p>
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-          <span className="hidden text-sm text-muted-foreground sm:inline">
-            Never miss a lead
-          </span>
         </motion.div>
       </div>
     </section>
