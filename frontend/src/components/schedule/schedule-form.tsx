@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
 import { clientApi } from "@/lib/client/api";
+import { useProductMode } from "@/components/dashboard/product-mode-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,8 @@ export function ScheduleForm({
   scheduledHours,
   maxSelectable,
 }: ScheduleFormProps) {
+  const [productMode] = useProductMode();
+  
   // Initialize with UTC hours directly - no conversion needed for state
   const [selected, setSelected] = useState<Set<number>>(
     () => new Set(scheduledHours),
@@ -33,9 +36,13 @@ export function ScheduleForm({
       }
       // Since 'selected' already contains UTC hours, we just send them as is
       const utcHours = Array.from(selected.values());
-      return clientApi.updateSchedule({
-        scheduledHours: utcHours.sort((a, b) => a - b),
-      });
+      const payload = { scheduledHours: utcHours.sort((a, b) => a - b) };
+      
+      // Call the correct API based on product mode
+      if (productMode === "keyword") {
+        return clientApi.updateKeywordSchedule(payload);
+      }
+      return clientApi.updateSchedule(payload);
     },
     onSuccess: () => {
       setSuccessMessage(

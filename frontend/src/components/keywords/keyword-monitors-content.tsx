@@ -85,7 +85,7 @@ export function KeywordMonitorsContent() {
     <div className="mx-auto flex max-w-6xl flex-col gap-8">
       <DashboardPageHeader
         title="Keyword Monitors"
-        description="Track specific subreddits for your keyword sets. Each monitor watches a target and reports matches."
+        description="Track specific subreddits for your keywords. Each monitor watches a target and reports matches."
         action={
           <Button
             onClick={() => setCreateDialogOpen(true)}
@@ -132,7 +132,7 @@ export function KeywordMonitorsContent() {
                 <p className="text-muted-foreground mt-2 max-w-sm text-center text-sm leading-relaxed">
                   {keywordSets.length === 0
                     ? "Create a keyword set first, then add monitors to track specific subreddits."
-                    : "Add a monitor to start tracking matches for your keyword sets."}
+                    : "Add a monitor to start tracking matches for your keywords."}
                 </p>
                 {keywordSets.length > 0 ? (
                   <Button

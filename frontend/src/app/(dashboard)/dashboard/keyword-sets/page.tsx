@@ -1,8 +1,8 @@
 import { KeywordSetsContent } from "@/components/keywords/keyword-sets-content";
 
 export const metadata = {
-  title: "Keyword Sets | Leadly",
-  description: "Manage your keyword sets for targeted lead discovery",
+  title: "Keywords | Leadly",
+  description: "Manage your keyword groups for targeted match discovery",
 };
 
 export default function KeywordSetsPage() {

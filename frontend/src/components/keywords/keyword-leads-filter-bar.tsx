@@ -83,10 +83,10 @@ export function KeywordLeadsFilterBar({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-foreground text-2xl font-semibold">
-            Keyword Leads
+            Matches
           </h1>
           <p className="text-muted-foreground text-sm">
-            Review and manage posts matching your keyword sets.
+            Review and manage posts matching your keywords.
           </p>
         </div>
       </div>

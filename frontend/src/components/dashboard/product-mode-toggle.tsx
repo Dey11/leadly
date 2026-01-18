@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { Sparkles, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -58,6 +59,8 @@ export function ProductModeToggle({
 export function useProductMode(): [ProductMode, (mode: ProductMode) => void] {
   const [mode, setMode] = useState<ProductMode>("leadgen");
   const [isHydrated, setIsHydrated] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const stored = localStorage.getItem(
@@ -70,9 +73,21 @@ export function useProductMode(): [ProductMode, (mode: ProductMode) => void] {
   }, []);
 
   const updateMode = (newMode: ProductMode) => {
+    if (newMode === mode) return; // No change
     setMode(newMode);
     localStorage.setItem("leadly-product-mode", newMode);
+    
+    // Dispatch custom event for same-tab listeners (like OverviewSwitcher)
+    window.dispatchEvent(new Event("leadly-mode-change"));
+    
+    // Always navigate to dashboard when switching modes
+    if (pathname === "/dashboard") {
+      router.refresh();
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   return [isHydrated ? mode : "leadgen", updateMode];
 }
+

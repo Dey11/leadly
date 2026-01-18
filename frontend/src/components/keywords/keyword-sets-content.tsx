@@ -58,8 +58,8 @@ export function KeywordSetsContent() {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8">
       <DashboardPageHeader
-        title="Keyword Sets"
-        description="Define groups of keywords to monitor across platforms. Each keyword set can be linked to multiple monitors for targeted lead discovery."
+        title="Keywords"
+        description="Define groups of keywords to monitor across platforms. Each group can be linked to multiple monitors for targeted match discovery."
         action={
           <Button
             onClick={() => setCreateDialogOpen(true)}
@@ -101,17 +101,17 @@ export function KeywordSetsContent() {
                 <Tags className="h-8 w-8" />
               </div>
               <h3 className="text-center text-lg font-semibold">
-                Create your first keyword set
+                Create your first keyword group
               </h3>
               <p className="text-muted-foreground mt-2 max-w-sm text-center text-sm leading-relaxed">
-                Define groups of keywords to monitor. Each set can track
+                Define groups of keywords to monitor. Each group can track
                 multiple terms across your chosen platforms.
               </p>
               <Button
                 className="mt-5"
                 onClick={() => setCreateDialogOpen(true)}
               >
-                Create Keyword Set
+                Create Keyword Group
               </Button>
             </Card>
           ) : (

@@ -7,6 +7,20 @@ import {
 } from "../types/keyword-set";
 import { TIER_LIMITS } from "../lib/constants";
 
+/**
+ * Normalize and deduplicate keywords (lowercase, trim, unique)
+ */
+function normalizeKeywords(keywords: string[]): string[] {
+  const seen = new Set<string>();
+  return keywords
+    .map((k) => k.toLowerCase().trim())
+    .filter((k) => {
+      if (k === "" || seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+}
+
 export async function createKeywordSet(req: Request, res: Response) {
   try {
     const payload = createKeywordSetSchema.safeParse(req.body);
@@ -45,9 +59,20 @@ export async function createKeywordSet(req: Request, res: Response) {
       });
     }
 
+    // Normalize and deduplicate keywords
+    const normalizedKeywords = normalizeKeywords(payload.data.keywords);
+
+    // Ensure at least one valid keyword remains after normalization
+    if (normalizedKeywords.length === 0) {
+      return res.status(400).json({
+        error: "At least one valid keyword is required (non-empty, non-whitespace).",
+      });
+    }
+
     const keywordSet = await db.keywordSet.create({
       data: {
-        ...payload.data,
+        name: payload.data.name,
+        keywords: normalizedKeywords,
         userId: req.userId!,
       },
     });
@@ -161,11 +186,27 @@ export async function updateKeywordSet(req: Request, res: Response) {
       }
     }
 
+    // Normalize keywords if provided
+    const updateData: { name?: string; keywords?: string[] } = {};
+    if (payload.data.name) {
+      updateData.name = payload.data.name;
+    }
+    if (payload.data.keywords) {
+      const normalizedKeywords = normalizeKeywords(payload.data.keywords);
+      
+      // Ensure at least one valid keyword remains after normalization
+      if (normalizedKeywords.length === 0) {
+        return res.status(400).json({
+          error: "At least one valid keyword is required (non-empty, non-whitespace).",
+        });
+      }
+      
+      updateData.keywords = normalizedKeywords;
+    }
+
     const updatedKeywordSet = await db.keywordSet.update({
       where: { id },
-      data: {
-        ...payload.data,
-      },
+      data: updateData,
     });
 
     res.json(updatedKeywordSet);

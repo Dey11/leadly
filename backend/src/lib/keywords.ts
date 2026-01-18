@@ -1,7 +1,24 @@
 import { RedditPost, RedditComment } from "../types/reddit";
 
 /**
- * Filters posts that contain ANY of the specified keywords
+ * Escape special regex characters in a string
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Check if a keyword matches as a whole word in the text
+ */
+function matchesWholeWord(text: string, keyword: string): boolean {
+  // Use word boundary regex for whole word matching
+  const escaped = escapeRegex(keyword.toLowerCase().trim());
+  const pattern = new RegExp(`\\b${escaped}\\b`, "i");
+  return pattern.test(text);
+}
+
+/**
+ * Filters posts that contain ANY of the specified keywords (whole word match)
  * Searches in: title, post body, and comments (recursively)
  */
 export function filterPostsByKeywords(
@@ -12,14 +29,9 @@ export function filterPostsByKeywords(
     return posts; // No keywords = return all posts
   }
 
-  // Normalize keywords to lowercase for case-insensitive matching
-  const normalizedKeywords = keywords.map((k) => k.toLowerCase().trim());
-
   return posts.filter((post) => {
-    const searchableText = buildSearchableText(post).toLowerCase();
-    return normalizedKeywords.some((keyword) =>
-      searchableText.includes(keyword),
-    );
+    const searchableText = buildSearchableText(post);
+    return keywords.some((keyword) => matchesWholeWord(searchableText, keyword));
   });
 }
 
@@ -44,20 +56,18 @@ function buildSearchableText(post: RedditPost): string {
 }
 
 /**
- * Get which keywords matched in a post (for debugging/analytics)
+ * Get which keywords matched in a post (whole word match)
  */
 export function getMatchedKeywords(
   post: RedditPost,
   keywords: string[],
 ): string[] {
-  const searchableText = buildSearchableText(post).toLowerCase();
-  return keywords.filter((keyword) =>
-    searchableText.includes(keyword.toLowerCase().trim()),
-  );
+  const searchableText = buildSearchableText(post);
+  return keywords.filter((keyword) => matchesWholeWord(searchableText, keyword));
 }
 
 /**
- * Check if a post matches ANY of the keywords
+ * Check if a post matches ANY of the keywords (whole word match)
  */
 export function postMatchesKeywords(
   post: RedditPost,
@@ -65,8 +75,7 @@ export function postMatchesKeywords(
 ): boolean {
   if (!keywords || keywords.length === 0) return true;
 
-  const searchableText = buildSearchableText(post).toLowerCase();
-  return keywords.some((keyword) =>
-    searchableText.includes(keyword.toLowerCase().trim()),
-  );
+  const searchableText = buildSearchableText(post);
+  return keywords.some((keyword) => matchesWholeWord(searchableText, keyword));
 }
+

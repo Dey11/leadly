@@ -196,7 +196,7 @@ export function KeywordLeadsView({ monitors, tier }: KeywordLeadsViewProps) {
           <div className="flex flex-col items-center justify-center py-16">
             <div className="border-primary/30 border-t-primary h-10 w-10 animate-spin rounded-full border-4" />
             <p className="text-muted-foreground mt-4 text-sm">
-              Loading leads...
+              Loading matches...
             </p>
           </div>
         ) : leads.length === 0 ? (
@@ -204,9 +204,9 @@ export function KeywordLeadsView({ monitors, tier }: KeywordLeadsViewProps) {
             <div className="bg-muted mb-4 flex h-16 w-16 items-center justify-center rounded-full">
               <SearchX className="text-muted-foreground/50 h-8 w-8" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold">No leads found</h3>
+            <h3 className="mb-2 text-xl font-semibold">No matches found</h3>
             <p className="text-muted-foreground max-w-sm text-center">
-              We couldn't find any keyword leads matching your current filters.
+              We couldn't find any keyword matches matching your current filters.
               {filters.status || filters.search
                 ? " Try adjusting your filters."
                 : " Waiting for the next scrape cycle."}

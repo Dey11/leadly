@@ -312,7 +312,6 @@ model Lead {
   @@map("leads")
 }
 
-// ==================== KEYWORD MODE MODELS ====================
 
 model KeywordMonitor {
   id     String @id @default(cuid())
@@ -338,6 +337,26 @@ model KeywordMonitor {
   @@index([userId])
   @@index([keywordSetId])
   @@map("keyword_monitors")
+
+  failedJobs FailedKeywordScrapeJob[]
+}
+
+model FailedKeywordScrapeJob {
+  id               String         @id @default(cuid())
+  keywordMonitorId String
+  keywordMonitor   KeywordMonitor @relation(fields: [keywordMonitorId], references: [id], onDelete: Cascade)
+
+  originalJobId String   @unique
+  errorMessage  String   @db.Text
+  failedAt      DateTime @default(now())
+  metadata      Json?
+
+  reviewed    Boolean @default(false)
+  reviewNotes String? @db.Text
+
+  @@index([keywordMonitorId])
+  @@index([reviewed])
+  @@map("failed_keyword_scrape_jobs")
 }
 
 model KeywordScrapeJob {

@@ -91,6 +91,19 @@ export async function getKeywordStats(req: Request, res: Response) {
     const activeMonitors = monitors.filter((m) => m.status === "ACTIVE").length;
     const pausedMonitors = monitors.filter((m) => m.status === "PAUSED").length;
 
+    // Find the last completed job for spotlight cards
+    const lastCompletedJob = await db.keywordScrapeJob.findFirst({
+      where: {
+        keywordMonitor: { userId: req.userId! },
+        status: "COMPLETED",
+      },
+      orderBy: { completedAt: "desc" },
+      select: {
+        completedAt: true,
+        matchCount: true,
+      },
+    });
+
     res.json({
       message: "Keyword stats retrieved successfully.",
       payload: {
@@ -101,6 +114,8 @@ export async function getKeywordStats(req: Request, res: Response) {
         totalMatches,
         matchesLast7Days,
         recentActivity,
+        lastCompletedAt: lastCompletedJob?.completedAt?.toISOString() ?? null,
+        lastJobMatches: lastCompletedJob?.matchCount ?? 0,
       },
     });
   } catch (err) {

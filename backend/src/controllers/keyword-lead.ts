@@ -216,6 +216,18 @@ export async function deleteKeywordLead(req: Request, res: Response) {
 
 export async function exportKeywordLeads(req: Request, res: Response) {
   try {
+    // Check for PREMIUM subscription
+    const user = await db.user.findUnique({
+      where: { id: req.userId! },
+      include: { subscription: true },
+    });
+
+    if (!user?.subscription || user.subscription.tier !== "PREMIUM") {
+      return res.status(403).json({
+        error: "Export is only available for PREMIUM subscribers.",
+      });
+    }
+
     const queryResult = getKeywordLeadsQuerySchema.safeParse(req.query);
     if (!queryResult.success) {
       return res.status(400).json({ error: "Invalid query parameters" });
