@@ -6,7 +6,11 @@ import {
   MAX_SCRAPE_RETRY_COUNT,
   SCRAPE_RETRY_DELAY_MS,
 } from "../lib/constants";
-import { filterPostsByKeywords, getMatchedKeywords } from "../lib/keywords";
+import {
+  filterPostsByKeywords,
+  getMatchedKeywords,
+  getMatchingSnippet,
+} from "../lib/keywords";
 import type { KeywordMonitor, KeywordSet, User } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
@@ -58,15 +62,26 @@ async function executeKeywordCoreScrapeLogic(
   );
 
   // Create leads for matched posts
-  const leads = matchedPosts.map((post) => ({
-    scrapeJobId: jobId,
-    platform: "REDDIT" as const,
-    content: post.title,
-    url: post.urlToPost,
-    author: post.posterId || null,
-    matchedKeywords: getMatchedKeywords(post, monitor.keywordSet.keywords),
-    status: "NEW" as const,
-  }));
+  const leads = matchedPosts.map((post) => {
+    const keywords = monitor.keywordSet.keywords;
+    const matchSnippet = getMatchingSnippet(post, keywords);
+
+    // Construct content: Title + (Context if applicable)
+    let content = post.title;
+    if (matchSnippet && matchSnippet.type !== "title") {
+      content = `${post.title}\n\n[Match in ${matchSnippet.type}]: ${matchSnippet.text}`;
+    }
+
+    return {
+      scrapeJobId: jobId,
+      platform: "REDDIT" as const,
+      content, // Now contains Title + Context
+      url: post.urlToPost,
+      author: post.posterId || null,
+      matchedKeywords: getMatchedKeywords(post, keywords),
+      status: "NEW" as const,
+    };
+  });
 
   // Insert leads (skip duplicates by URL)
   let createdCount = 0;

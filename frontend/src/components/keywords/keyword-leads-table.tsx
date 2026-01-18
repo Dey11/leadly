@@ -196,7 +196,7 @@ export function KeywordLeadsTable({
                   <TableRow className="bg-muted/30 hover:bg-muted/30">
                     <TableCell colSpan={6} className="px-4 pt-0 pb-4">
                       <div className="border-border/60 ml-8 space-y-3 border-l-2 pl-6">
-                        <div className="text-foreground text-sm leading-relaxed">
+                        <div className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
                           {lead.content}
                         </div>
                         <div className="space-y-2">

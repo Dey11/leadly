@@ -10,7 +10,7 @@ function escapeRegex(str: string): string {
 /**
  * Check if a keyword matches as a whole word in the text
  */
-function matchesWholeWord(text: string, keyword: string): boolean {
+export function matchesWholeWord(text: string, keyword: string): boolean {
   // Use word boundary regex for whole word matching
   const escaped = escapeRegex(keyword.toLowerCase().trim());
   const pattern = new RegExp(`\\b${escaped}\\b`, "i");
@@ -77,5 +77,49 @@ export function postMatchesKeywords(
 
   const searchableText = buildSearchableText(post);
   return keywords.some((keyword) => matchesWholeWord(searchableText, keyword));
+}
+
+/**
+ * Get the specific text snippet that triggered the match
+ * Priorities: Title > Body > First Matching Comment
+ */
+export function getMatchingSnippet(
+  post: RedditPost,
+  keywords: string[],
+): { type: "title" | "body" | "comment"; text: string } | null {
+  // 1. Check Title
+  if (keywords.some((kw) => matchesWholeWord(post.title, kw))) {
+    return { type: "title", text: post.title };
+  }
+
+  // 2. Check Body
+  if (post.post && keywords.some((kw) => matchesWholeWord(post.post, kw))) {
+    return { type: "body", text: post.post };
+  }
+
+  // 3. Check Comments (Recursively)
+  const findInComments = (
+    comments: RedditComment[],
+  ): { type: "comment"; text: string } | null => {
+    if (!comments) return null;
+    for (const c of comments) {
+      if (
+        c.commentText &&
+        keywords.some((kw) => matchesWholeWord(c.commentText, kw))
+      ) {
+        return { type: "comment", text: c.commentText };
+      }
+      const childMatch = findInComments(c.children);
+      if (childMatch) return childMatch;
+    }
+    return null;
+  };
+
+  const commentMatch = findInComments(post.comments);
+  if (commentMatch) {
+    return { type: "comment", text: commentMatch.text };
+  }
+
+  return null;
 }
 

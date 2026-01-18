@@ -85,9 +85,47 @@ export function KeywordLeadDetailDialog({
 
             <div className="space-y-4 py-4">
               <div className="bg-secondary/30 rounded-xl p-4">
-                <p className="text-foreground leading-relaxed">
-                  {lead.content}
-                </p>
+                {(() => {
+                  const parts = lead.content.split("\n\n");
+                  const title = parts[0];
+                  const context = parts.slice(1).join("\n\n");
+
+                  const highlightText = (text: string) => {
+                    if (!lead.matchedKeywords?.length) return text;
+                    
+                    const pattern = new RegExp(
+                      `\\b(${lead.matchedKeywords.join("|")})\\b`,
+                      "gi"
+                    );
+                    
+                   const splitText = text.split(pattern);
+                    return splitText.map((part, i) =>
+                      pattern.test(part) ? (
+                        <span
+                          key={i}
+                          className="bg-primary/20 text-primary font-medium rounded-sm px-0.5"
+                        >
+                          {part}
+                        </span>
+                      ) : (
+                        part
+                      )
+                    );
+                  };
+
+                  return (
+                    <div className="space-y-3">
+                      <p className="text-foreground text-lg font-semibold leading-relaxed">
+                        {highlightText(title)}
+                      </p>
+                      {context && (
+                        <div className="text-muted-foreground border-l-2 border-primary/20 pl-4 text-sm whitespace-pre-wrap">
+                          {highlightText(context)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="space-y-2">
