@@ -6,7 +6,10 @@ import {
 import {
   MAX_SCRAPE_RETRY_COUNT,
   STUCK_PENDING_THRESHOLD_MS,
+  TIER_LIMITS,
 } from "../lib/constants";
+import { tryConsumeScrapeCredit, previewUsage } from "../lib/usage";
+import { env } from "../env";
 
 async function pickupKeywordRetryJobs() {
   const now = new Date();
@@ -176,6 +179,30 @@ export async function runKeywordScheduler() {
     if (monitors.length === 0) {
       console.log(
         `[Keyword Scheduler] User ${user.id} has no active keyword monitors`,
+      );
+      continue;
+    }
+
+    // Enforce daily scrape limits
+    const tier = user.subscription.tier;
+    const { allowed, reason, summary } = await tryConsumeScrapeCredit(
+      user.id,
+      tier,
+      user.subscription.currentPeriodEnd,
+      env.FEATURE_BILLING_ENFORCEMENT,
+      "KEYWORD",
+    );
+
+    if (!allowed) {
+      console.warn(
+        JSON.stringify({
+          evt: "keyword_scheduler.blocked",
+          userId: user.id,
+          reason,
+          monitorCount: monitors.length,
+          dailyUsed: summary.dailyUsed,
+          dailyLimit: summary.dailyLimit,
+        }),
       );
       continue;
     }
