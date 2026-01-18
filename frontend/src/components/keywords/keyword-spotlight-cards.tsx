@@ -36,7 +36,8 @@ export function KeywordSpotlightCards({
   const scheduledHours = schedule?.scheduledHours ?? [];
 
   // Calculate timezone-sensitive values on client
-  const minutesUntilNext = getMinutesUntilNextScrape(scheduledHours);
+  // Pass 30 as minuteOffset for Keyword Mode
+  const minutesUntilNext = getMinutesUntilNextScrape(scheduledHours, 30);
   const nextScrapeLabel =
     minutesUntilNext !== null
       ? `Next scrape in ${formatMinutesUntil(minutesUntilNext)}`
@@ -47,7 +48,16 @@ export function KeywordSpotlightCards({
       ? scheduledHours
           .slice(0, 4)
           .sort((a, b) => a - b)
-          .map((h) => formatUtcHourAsLocal(h))
+          .map((h) => {
+             // Shift by 30 mins for keyword mode display
+             const date = new Date();
+             date.setUTCHours(h, 0, 0, 0);
+             date.setMinutes(date.getMinutes() + 30);
+             return new Intl.DateTimeFormat("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              }).format(date);
+          })
           .join(" · ")
       : "Set scrape windows to automate keyword monitoring.";
 

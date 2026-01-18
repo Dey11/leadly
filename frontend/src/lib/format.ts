@@ -82,6 +82,7 @@ export function formatUtcHourListAsLocal(utcHours: number[]): string {
  */
 export function getMinutesUntilNextScrape(
   scheduledUtcHours: number[],
+  minuteOffset = 0,
 ): number | null {
   if (scheduledUtcHours.length === 0) return null;
 
@@ -91,21 +92,22 @@ export function getMinutesUntilNextScrape(
 
   const sortedHours = [...scheduledUtcHours].sort((a, b) => a - b);
 
+  // Check if current hour is scheduled and we haven't passed the offset minute
+  if (sortedHours.includes(currentUtcHour) && currentMinutes < minuteOffset) {
+    return minuteOffset - currentMinutes;
+  }
+
   // Find next upcoming hour
   let nextHour = sortedHours.find((h) => h > currentUtcHour);
 
-  // If current hour is scheduled and we haven't passed minute 0
-  if (sortedHours.includes(currentUtcHour) && currentMinutes < 1) {
-    return 0;
-  }
-
   if (nextHour !== undefined) {
-    return (nextHour - currentUtcHour) * 60 - currentMinutes;
+    // Diff in hours converted to minutes, minus current minutes, plus offset
+    return (nextHour - currentUtcHour) * 60 - currentMinutes + minuteOffset;
   }
 
   // Wrap to first hour tomorrow
   nextHour = sortedHours[0];
-  return (24 - currentUtcHour + nextHour) * 60 - currentMinutes;
+  return (24 - currentUtcHour + nextHour) * 60 - currentMinutes + minuteOffset;
 }
 
 /**

@@ -100,7 +100,18 @@ export function ScheduleForm({
               const isChecked = selected.has(utcHour);
               // Format the UTC hour as local time for display
               // This handles half-hour timezones correctly (e.g. 12 UTC -> 17:30 IST)
-              const localLabel = formatUtcHourAsLocal(utcHour);
+              const date = new Date();
+              date.setUTCHours(utcHour, 0, 0, 0);
+              
+              // Shift label by 30 mins for keyword mode to match execution time (xx:30)
+              if (productMode === "keyword") {
+                date.setMinutes(date.getMinutes() + 30);
+              }
+
+              const localLabel = new Intl.DateTimeFormat("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              }).format(date);
 
               return (
                 <label

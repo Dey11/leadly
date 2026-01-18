@@ -256,7 +256,7 @@ export async function KeywordOverviewContent() {
           </CardContent>
         </Card>
 
-        <DashboardScheduleCard schedule={schedule} />
+        <DashboardScheduleCard schedule={schedule} productMode="keyword" />
       </section>
     </div>
   );

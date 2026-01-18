@@ -148,7 +148,7 @@ export function KeywordLeadsFilterBar({
             Search content
           </Label>
           <Input
-            placeholder="Filter by keywords"
+            placeholder="Search content or keywords..."
             value={searchValue}
             onChange={(event) => handleSearchChange(event.target.value)}
             maxLength={100}

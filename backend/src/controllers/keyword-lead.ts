@@ -38,10 +38,24 @@ export async function getKeywordLeads(req: Request, res: Response) {
     }
 
     if (search) {
-      whereClause.content = {
-        contains: search,
-        mode: "insensitive",
-      };
+      whereClause.OR = [
+        {
+          content: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          matchedKeywords: {
+            has: search,
+          },
+        },
+        {
+          matchedKeywords: {
+            has: search.toLowerCase(),
+          },
+        },
+      ];
     }
 
     const [leads, total] = await Promise.all([
@@ -256,10 +270,24 @@ export async function exportKeywordLeads(req: Request, res: Response) {
     }
 
     if (search) {
-      whereClause.content = {
-        contains: search,
-        mode: "insensitive",
-      };
+      whereClause.OR = [
+        {
+          content: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          matchedKeywords: {
+            has: search,
+          },
+        },
+        {
+          matchedKeywords: {
+            has: search.toLowerCase(),
+          },
+        },
+      ];
     }
 
     const leads = await db.keywordLead.findMany({
