@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { env } from "../env";
 import { getRedis } from "./redis";
 
 type RateLimitConfig = {
@@ -51,6 +52,17 @@ export async function checkRateLimit(
   req: Request,
   action: keyof typeof rateLimitConfigs,
 ) {
+  if (env.NODE_ENV === "development") {
+    const config = rateLimitConfigs[action];
+    return {
+      limit: config.maxRequests,
+      remaining: config.maxRequests,
+      reset: Date.now(),
+      exceeded: false,
+      error: "",
+      retryAfter: 0,
+    };
+  }
   const config = rateLimitConfigs[action];
   const redis = getRedis();
   const ip = req.ip || req.socket.remoteAddress || "unknown";
@@ -75,6 +87,9 @@ export async function incrementRateLimit(
   req: Request,
   action: keyof typeof rateLimitConfigs,
 ) {
+  if (env.NODE_ENV === "development") {
+    return 0;
+  }
   const config = rateLimitConfigs[action];
   const redis = getRedis();
   const ip = req.ip || req.socket.remoteAddress || "unknown";
@@ -92,6 +107,9 @@ export function rateLimit(action: keyof typeof rateLimitConfigs) {
   const config = rateLimitConfigs[action];
 
   return async (req: Request, res: Response, next: NextFunction) => {
+    if (env.NODE_ENV === "development") {
+      return next();
+    }
     try {
       const redis = getRedis();
       const ip = req.ip || req.socket.remoteAddress || "unknown";
@@ -180,6 +198,9 @@ export function userRateLimit(action: UserRateLimitAction) {
   const config = userRateLimitConfigs[action];
 
   return async (req: Request, res: Response, next: NextFunction) => {
+    if (env.NODE_ENV === "development") {
+      return next();
+    }
     try {
       const userId = req.userId;
       if (!userId) {

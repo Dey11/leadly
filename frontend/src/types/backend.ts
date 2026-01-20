@@ -116,12 +116,16 @@ export interface UsageSummaryResponse {
   message: string;
   payload: {
     tier: SubscriptionTier;
+    status: SubscriptionStatus;
+    subscriptionId: string | null;
     dailyUsed: number;
     dailyLimit: number;
     monthlyUsed: number;
     monthlyLimit: number;
     periodStart: string;
     periodEnd: string;
+    renewalDate: string | null;
+    cancelledAtPeriodEnd: boolean;
     billingContact: {
       name?: string | null;
       email?: string | null;
@@ -160,3 +164,31 @@ export interface LeadUpdateResponse {
 }
 
 export type SubscriptionTier = "FREE" | "PRO" | "PREMIUM";
+
+export type SubscriptionStatus =
+  | "ACTIVE"
+  | "CANCELLED"
+  | "ON_HOLD"
+  | "EXPIRED"
+  | "PENDING"
+  | "FAILED";
+
+export interface PlanChangePreview {
+  canPreview: boolean;
+  isNewSubscription: boolean;
+  currentTier: SubscriptionTier;
+  newTier: SubscriptionTier;
+  isUpgrade?: boolean;
+  immediateCharge?: {
+    amount: number;
+    currency: string;
+    summary: string;
+  } | null;
+  credit?: {
+    amount: number;
+    currency: string;
+  } | null;
+  summary?: string | null;
+  fallback?: boolean;
+  message?: string;
+}

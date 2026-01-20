@@ -76,7 +76,7 @@ export function RegisterForm() {
           {!name && formError && <FieldError>Name is required.</FieldError>}
         </Field>
         <Field data-invalid={!!formError && !email}>
-          <FieldLabel htmlFor="email">Work email</FieldLabel>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input
             id="email"
             name="email"

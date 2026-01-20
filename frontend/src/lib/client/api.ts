@@ -229,6 +229,30 @@ export const clientApi = {
       method: "POST",
     });
   },
+  previewPlanChange: async (plan: "pro" | "premium") => {
+    return request<{
+      canPreview: boolean;
+      isNewSubscription: boolean;
+      currentTier: string;
+      newTier: string;
+      isUpgrade?: boolean;
+      immediateCharge?: {
+        amount: number;
+        currency: string;
+        summary: string;
+      } | null;
+      credit?: { amount: number; currency: string } | null;
+      summary?: string | null;
+      fallback?: boolean;
+      message?: string;
+      error?: string;
+      code?: string;
+      retryAfterSeconds?: number;
+    }>(`${apiBaseUrl}/billing/preview-plan-change`, {
+      method: "POST",
+      body: { plan },
+    });
+  },
 
   listLeads: async (
     params: {

@@ -39,6 +39,8 @@ type SubscriptionEventContext = {
   startOfBillingCycle: string;
   endOfBillingCycle: string;
   expiresAt: string | null | undefined;
+  cancelledAt: string | null | undefined;
+  cancelAtNextBillingDate: boolean;
   currency: string;
   customer: Customer;
   billing: BillingAddress;
@@ -72,10 +74,12 @@ export async function newDodoWebhookHandler(req: Request, res: Response) {
     });
 
     logger.info(`[WEBHOOK] Unwrapped webhook type: ${unwrapped.type}`);
-    logger.info(
-      "[WEBHOOK] Webhook data:",
-      JSON.stringify(unwrapped.data, null, 2),
-    );
+    // Log full payload only for subscription.cancelled to debug cancellation types
+    if (unwrapped.type === "subscription.cancelled") {
+      logger.info(
+        `[WEBHOOK] Cancelled payload: ${JSON.stringify(unwrapped.data, null, 2)}`,
+      );
+    }
 
     const webhookEvent = await db.webhookEvent.create({
       data: {
@@ -212,6 +216,7 @@ async function handleSubscriptionActive(ctx: SubscriptionEventContext) {
         tier,
       },
       update: {
+        subscriptionId: ctx.subscriptionId,
         status: SubscriptionStatus.ACTIVE,
         currentPeriodEnd: ctx.endOfBillingCycle,
         billingAddress: parseBillingAddress(ctx.billing),
@@ -284,18 +289,20 @@ async function handleSubscriptionUpdated(ctx: SubscriptionEventContext) {
       throw new Error("Subscription not found for user");
     }
 
-    logger.info(`[UPDATED] Updating subscription with new status and tier`);
+    logger.info(
+      `[UPDATED] Updating subscription with new status, cancelledAtPeriodEnd=${ctx.cancelAtNextBillingDate}`,
+    );
     await tx.subscription.update({
       where: { userId: ctx.user.id },
       data: {
         status: ctx.status.toUpperCase() as SubscriptionStatus,
         currentPeriodEnd: ctx.endOfBillingCycle,
+        cancelledAtPeriodEnd: ctx.cancelAtNextBillingDate,
         billingAddress: parseBillingAddress(ctx.billing),
         billingEmail: ctx.customer.email,
         billingPhone: ctx.customer.phone_number,
         billingName: ctx.customer.name,
         currency: ctx.currency,
-        tier,
       },
     });
 
@@ -538,16 +545,17 @@ async function handleSubscriptionCancelled(ctx: SubscriptionEventContext) {
     `[CANCELLED] Handling subscription cancelled for user: ${ctx.user.email}`,
   );
 
+  const isImmediateCancellation = !ctx.cancelAtNextBillingDate;
+  logger.info(
+    `[CANCELLED] cancelAtNextBillingDate=${ctx.cancelAtNextBillingDate}, isImmediateCancellation=${isImmediateCancellation}`,
+  );
+
   await db.$transaction(async (tx) => {
-    logger.info(
-      `[CANCELLED] Transaction started - updating webhook status to PROCESSING`,
-    );
     await tx.webhookEvent.update({
       where: { id: ctx.webhookEventId },
       data: { status: WebhookEventStatus.PROCESSING },
     });
 
-    logger.info(`[CANCELLED] Checking for existing subscription`);
     const existingSubscription = await tx.subscription.findUnique({
       where: { userId: ctx.user.id },
     });
@@ -558,19 +566,34 @@ async function handleSubscriptionCancelled(ctx: SubscriptionEventContext) {
       throw new Error("Subscription not found for user");
     }
 
-    logger.info(`[CANCELLED] Updating subscription status to CANCELLED`);
-    await tx.subscription.update({
-      where: { userId: ctx.user.id },
-      data: {
-        status: SubscriptionStatus.CANCELLED,
-        currentPeriodEnd: ctx.endOfBillingCycle,
-      },
-    });
+    if (isImmediateCancellation) {
+      logger.info(`[CANCELLED] IMMEDIATE cancellation - setting tier to FREE`);
+      await tx.subscription.update({
+        where: { userId: ctx.user.id },
+        data: {
+          status: SubscriptionStatus.CANCELLED,
+          tier: SubscriptionTier.FREE,
+          currentPeriodEnd: ctx.endOfBillingCycle,
+        },
+      });
+      await initializeOrResetUsagePeriod(
+        tx,
+        ctx.user.id,
+        SubscriptionTier.FREE,
+      );
+    } else {
+      logger.info(
+        `[CANCELLED] SCHEDULED cancellation - keeping current tier until period end`,
+      );
+      await tx.subscription.update({
+        where: { userId: ctx.user.id },
+        data: {
+          status: SubscriptionStatus.CANCELLED,
+          currentPeriodEnd: ctx.endOfBillingCycle,
+        },
+      });
+    }
 
-    logger.info(`[CANCELLED] Resetting usage period to FREE tier`);
-    await initializeOrResetUsagePeriod(tx, ctx.user.id, SubscriptionTier.FREE);
-
-    logger.info(`[CANCELLED] Updating webhook status to COMPLETED`);
     await tx.webhookEvent.update({
       where: { id: ctx.webhookEventId },
       data: { status: WebhookEventStatus.COMPLETED },
@@ -581,7 +604,9 @@ async function handleSubscriptionCancelled(ctx: SubscriptionEventContext) {
   sendSubscriptionCancelledEmail(ctx.user.email, ctx.subscriptionId);
   sendTransactionToDiscord({
     type: "subscription.cancelled",
-    tier: SubscriptionTier.FREE,
+    tier: isImmediateCancellation
+      ? SubscriptionTier.FREE
+      : getTierFromProductId(ctx.productId),
     user: { name: ctx.user.name, email: ctx.user.email },
     subscriptionId: ctx.subscriptionId,
   });
@@ -738,6 +763,8 @@ async function handleSubscriptionEvent(
     startOfBillingCycle: data.previous_billing_date,
     endOfBillingCycle: data.next_billing_date,
     expiresAt: data.expires_at,
+    cancelledAt: data.cancelled_at,
+    cancelAtNextBillingDate: data.cancel_at_next_billing_date ?? false,
     currency: data.currency,
     customer,
     billing,

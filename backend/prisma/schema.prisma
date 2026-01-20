@@ -157,9 +157,10 @@ model Subscription {
   billingAddress         String? @db.Text
   currency               String?
 
-  status           SubscriptionStatus
-  tier             SubscriptionTier   @default(FREE)
-  currentPeriodEnd DateTime
+  status               SubscriptionStatus
+  tier                 SubscriptionTier   @default(FREE)
+  currentPeriodEnd     DateTime
+  cancelledAtPeriodEnd Boolean            @default(false) // True if scheduled for cancellation at next billing date
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

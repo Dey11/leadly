@@ -167,6 +167,10 @@ export async function getUsageSummary(req: Request, res: Response) {
 
     const tier = user.subscription.tier as SubscriptionTier;
     const currentPeriodEnd = user.subscription.currentPeriodEnd;
+    const status = user.subscription.status;
+    const subscriptionId = user.subscription.subscriptionId;
+    const cancelledAtPeriodEnd =
+      user.subscription.cancelledAtPeriodEnd ?? false;
 
     const usage = await previewUsage(userId, tier, currentPeriodEnd);
 
@@ -174,12 +178,16 @@ export async function getUsageSummary(req: Request, res: Response) {
       message: "Usage summary",
       payload: {
         tier,
+        status,
+        subscriptionId,
         dailyUsed: usage.dailyUsed,
         dailyLimit: usage.dailyLimit,
         monthlyUsed: usage.monthlyUsed,
         monthlyLimit: usage.monthlyLimit,
         periodStart: usage.periodStart,
         periodEnd: usage.periodEnd,
+        renewalDate: currentPeriodEnd?.toISOString() ?? null,
+        cancelledAtPeriodEnd,
         billingContact,
       },
     });

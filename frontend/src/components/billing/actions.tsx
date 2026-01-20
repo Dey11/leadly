@@ -6,12 +6,19 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { clientApi } from "@/lib/client/api";
+import type { SubscriptionStatus } from "@/types/backend";
 
 type ActionType = "manage" | "cancel" | null;
 
-export function BillingActions() {
+interface BillingActionsProps {
+  status?: SubscriptionStatus;
+}
+
+export function BillingActions({ status }: BillingActionsProps) {
   const [loading, setLoading] = useState<ActionType>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const isCancelled = status === "CANCELLED";
 
   const handleAction = async (type: ActionType) => {
     if (!type) return;
@@ -43,8 +50,9 @@ export function BillingActions() {
       <CardHeader className="space-y-2">
         <CardTitle>Subscription actions</CardTitle>
         <p className="text-muted-foreground text-xs">
-          Manage payment methods, view invoices, or cancel directly in Dodo’s
-          portal.
+          {isCancelled
+            ? "Your subscription is cancelled. You can resubscribe from the plans below."
+            : "Manage payment methods, view invoices, or cancel directly in Dodo's portal."}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -64,15 +72,17 @@ export function BillingActions() {
               ? "Opening management portal…"
               : "Manage subscription"}
           </Button>
-          <Button
-            variant="outline"
-            disabled={loading !== null}
-            onClick={() => handleAction("cancel")}
-          >
-            {loading === "cancel"
-              ? "Opening cancellation flow…"
-              : "Cancel subscription"}
-          </Button>
+          {!isCancelled && (
+            <Button
+              variant="outline"
+              disabled={loading !== null}
+              onClick={() => handleAction("cancel")}
+            >
+              {loading === "cancel"
+                ? "Opening cancellation flow…"
+                : "Cancel subscription"}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

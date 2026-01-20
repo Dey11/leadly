@@ -1,0 +1,10 @@
+{"error":{"code":"PAYMENT_PENDING","error":"Please wait for your previous payment to complete before changing plans.","status":409},"level":"error","message":"[BILLING] ❌ Plan change failed","service":"leadly-backend"}
+{"error":{"code":"PAYMENT_PENDING","error":"Please wait for your previous payment to complete before changing plans.","status":409},"level":"error","message":"[BILLING] ❌ Plan change failed","service":"leadly-backend"}
+{"level":"error","message":"[SUBSCRIPTION_EVENT] ❌ User not found for subscription:","service":"leadly-backend","subscriptionId":"sub_ajswRHqY3l2QljGZZIHRU","userId":"cmhw588qe00000xbtayda0oyg"}
+{"level":"error","message":"[SUBSCRIPTION_EVENT] ❌ User not found for subscription:","service":"leadly-backend","subscriptionId":"sub_ajswRHqY3l2QljGZZIHRU","userId":"cmhw588qe00000xbtayda0oyg"}
+{"level":"error","message":"[SUBSCRIPTION_EVENT] ❌ User not found for subscription:","service":"leadly-backend","subscriptionId":"sub_ajswRHqY3l2QljGZZIHRU","userId":"cmhw588qe00000xbtayda0oyg"}
+{"error":{"code":"PAYMENT_PENDING","error":"Please wait for your previous payment to complete before changing plans.","status":409},"level":"error","message":"[BILLING] ❌ Plan change failed","service":"leadly-backend"}
+{"level":"error","message":"[SUBSCRIPTION_EVENT] ❌ User not found for subscription:","service":"leadly-backend","subscriptionId":"sub_bvgVPpzwvPaLsKi64vnfe","userId":"cmhxk6wmm001g0xq9xa8cv29w"}
+{"level":"error","message":"[SUBSCRIPTION_EVENT] ❌ User not found for subscription:","service":"leadly-backend","subscriptionId":"sub_bvgVPpzwvPaLsKi64vnfe","userId":"cmhxk6wmm001g0xq9xa8cv29w"}
+{"level":"error","message":"[SUBSCRIPTION_EVENT] ❌ User not found for subscription:","service":"leadly-backend","subscriptionId":"sub_bvgVPpzwvPaLsKi64vnfe","userId":"cmhxk6wmm001g0xq9xa8cv29w"}
+{"error":{"code":"PAYMENT_PENDING","error":"Please wait for your previous payment to complete before changing plans.","status":409},"level":"error","message":"[BILLING] ❌ Plan change failed","service":"leadly-backend"}
