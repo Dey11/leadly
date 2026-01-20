@@ -7,9 +7,8 @@
 - [ ] gotta store more data regarding the customer, in the db, from the dodo portal
 - [ ] make a seed script for the db
 - [ ] make the emails look fancy
-- [x] check the frontend as well for the billing result page, how it shows the status for every possible status
 - [ ] in testing, email verification isnt needed for new registrations
-- [x] for discord msgs, upgrades/downgrades arent being mentioned
+- [ ] run db migrations
 
 ## Future scope
 
