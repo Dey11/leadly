@@ -109,20 +109,25 @@ const TRANSACTION_COLORS: Record<string, number> = {
   "subscription.cancelled": 0xf97316, // orange
   "subscription.on_hold": 0xeab308, // yellow
   "subscription.failed": 0xdc2626, // red
+  "subscription.expired": 0xdc2626, // red
 };
 
 const TRANSACTION_TITLES: Record<string, string> = {
   "subscription.active": "🎉 New Subscription",
   "subscription.renewed": "🔄 Subscription Renewed",
-  "subscription.plan_changed": "⬆️ Plan Changed",
+  "subscription.upgraded": "⬆️ Plan Upgraded",
+  "subscription.downgraded": "⬇️ Plan Downgraded",
+  "subscription.plan_changed": "🔀 Plan Changed",
   "subscription.cancelled": "⚠️ Subscription Cancelled",
   "subscription.on_hold": "⏸️ Subscription On Hold",
   "subscription.failed": "❌ Payment Failed",
+  "subscription.expired": "⏳ Subscription Expired",
 };
 
 export type TransactionDetails = {
   type: string;
   tier: string;
+  oldTier?: string; // For plan changes - shows the previous tier
   user: {
     name: string;
     email: string;
@@ -142,7 +147,19 @@ export async function sendTransactionToDiscord(
   }
 
   const color = TRANSACTION_COLORS[details.type] ?? 0x6b7280;
-  const title = TRANSACTION_TITLES[details.type] ?? details.type;
+  let title = TRANSACTION_TITLES[details.type] ?? details.type;
+
+  // For plan changes, determine if it's an upgrade or downgrade
+  const tierOrder: Record<string, number> = { FREE: 0, PRO: 1, PREMIUM: 2 };
+  if (details.type === "subscription.plan_changed" && details.oldTier) {
+    const oldRank = tierOrder[details.oldTier] ?? 0;
+    const newRank = tierOrder[details.tier] ?? 0;
+    if (newRank > oldRank) {
+      title = TRANSACTION_TITLES["subscription.upgraded"];
+    } else if (newRank < oldRank) {
+      title = TRANSACTION_TITLES["subscription.downgraded"];
+    }
+  }
 
   const embed = {
     title,
@@ -155,7 +172,9 @@ export async function sendTransactionToDiscord(
       },
       {
         name: "Plan",
-        value: details.tier,
+        value: details.oldTier
+          ? `${details.oldTier} → ${details.tier}`
+          : details.tier,
         inline: true,
       },
       ...(details.periodEnd

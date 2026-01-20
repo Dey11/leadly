@@ -69,16 +69,6 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     const planCode: string | undefined =
       data?.plan_code || data?.metadata?.plan || data?.metadata?.plan_code;
 
-    console.log(
-      "[Dodo Webhook]",
-      JSON.stringify({
-        type,
-        subscriptionId,
-        planCode,
-        customerId, // Added for debugging
-      }),
-    );
-
     const userId = (data?.metadata?.user_id as string | undefined) ?? undefined;
 
     const mapPlanToTier = (pc?: string): SubscriptionTier | undefined => {
@@ -443,7 +433,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               .update({
                 where: { userId },
                 data: {
-                  status: SubscriptionStatus.CANCELED,
+                  status: SubscriptionStatus.CANCELLED,
                   tier: SubscriptionTier.FREE,
                 },
               })

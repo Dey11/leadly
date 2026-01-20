@@ -1,9 +1,7 @@
 import cors from "cors";
 import { env } from "./env";
 import express from "express";
-import cron from "node-cron";
 import cookieParser from "cookie-parser";
-import { runScheduler } from "./services/scheduler";
 import { authRouter } from "./routes/auth";
 import monitorRouter from "./routes/monitor";
 import icpRouter from "./routes/icp";
@@ -11,10 +9,12 @@ import scheduleRouter from "./routes/schedule";
 import { accountRouter } from "./routes/account";
 import leadRouter from "./routes/lead";
 import scrapeJobsRouter from "./routes/scrape-jobs";
-import { CRON_INTERVAL } from "./lib/constants";
 import billingRouter from "./routes/billing";
 import bugReportRouter from "./routes/bug-report";
-import { dodoWebhookHandler } from "./controllers/webhooks";
+import { newDodoWebhookHandler } from "./controllers/webhooks-new";
+import cron from "node-cron";
+import { CRON_INTERVAL } from "./lib/constants";
+import { runScheduler } from "./services/scheduler";
 
 const PORT = env.PORT;
 
@@ -33,7 +33,8 @@ app.use(
 app.post(
   "/api/v1/webhooks/dodo",
   express.raw({ type: "application/json" }),
-  dodoWebhookHandler,
+  // dodoWebhookHandler,
+  newDodoWebhookHandler,
 );
 
 app.use(express.json());

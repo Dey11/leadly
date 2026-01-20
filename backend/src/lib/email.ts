@@ -1,5 +1,7 @@
 import { Resend } from "resend";
 import { env } from "../env";
+import { SUPPORT_EMAIL } from "./constants";
+import { SubscriptionTier } from "@prisma/client";
 
 const resend = new Resend(env.RESEND_API_KEY);
 
@@ -43,5 +45,173 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   if (error) {
     console.error("Failed to send password reset email:", error);
     throw new Error("Failed to send password reset email");
+  }
+}
+
+export async function sendSubscriptionActiveEmail(
+  email: string,
+  subscriptionId: string,
+  periodEnd: Date,
+) {
+  const { error } = await resend.emails.send({
+    from: "Leadly Team <hello@leadly.live>",
+    to: email,
+    subject: "Your subscription is active - Leadly",
+    html: `
+      <h2>Your subscription is active!</h2>
+      <p>Your subscription is active until ${periodEnd.toLocaleDateString()}.</p>
+      <p>Your subscription ID is ${subscriptionId} (for internal use).</p>
+      <p>If you have any questions, please contact us at <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>
+      <p>Thank you for using Leadly!</p>
+    `,
+  });
+
+  if (error) {
+    console.error("Failed to send subscription active email:", error);
+  }
+}
+
+export async function sendSubscriptionOnHoldEmail(
+  email: string,
+  subscriptionId: string,
+  periodEnd: Date,
+) {
+  const { error } = await resend.emails.send({
+    from: "Leadly Team <hello@leadly.live>",
+    to: email,
+    subject: "Your subscription is on hold - Leadly",
+    html: `
+      <h2>Your subscription is on hold!</h2>
+      <p>Your subscription is on hold until ${periodEnd.toLocaleDateString()}.</p>
+      <p>Your subscription ID is ${subscriptionId} (for internal use).</p>
+      <p> Please go to the billing page > manage subscription > update your payment details in the Dodo Payments portal.</p>
+      <p>If you have any questions, please contact us at <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>
+      <p>Thank you for using Leadly!</p>
+    `,
+  });
+
+  if (error) {
+    console.error("Failed to send subscription on hold email:", error);
+  }
+}
+
+export async function sendSubscriptionRenewedEmail(
+  email: string,
+  subscriptionId: string,
+  periodEnd: Date,
+) {
+  const { error } = await resend.emails.send({
+    from: "Leadly Team <hello@leadly.live>",
+    to: email,
+    subject: "Your subscription is renewed - Leadly",
+    html: `
+      <h2>Your subscription is renewed!</h2>
+      <p>Your subscription is renewed until ${periodEnd.toLocaleDateString()}.</p>
+      <p>Your subscription ID is ${subscriptionId} (for internal use).</p>
+      <p>If you have any questions, please contact us at <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>
+      <p>Thank you for using Leadly!</p>
+    `,
+  });
+
+  if (error) {
+    console.error("Failed to send subscription renewed email:", error);
+  }
+}
+
+export async function sendSubscriptionPlanChangedEmail(
+  email: string,
+  subscriptionId: string,
+  tier: SubscriptionTier,
+) {
+  const planName =
+    tier === SubscriptionTier.FREE
+      ? "Free"
+      : tier === SubscriptionTier.PRO
+        ? "Pro"
+        : "Premium";
+  const { error } = await resend.emails.send({
+    from: "Leadly Team <hello@leadly.live>",
+    to: email,
+    subject: "Your subscription plan is changed - Leadly",
+    html: `
+      <h2>Your subscription plan is changed!</h2>
+      <p>Your new plan is ${planName}.</p>
+      <p>Your subscription ID is ${subscriptionId} (for internal use).</p>
+      <p>If you have any questions, please contact us at <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>
+      <p>Thank you for using Leadly!</p>
+    `,
+  });
+
+  if (error) {
+    console.error("Failed to send subscription plan changed email:", error);
+  }
+}
+
+export async function sendSubscriptionCancelledEmail(
+  email: string,
+  subscriptionId: string,
+) {
+  const { error } = await resend.emails.send({
+    from: "Leadly Team <hello@leadly.live>",
+    to: email,
+    subject: "Your subscription is cancelled - Leadly",
+    html: `
+      <h2>Your subscription is cancelled!</h2>
+      <p>You can reactivate it back anytime.</p>
+      <p>You are in the free plan now.</p>
+      <p>Your subscription ID is ${subscriptionId} (for internal use).</p>
+      <p>If you have any questions, please contact us at <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>
+      <p>Thank you for using Leadly!</p>
+    `,
+  });
+
+  if (error) {
+    console.error("Failed to send subscription cancelled email:", error);
+  }
+}
+
+export async function sendSubscriptionExpiredEmail(
+  email: string,
+  subscriptionId: string,
+) {
+  const { error } = await resend.emails.send({
+    from: "Leadly Team <hello@leadly.live>",
+    to: email,
+    subject: "Your subscription is expired - Leadly",
+    html: `
+      <h2>Your subscription is expired!</h2>
+      <p>You can reactivate it back anytime.</p>
+      <p>You are in the free plan now.</p>
+      <p>Your subscription ID is ${subscriptionId} (for internal use).</p>
+      <p>If you have any questions, please contact us at <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>
+      <p>Thank you for using Leadly!</p>
+    `,
+  });
+
+  if (error) {
+    console.error("Failed to send subscription expired email:", error);
+  }
+}
+
+export async function sendSubscriptionFailedEmail(
+  email: string,
+  subscriptionId: string,
+) {
+  const { error } = await resend.emails.send({
+    from: "Leadly Team <hello@leadly.live>",
+    to: email,
+    subject: "Your subscription has failed - Leadly",
+    html: `
+      <h2>Your subscription is failed!</h2>
+      <p>Please try again later or update your payment details.</p>
+      <p>You are in the free plan now.</p>
+      <p>Your subscription ID is ${subscriptionId} (for internal use).</p>
+      <p>If you have any questions, please contact us at <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>
+      <p>Thank you for using Leadly!</p>
+    `,
+  });
+
+  if (error) {
+    console.error("Failed to send subscription failed email:", error);
   }
 }

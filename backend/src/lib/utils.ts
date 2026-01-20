@@ -1,4 +1,5 @@
 import axios from "axios";
+import { BillingAddress } from "dodopayments/resources/payments";
 import he from "he";
 
 export function cleanText(text: string): string {
@@ -43,4 +44,21 @@ export async function fetchWithRetry(
       throw err;
     }
   }
+}
+
+export function parseBillingAddress(billing: BillingAddress): string {
+  if (!billing) return "";
+  const {
+    street = "",
+    city = "",
+    state = "",
+    country = "",
+    zipcode = "",
+  } = billing || {};
+
+  const parts = [street, city, state, country].filter(Boolean).join(", ");
+
+  const zipPart = zipcode ? ` - ${zipcode}` : "";
+
+  return [parts, zipPart].join("").trim();
 }

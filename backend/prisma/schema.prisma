@@ -39,15 +39,29 @@ enum LeadStatus {
 
 enum SubscriptionStatus {
   ACTIVE
+  PENDING
+  ON_HOLD
   CANCELLED
-  PAST_DUE
-  INCOMPLETE
+  FAILED
+  EXPIRED
 }
 
 enum SubscriptionTier {
   FREE
   PRO
   PREMIUM
+}
+
+enum SubscriptionEventType {
+  CREATED
+  ACTIVATED
+  RENEWED
+  PLAN_CHANGED
+  CANCELLED
+  FAILED
+  ON_HOLD
+  STATUS_CHANGED
+  TIER_CHANGED
 }
 
 enum BugReportCategory {
@@ -69,6 +83,13 @@ enum BugReportStatus {
   IN_PROGRESS
   RESOLVED
   CLOSED
+}
+
+enum WebhookEventStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 model User {
@@ -129,11 +150,12 @@ model Subscription {
 
   subscriptionCustomerId String? @unique
   subscriptionId         String? @unique
-  subscriptionPriceId    String?
+  subscriptionPriceId    String? // dont know what this is
   billingName            String?
   billingEmail           String?
   billingPhone           String?
   billingAddress         String? @db.Text
+  currency               String?
 
   status           SubscriptionStatus
   tier             SubscriptionTier   @default(FREE)
@@ -143,6 +165,22 @@ model Subscription {
   updatedAt DateTime @updatedAt
 
   @@map("subscriptions")
+}
+
+// TODO: add subscription history model
+
+model WebhookEvent {
+  id         String             @id @default(cuid())
+  status     WebhookEventStatus @default(PENDING)
+  customerId String // dodo customer id
+  webhookId  String
+  eventData  Json
+  retryCount Int                @default(0)
+  lastError  String?            @db.Text
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@map("webhook_events")
 }
 
 model Icp {

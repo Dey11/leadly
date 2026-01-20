@@ -226,6 +226,7 @@ export async function tryConsumeScrapeCredit(
     });
   }
 
+  // TODO: problem here, need to fix this later. Does not matter right now since requests come every hour
   const { dailyLimit, monthlyLimit } = computeLimits(tier);
 
   const currentDaily = usage.dailyCount;
