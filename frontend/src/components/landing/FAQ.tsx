@@ -21,6 +21,11 @@ const faqs = [
       "No! Leadly works independently. We monitor public Reddit discussions on your behalf. You don't need to connect any accounts or give us any Reddit credentials.",
   },
   {
+    question: "What's the difference between subreddit and keyword monitoring?",
+    answer:
+      "Subreddit monitoring scans specific communities (like r/SaaS or r/startups) for all relevant discussions. Keyword monitoring tracks specific terms across all of Reddit, catching conversations wherever they happen. Most users combine both for comprehensive coverage.",
+  },
+  {
     question: "Is this compliant with Reddit's Terms of Service?",
     answer:
       "Yes. We only access publicly available information through proper channels. We don't violate rate limits, scrape private content, or do anything that would breach Reddit's ToS. We're built for the long term.",

@@ -103,6 +103,8 @@ export class Reddit {
     };
 
     for (const post of posts) {
+      let comments: RedditComment[] = [];
+
       try {
         await delay(1000);
         const commentsUrl = `${this.baseUrl}/r/${subreddit}/comments/${post.id}`;
@@ -114,44 +116,38 @@ export class Reddit {
           timeout: this.timeout,
         });
 
-        if (commentsRes?.status !== 200 || !commentsRes)
-          throw new Error(
-            `Failed to fetch comments for post ${post.id}: ${commentsRes?.status}`,
-          );
-
-        const commentsJson: any = commentsRes.data;
-        const comments = extractComments(commentsJson[1].data.children);
-
-        const redditPostVar: RedditPost = {
-          subreddit: subreddit,
-          title: cleanText(post.title),
-          post: cleanText(post.selftext),
-          postId: post.id,
-          posterId: post.author,
-          urlToPost: `https://reddit.com${post.permalink}`,
-          comments,
-        };
-
-        results.push(redditPostVar);
+        if (commentsRes?.status === 200 && commentsRes) {
+          const commentsJson: any = commentsRes.data;
+          // Check if structure matches expected [post, comments] array
+          if (
+            Array.isArray(commentsJson) &&
+            commentsJson.length > 1 &&
+            commentsJson[1]?.data
+          ) {
+            comments = extractComments(commentsJson[1].data.children);
+          }
+        }
       } catch (err) {
-        console.error(`Error fetching comments for ${post.id}:`, err);
+        // Log error but continue to save the post
+        console.error(
+          `Warning: Failed to fetch comments for ${post.id} (saving post without comments):`,
+          err instanceof Error ? err.message : String(err)
+        );
       }
+
+      // Add post to results regardless of comment fetch status
+      results.push({
+        subreddit: subreddit,
+        title: cleanText(post.title),
+        post: cleanText(post.selftext),
+        postId: post.id,
+        posterId: post.author,
+        urlToPost: `https://reddit.com${post.permalink}`,
+        comments,
+      });
     }
 
     return results;
   }
 }
 
-// test code
-// const main = async () => {
-//   const redditClient = new Reddit(
-//     env.REDDIT_CLIENT_ID,
-//     env.REDDIT_CLIENT_SECRET
-//   );
-//   // const posts = await redditClient.fetchPosts("javascript", 10);
-//   const posts = await redditClient.fetchPosts("WebDeveloperJobs", 5, "1ogckxk");
-//   console.log(posts);
-//   // console.log(posts[0].comments);
-// };
-
-// main();

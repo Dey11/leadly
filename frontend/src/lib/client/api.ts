@@ -299,4 +299,108 @@ export const clientApi = {
         body,
       },
     ),
+
+  // ==================== Keyword Sets ====================
+  listKeywordSets: async () => {
+    const response = await request<any[]>(`${apiBaseUrl}/keyword-sets`);
+    return response;
+  },
+  createKeywordSet: (body: { name: string; keywords: string[] }) =>
+    request(`${apiBaseUrl}/keyword-sets`, { method: "POST", body }),
+  updateKeywordSet: (
+    id: string,
+    body: { name?: string; keywords?: string[] },
+  ) => request(`${apiBaseUrl}/keyword-sets/${id}`, { method: "PATCH", body }),
+  deleteKeywordSet: (id: string) =>
+    request(`${apiBaseUrl}/keyword-sets/${id}`, { method: "DELETE" }),
+
+  // ==================== Keyword Monitors ====================
+  listKeywordMonitors: async () => {
+    const response = await request<any[]>(`${apiBaseUrl}/keyword-monitors`);
+    return response;
+  },
+  getKeywordMonitor: async (id: string) => {
+    const response = await request<any>(`${apiBaseUrl}/keyword-monitors/${id}`);
+    return response;
+  },
+  createKeywordMonitor: (body: {
+    keywordSetId: string;
+    target: string;
+    platform?: string;
+  }) => request(`${apiBaseUrl}/keyword-monitors`, { method: "POST", body }),
+  updateKeywordMonitor: (
+    id: string,
+    body: { keywordSetId?: string; target?: string; status?: string },
+  ) =>
+    request(`${apiBaseUrl}/keyword-monitors/${id}`, { method: "PATCH", body }),
+  deleteKeywordMonitor: (id: string) =>
+    request(`${apiBaseUrl}/keyword-monitors/${id}`, { method: "DELETE" }),
+
+  // ==================== Keyword Leads ====================
+  listKeywordLeads: async (
+    params: {
+      keywordMonitorId?: string;
+      platform?: string;
+      status?: string;
+      search?: string;
+      page?: number;
+      limit?: number;
+    } = {},
+  ) => {
+    const query = buildQueryString(params);
+    const response = await request<{
+      message: string;
+      payload: {
+        data: any[];
+        pagination: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
+      };
+    }>(`${apiBaseUrl}/keyword-leads${query}`);
+    return response.payload;
+  },
+  getKeywordLead: async (id: string) => {
+    const response = await request<{ message: string; payload: any }>(
+      `${apiBaseUrl}/keyword-leads/${id}`,
+    );
+    return response.payload;
+  },
+  updateKeywordLead: (id: string, status: LeadStatus) =>
+    request(`${apiBaseUrl}/keyword-leads/${id}`, {
+      method: "PATCH",
+      body: { status },
+    }),
+  deleteKeywordLead: (id: string) =>
+    request(`${apiBaseUrl}/keyword-leads/${id}`, { method: "DELETE" }),
+  exportKeywordLeadsCsv: async (params: {
+    keywordMonitorId?: string;
+    status?: string;
+    search?: string;
+  }) => {
+    const query = buildQueryString(params);
+    const response = await fetch(`${apiBaseUrl}/keyword-leads/export${query}`, {
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Export failed");
+    return response.blob();
+  },
+
+  // ==================== Keyword Schedule ====================
+  getKeywordSchedule: async () => {
+    const response = await request<any>(`${apiBaseUrl}/keyword-schedule`);
+    return response;
+  },
+  updateKeywordSchedule: (body: { scheduledHours: number[] }) =>
+    request(`${apiBaseUrl}/keyword-schedule`, { method: "PATCH", body }),
+
+  // ==================== Keyword Stats ====================
+  getKeywordStats: async () => {
+    const response = await request<{ message: string; payload: any }>(
+      `${apiBaseUrl}/keyword-stats`,
+    );
+    return response.payload;
+  },
 };

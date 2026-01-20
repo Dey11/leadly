@@ -7,6 +7,7 @@ import { SEO_CONFIG } from "@/constants/seo";
 // Landing Components
 import { Hero } from "@/components/landing/Hero";
 import { Features } from "@/components/landing/Features";
+import { DualMonitoring } from "@/components/landing/DualMonitoring";
 import { ThreeSteps } from "@/components/landing/ThreeSteps";
 import { Problem } from "@/components/landing/Problem";
 import { Solution } from "@/components/landing/Solution";
@@ -108,6 +109,7 @@ export default function HomePage() {
       <main>
         <Hero />
         <Features />
+        <DualMonitoring />
         <ThreeSteps />
         <Problem />
         <Solution />

@@ -42,9 +42,9 @@ const comparisonData = [
   },
   {
     feature: "Keyword Tracking",
-    leadly: "Coming soon (AI-enhanced)",
+    leadly: "AI-enhanced keyword monitoring",
     others: "Basic matching only",
-    leadlyHas: "soon",
+    leadlyHas: true,
     othersHas: true,
   },
   {

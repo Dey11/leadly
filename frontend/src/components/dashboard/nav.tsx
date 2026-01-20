@@ -10,6 +10,8 @@ import {
   Radar,
   Sparkles,
   UserRound,
+  Tags,
+  Search,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -29,6 +31,9 @@ const iconComponents = {
   schedule: CalendarClock,
   account: UserRound,
   billing: CreditCard,
+  keywordSets: Tags,
+  keywordMonitors: Radar,
+  keywordLeads: Search,
 } as const;
 
 export type IconKey = keyof typeof iconComponents;

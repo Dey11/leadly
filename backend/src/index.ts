@@ -13,8 +13,13 @@ import billingRouter from "./routes/billing";
 import bugReportRouter from "./routes/bug-report";
 import { newDodoWebhookHandler } from "./controllers/webhooks-new";
 import cron from "node-cron";
-import { CRON_INTERVAL } from "./lib/constants";
+import { CRON_INTERVAL, KEYWORD_CRON_INTERVAL } from "./lib/constants";
 import { runScheduler } from "./services/scheduler";
+import keywordSetRouter from "./routes/keyword-set";
+import keywordScheduleRouter from "./routes/keyword-schedule";
+import keywordStatsRouter from "./routes/keyword-stats";
+import keywordMonitorRouter from "./routes/keyword-monitor";
+import keywordLeadRouter from "./routes/keyword-lead";
 
 const PORT = env.PORT;
 
@@ -48,6 +53,7 @@ const apiRouter = express.Router();
 
 app.use("/api/v1", apiRouter);
 
+// Lead Gen routes
 apiRouter.use("/auth", authRouter);
 apiRouter.use("/monitors", monitorRouter);
 apiRouter.use("/icps", icpRouter);
@@ -58,17 +64,36 @@ apiRouter.use("/monitors", scrapeJobsRouter);
 apiRouter.use("/billing", billingRouter);
 apiRouter.use("/bug-reports", bugReportRouter);
 
-const scheduledTask = cron.schedule(CRON_INTERVAL, runScheduler, {
+// Keyword mode routes
+apiRouter.use("/keyword-sets", keywordSetRouter);
+apiRouter.use("/keyword-schedule", keywordScheduleRouter);
+apiRouter.use("/keyword-stats", keywordStatsRouter);
+apiRouter.use("/keyword-monitors", keywordMonitorRouter);
+apiRouter.use("/keyword-leads", keywordLeadRouter);
+
+// Lead Gen scheduler (hourly at xx:00)
+const leadGenScheduler = cron.schedule(CRON_INTERVAL, runScheduler, {
   timezone: "UTC",
 });
 
+// Keyword scheduler (hourly at xx:30)
+import { runKeywordScheduler } from "./services/keyword-scheduler";
+const keywordScheduler = cron.schedule(
+  KEYWORD_CRON_INTERVAL,
+  runKeywordScheduler,
+  {
+    timezone: "UTC",
+  },
+);
+
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log("Scheduler started.");
+  console.log("Lead Gen Scheduler started (hourly at xx:00).");
+  console.log("Keyword Scheduler started (hourly at xx:30).");
 });
 
 const stopServer = () => {
-  scheduledTask.stop();
+  leadGenScheduler.stop();
   server.close(() => {
     console.log("Server closed.");
     process.exit(0);

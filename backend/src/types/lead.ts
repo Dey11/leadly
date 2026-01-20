@@ -7,6 +7,7 @@ export const getLeadsQuerySchema = z
     platform: z.enum(Platform).optional(),
     leadType: z.enum(LeadType).optional(),
     status: z.enum(LeadStatus).optional(),
+    search: z.string().optional(),
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(100).default(20),
   })

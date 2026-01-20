@@ -6,11 +6,29 @@ import { getAccountSummary, getScheduleLimits } from "@/lib/backend-queries";
 import type { AccountSummary } from "@/types/backend";
 import { Walkthrough } from "@/components/dashboard/walkthrough";
 
-const navItems: DashboardNavItem[] = [
+const leadGenNavItems: DashboardNavItem[] = [
   { href: "/dashboard", label: "Overview", icon: "overview" },
   { href: "/dashboard/leads", label: "Leads", icon: "leads" },
   { href: "/dashboard/icps", label: "ICPs", icon: "icps" },
   { href: "/dashboard/monitors", label: "Monitors", icon: "monitors" },
+  { href: "/dashboard/schedule", label: "Schedule", icon: "schedule" },
+  { href: "/dashboard/billing", label: "Billing", icon: "billing" },
+  { href: "/dashboard/account", label: "Account", icon: "account" },
+];
+
+const keywordNavItems: DashboardNavItem[] = [
+  { href: "/dashboard", label: "Overview", icon: "overview" },
+  { href: "/dashboard/keyword-leads", label: "Matches", icon: "keywordLeads" },
+  {
+    href: "/dashboard/keyword-sets",
+    label: "Keywords",
+    icon: "keywordSets",
+  },
+  {
+    href: "/dashboard/keyword-monitors",
+    label: "Monitors",
+    icon: "keywordMonitors",
+  },
   { href: "/dashboard/schedule", label: "Schedule", icon: "schedule" },
   { href: "/dashboard/billing", label: "Billing", icon: "billing" },
   { href: "/dashboard/account", label: "Account", icon: "account" },
@@ -82,7 +100,8 @@ export default async function DashboardLayout({
       </div>
       <Walkthrough hasSeenWalkthrough={account.hasSeenWalkthrough} />
       <DashboardShell
-        navItems={navItems}
+        leadGenNavItems={leadGenNavItems}
+        keywordNavItems={keywordNavItems}
         tierLabel={tierLabel}
         limitsDescription={limitsDescription}
         accountName={account.name ?? "Leadly user"}

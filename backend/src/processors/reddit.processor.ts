@@ -1,6 +1,6 @@
 import db from "../lib/db";
 import { Reddit } from "../services/reddit";
-import { processLeads } from "./ai.processor";
+import { processLeads, LeadData } from "./ai.processor";
 import type { Job } from "bullmq";
 import type { LeadStatus, Monitor, Icp, User } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
@@ -12,7 +12,7 @@ import {
 } from "../lib/constants";
 
 type MonitorWithIcpAndUser = Monitor & {
-  icp: Icp | null;
+  icp: Icp;
   user: User;
 };
 
@@ -60,6 +60,7 @@ async function executeCoreScrapeLogic(
     qualifyingSignals: monitor.icp.qualifyingSignals,
     disqualifyingSignals: monitor.icp.disqualifyingSignals,
   });
+
   const lastPostId = posts[0]?.postId;
 
   const warmLeads = leads.filter((lead) => lead.leadType === "WARM");
@@ -131,140 +132,148 @@ async function handleJobFailure(
     });
   } else {
     console.log(
-      `Job ${jobId} permanently failed (retryCount: ${currentRetryCount}, source: ${context.source})`,
+      `Job ${jobId} failed permanently after ${MAX_SCRAPE_RETRY_COUNT} retries: ${errorMessage}`,
     );
 
-    await db.$transaction([
-      db.failedScrapeJob.create({
+    await db.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.failedScrapeJob.create({
         data: {
           monitorId: context.monitorId,
           originalJobId: jobId,
           errorMessage,
-          metadata: {
-            stack: error instanceof Error ? error.stack : null,
-            context,
-            retryCount: currentRetryCount,
-          },
         },
-      }),
-      db.scrapeJob.update({
+      });
+
+      await tx.scrapeJob.update({
         where: { id: jobId },
         data: {
           status: "FAILED",
+          errorMessage,
           retryCount: currentRetryCount,
           nextRetryAt: null,
-          errorMessage,
         },
-      }),
-    ]);
+      });
+    });
   }
 }
 
-export async function processScrapeJob(job: Job) {
-  console.log("Processing job with data:", job.data);
-
-  if (!job.data.monitorId || !job.data.jobId) {
-    throw new Error("Missing monitorId or jobId in job data");
-  }
-
+export async function processRedditScrape(job: Job) {
   const { monitorId, jobId } = job.data;
 
-  let scrapeJob = await db.scrapeJob.findUnique({
+  console.log(`Processing scrape job: ${jobId} for monitor: ${monitorId}`);
+
+  const scrapeJob = await db.scrapeJob.findUnique({
     where: { id: jobId },
-    include: { monitor: { include: { icp: true } } },
   });
+
+  if (!scrapeJob) {
+    console.log("Scrape job not found:", jobId);
+    return;
+  }
 
   const monitor = await db.monitor.findUnique({
     where: { id: monitorId },
-    include: { user: true, icp: true },
+    include: { icp: true, user: true },
   });
 
-  console.log("Found scrapeJob:", !!scrapeJob, "Found monitor:", !!monitor);
-
-  if (!scrapeJob || !monitor) {
-    throw new Error("ScrapeJob or Monitor not found");
+  if (!monitor) {
+    console.log("Monitor not found:", monitorId);
+    return;
   }
 
-  if (monitor.user.isDeleted) {
-    console.log(`Skipping job ${jobId} because user is deleted`);
+  if (!monitor.icp) {
+    console.log("Monitor has no ICP:", monitorId);
+    await db.scrapeJob.update({
+      where: { id: jobId },
+      data: {
+        status: "FAILED",
+        errorMessage: "Monitor has no associated ICP",
+      },
+    });
     return;
   }
 
   try {
-    await executeCoreScrapeLogic(monitorId, jobId, monitor);
-  } catch (error) {
-    console.error("Job processing failed:", error);
-
-    const currentRetryCount = (scrapeJob?.retryCount ?? 0) + 1;
-    console.log(
-      `Job ${jobId} failed. Retry count: ${currentRetryCount}/${MAX_SCRAPE_RETRY_COUNT}`,
+    const leadsCreated = await executeCoreScrapeLogic(
+      monitorId,
+      jobId,
+      monitor as MonitorWithIcpAndUser,
     );
 
-    try {
-      await handleJobFailure(
+    console.log(
+      JSON.stringify({
+        evt: "scrape.completed",
         jobId,
-        { monitorId, jobId, source: "bullmq" },
-        error,
-        currentRetryCount,
-        false,
-      );
-    } catch (updateError) {
-      console.error("Failed to update scrapeJob status:", updateError);
-    }
+        monitorId,
+        leadsCreated,
+      }),
+    );
+  } catch (error) {
+    console.error("Scrape failed:", error);
+
+    await handleJobFailure(
+      jobId,
+      { monitorId, jobId, source: "bullmq" },
+      error,
+      scrapeJob.retryCount + 1,
+      false,
+    );
   }
 }
 
 export async function processStuckJob(monitorId: string, jobId: string) {
-  console.log(
-    JSON.stringify({
-      evt: "stuck_job.processing",
-      monitorId,
-      jobId,
-    }),
-  );
-
-  let scrapeJob = await db.scrapeJob.findUnique({
-    where: { id: jobId },
-    include: { monitor: { include: { icp: true } } },
-  });
+  console.log(`Processing stuck job: ${jobId} for monitor: ${monitorId}`);
 
   const monitor = await db.monitor.findUnique({
     where: { id: monitorId },
-    include: { user: true, icp: true },
+    include: { icp: true, user: true },
   });
 
-  if (!scrapeJob || !monitor) {
-    throw new Error("ScrapeJob or Monitor not found");
+  if (!monitor || !monitor.icp) {
+    console.log("Invalid monitor for stuck job:", monitorId);
+    await db.scrapeJob.update({
+      where: { id: jobId },
+      data: {
+        status: "FAILED",
+        errorMessage: "Monitor or ICP not found",
+      },
+    });
+    return;
   }
 
-  if (monitor.user.isDeleted) {
-    console.log(`Skipping stuck job ${jobId} because user is deleted`);
+  const scrapeJob = await db.scrapeJob.findUnique({
+    where: { id: jobId },
+  });
+
+  if (!scrapeJob) {
+    console.log("Stuck job not found:", jobId);
     return;
   }
 
   try {
-    const leadsCount = await executeCoreScrapeLogic(monitorId, jobId, monitor);
+    const leadsCreated = await executeCoreScrapeLogic(
+      monitorId,
+      jobId,
+      monitor as MonitorWithIcpAndUser,
+    );
 
     console.log(
       JSON.stringify({
-        evt: "stuck_job.completed",
+        evt: "stuck_scrape.completed",
         jobId,
-        leadsCount,
+        monitorId,
+        leadsCreated,
       }),
     );
   } catch (error) {
     console.error("Stuck job processing failed:", error);
 
-    const currentRetryCount = (scrapeJob?.retryCount ?? 0) + 1;
-
     await handleJobFailure(
       jobId,
       { monitorId, jobId, source: "stuck_job_fallback" },
       error,
-      currentRetryCount,
+      scrapeJob.retryCount + 1,
       true,
     );
-
-    throw error;
   }
 }
