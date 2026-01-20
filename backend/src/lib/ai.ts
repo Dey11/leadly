@@ -1,5 +1,6 @@
 import { google } from "@ai-sdk/google";
 import { MODEL_LITE, MODEL } from "./constants";
+import logger from "./logger";
 
 export const AI_SAFETY_SETTINGS = [
   {
@@ -31,7 +32,7 @@ export function handleAiError(
   error: unknown,
   context: string,
 ): { status: number; body: { error: string } } {
-  console.error(`AI ${context} error:`, error);
+  logger.error(`AI ${context} error:`, error);
 
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorString = JSON.stringify(error);

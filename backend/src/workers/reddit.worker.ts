@@ -2,6 +2,7 @@ import { Worker } from "bullmq";
 import Redis from "ioredis";
 import { env } from "../env";
 import { processRedditScrape } from "../processors/reddit.processor";
+import logger from "../lib/logger";
 
 const connection = new Redis(env.REDIS_URL, {
   maxRetriesPerRequest: null,
@@ -10,32 +11,32 @@ const connection = new Redis(env.REDIS_URL, {
 const worker = new Worker(
   "scrapeJobs",
   async (job) => {
-    console.log("Processing job:", job.data);
+    logger.info("Processing job:", job.data);
     await processRedditScrape(job);
   },
-  { connection },
+  { connection: connection as any },
 );
 
 worker.on("completed", (job) => {
-  console.log(`Job ${job.id} completed`);
+  logger.info(`Job ${job.id} completed`);
 });
 
 worker.on("failed", (job, err) => {
   if (job) {
-    console.log(`Job ${job.id} failed with error: ${err.message}`);
+    logger.error(`Job ${job.id} failed with error: ${err.message}`);
   }
 });
 
 process.on("SIGINT", async () => {
-  console.log("SIGINT received, closing worker...");
+  logger.info("SIGINT received, closing worker...");
   await worker.close();
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
-  console.log("SIGTERM received, closing worker...");
+  logger.info("SIGTERM received, closing worker...");
   await worker.close();
   process.exit(0);
 });
 
-console.log("Worker started");
+logger.info("Worker started");

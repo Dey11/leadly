@@ -1,4 +1,5 @@
 import { scrapeJobsQueue } from "../lib/queue";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import { env } from "../env";
 import {
@@ -28,11 +29,11 @@ async function pickupRetryJobs() {
     },
   });
 
-  console.log(`Found ${jobsToRetry.length} jobs ready for retry`);
+  logger.info(`Found ${jobsToRetry.length} jobs ready for retry`);
 
   for (const job of jobsToRetry) {
     try {
-      console.log(
+      logger.info(
         `Retrying job ${job.id} (attempt ${
           job.retryCount + 1
         }/${MAX_SCRAPE_RETRY_COUNT})`,
@@ -48,9 +49,9 @@ async function pickupRetryJobs() {
         jobId: job.id,
       });
 
-      console.log(`Scheduled retry for job ${job.id}`);
+      logger.info(`Scheduled retry for job ${job.id}`);
     } catch (error) {
-      console.error(`Failed to schedule retry for job ${job.id}:`, error);
+      logger.error(`Failed to schedule retry for job ${job.id}:`, error);
     }
   }
 }
@@ -73,11 +74,11 @@ async function processStuckPendingJobs() {
     },
   });
 
-  console.log(`Found ${stuckJobs.length} stuck PENDING jobs (>6 hours old)`);
+  logger.info(`Found ${stuckJobs.length} stuck PENDING jobs (>6 hours old)`);
 
   for (const job of stuckJobs) {
     try {
-      console.log(
+      logger.info(
         JSON.stringify({
           evt: "scheduler.stuck_job_processing",
           jobId: job.id,
@@ -91,14 +92,14 @@ async function processStuckPendingJobs() {
 
       await processStuckJob(job.monitorId, job.id);
 
-      console.log(
+      logger.info(
         JSON.stringify({
           evt: "scheduler.stuck_job_completed",
           jobId: job.id,
         }),
       );
     } catch (error) {
-      console.error(
+      logger.error(
         JSON.stringify({
           evt: "scheduler.stuck_job_failed",
           jobId: job.id,
@@ -110,7 +111,7 @@ async function processStuckPendingJobs() {
 }
 
 export async function runScheduler() {
-  console.log("Running scheduler");
+  logger.info("Running scheduler");
 
   // Process stuck pending jobs first
   await processStuckPendingJobs();
@@ -119,7 +120,7 @@ export async function runScheduler() {
   await pickupRetryJobs();
 
   const currentHour = new Date().getUTCHours();
-  console.log("Current UTC hour:", currentHour);
+  logger.info(`Current UTC hour: ${currentHour}`);
 
   // Find all users who have the current hour in their schedule
   const usersWithScheduledHour = await db.userSchedule.findMany({
@@ -145,7 +146,7 @@ export async function runScheduler() {
     },
   });
 
-  console.log("Users with scheduled hour:", usersWithScheduledHour.length);
+  logger.info(`Users with scheduled hour: ${usersWithScheduledHour.length}`);
 
   for (const userSchedule of usersWithScheduledHour) {
     const { user } = userSchedule;
@@ -163,7 +164,7 @@ export async function runScheduler() {
       tier,
       user.subscription.currentPeriodEnd,
     );
-    console.log(
+    logger.info(
       JSON.stringify({
         evt: "scheduler.usage_preview",
         userId: user.id,
@@ -188,7 +189,7 @@ export async function runScheduler() {
 
     if (!allowed) {
       // Block when enforcement is "on"
-      console.warn(
+      logger.warn(
         JSON.stringify({
           evt: "scheduler.blocked",
           userId: user.id,
@@ -215,13 +216,13 @@ export async function runScheduler() {
         });
 
         if (existingJob) {
-          console.log(
+          logger.info(
             `Skipping monitor ${monitor.id} because a job is already ${existingJob.status}`,
           );
           continue;
         }
 
-        console.log("Creating scrape job for monitor:", monitor.id);
+        logger.info(`Creating scrape job for monitor: ${monitor.id}`);
         const scrapeJob = await db.scrapeJob.create({
           data: {
             monitorId: monitor.id,
@@ -233,9 +234,9 @@ export async function runScheduler() {
           monitorId: monitor.id,
           jobId: scrapeJob.id,
         });
-        console.log("Scrape job created for monitor:", monitor.id);
+        logger.info(`Scrape job created for monitor: ${monitor.id}`);
       } catch (error) {
-        console.error(
+        logger.error(
           `Failed to schedule scrape job for monitor ${monitor.id}:`,
           error,
         );

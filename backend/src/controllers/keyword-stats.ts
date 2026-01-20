@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 
 /**
@@ -119,7 +120,7 @@ export async function getKeywordStats(req: Request, res: Response) {
       },
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch keyword stats:", err);
     res.status(500).json({ error: "Failed to fetch keyword stats" });
   }
 }

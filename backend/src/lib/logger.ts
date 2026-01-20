@@ -1,25 +1,67 @@
 import winston from "winston";
+import "winston-daily-rotate-file";
 import { env } from "../env";
 
-const logger = winston.createLogger({
-  level: "info",
-  format: winston.format.json(),
-  defaultMeta: { service: "leadly-backend" },
-  transports: [
-    new winston.transports.File({ filename: "error.log", level: "error" }),
-    new winston.transports.File({ filename: "combined.log" }),
-  ],
+const { combine, timestamp, json, colorize, printf } = winston.format;
+
+const logFormat = printf(({ level, message, timestamp }) => {
+  return `${timestamp} [${level}]: ${message}`;
 });
 
+const transports: winston.transport[] = [];
+
 if (env.NODE_ENV !== "production") {
-  logger.add(
+  transports.push(
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple(),
+      format: combine(
+        colorize({ all: true }),
+        timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+        printf(({ level, message, timestamp, ...metadata }) => {
+          let msg = `${timestamp} [${level}]: ${message}`;
+          if (
+            Object.keys(metadata).length > 0 &&
+            metadata.service === "leadly-backend"
+          ) {
+            // Remove default meta from verbose output in dev
+            delete metadata.service;
+          }
+          if (Object.keys(metadata).length > 0) {
+            msg += ` ${JSON.stringify(metadata)}`;
+          }
+          return msg;
+        }),
       ),
     }),
   );
+} else {
+  transports.push(
+    new winston.transports.DailyRotateFile({
+      filename: "logs/error-%DATE%.log",
+      datePattern: "YYYY-MM-DD",
+      zippedArchive: true,
+      maxSize: "20m",
+      maxFiles: "14d",
+      level: "error",
+      format: combine(timestamp(), json()),
+    }),
+  );
+  transports.push(
+    new winston.transports.DailyRotateFile({
+      filename: "logs/combined-%DATE%.log",
+      datePattern: "YYYY-MM-DD",
+      zippedArchive: true,
+      maxSize: "20m",
+      maxFiles: "14d",
+      format: combine(timestamp(), json()),
+    }),
+  );
 }
+
+const logger = winston.createLogger({
+  level: env.LOG_LEVEL,
+  format: json(),
+  defaultMeta: { service: "leadly-backend" },
+  transports,
+});
 
 export default logger;

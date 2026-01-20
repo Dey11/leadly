@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import {
   getKeywordLeadsQuerySchema,
@@ -93,7 +94,7 @@ export async function getKeywordLeads(req: Request, res: Response) {
       },
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch keyword leads:", err);
     res.status(500).json({ error: "Failed to fetch keyword leads" });
   }
 }
@@ -148,7 +149,7 @@ export async function getKeywordLead(req: Request, res: Response) {
       payload: { ...lead, status },
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch lead:", err);
     res.status(500).json({ error: "Failed to fetch lead" });
   }
 }
@@ -189,7 +190,7 @@ export async function updateKeywordLead(req: Request, res: Response) {
       payload: { id, status: payload.data.status },
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to update lead:", err);
     res.status(500).json({ error: "Failed to update lead" });
   }
 }
@@ -223,7 +224,7 @@ export async function deleteKeywordLead(req: Request, res: Response) {
       payload: {},
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to delete lead:", err);
     res.status(500).json({ error: "Failed to delete lead" });
   }
 }
@@ -347,7 +348,7 @@ export async function exportKeywordLeads(req: Request, res: Response) {
     );
     res.send(csv);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to export keyword leads:", err);
     res.status(500).json({ error: "Failed to export keyword leads" });
   }
 }

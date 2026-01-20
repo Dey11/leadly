@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import {
   createKeywordScheduleSchema,
@@ -18,7 +19,7 @@ export async function getKeywordSchedule(req: Request, res: Response) {
 
     res.json(schedule);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch keyword schedule:", err);
     res.status(500).json({ error: "Failed to fetch keyword schedule" });
   }
 }
@@ -72,7 +73,7 @@ export async function createKeywordSchedule(req: Request, res: Response) {
 
     res.status(201).json(schedule);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to create keyword schedule:", err);
     res.status(500).json({ error: "Failed to create keyword schedule" });
   }
 }
@@ -127,7 +128,7 @@ export async function updateKeywordSchedule(req: Request, res: Response) {
 
     res.json(schedule);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to update keyword schedule:", err);
     res.status(500).json({ error: "Failed to update keyword schedule" });
   }
 }

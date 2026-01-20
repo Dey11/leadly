@@ -1,4 +1,5 @@
 import { env } from "../env";
+import logger from "./logger";
 import type { BugReport, User } from "@prisma/client";
 
 type BugReportWithUser = BugReport & { user: Pick<User, "email" | "name"> };
@@ -23,7 +24,7 @@ export async function sendBugReportToDiscord(
   const webhookUrl = env.DISCORD_WEBHOOK_URL;
 
   if (!webhookUrl) {
-    console.warn("Discord webhook URL not configured, skipping notification");
+    logger.warn("Discord webhook URL not configured, skipping notification");
     return false;
   }
 
@@ -87,7 +88,7 @@ export async function sendBugReportToDiscord(
     });
 
     if (!response.ok) {
-      console.error(
+      logger.error(
         "Failed to send Discord notification:",
         response.status,
         await response.text(),
@@ -97,7 +98,7 @@ export async function sendBugReportToDiscord(
 
     return true;
   } catch (error) {
-    console.error("Error sending Discord notification:", error);
+    logger.error("Error sending Discord notification:", error);
     return false;
   }
 }
@@ -213,7 +214,7 @@ export async function sendTransactionToDiscord(
     });
     return true;
   } catch (error) {
-    console.error("Error sending transaction notification:", error);
+    logger.error("Error sending transaction notification:", error);
     return false;
   }
 }

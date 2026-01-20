@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import { createBugReportSchema } from "../types/bug-report";
 import { sendBugReportToDiscord } from "../lib/discord";
@@ -52,7 +53,7 @@ export async function createBugReport(req: Request, res: Response) {
 
     // Send to Discord webhook (fire and forget, don't block response)
     sendBugReportToDiscord(bugReport).catch((error) => {
-      console.error("Failed to send bug report to Discord:", error);
+      logger.error("Failed to send bug report to Discord:", error);
     });
 
     return res.status(201).json({
@@ -66,7 +67,7 @@ export async function createBugReport(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error("Error creating bug report:", error);
+    logger.error("Error creating bug report:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -97,7 +98,7 @@ export async function listBugReports(req: Request, res: Response) {
       payload: bugReports,
     });
   } catch (error) {
-    console.error("Error listing bug reports:", error);
+    logger.error("Error listing bug reports:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }

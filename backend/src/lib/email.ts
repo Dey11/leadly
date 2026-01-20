@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { env } from "../env";
 import { SUPPORT_EMAIL } from "./constants";
 import { SubscriptionTier } from "@prisma/client";
+import logger from "./logger";
 
 const resend = new Resend(env.RESEND_API_KEY);
 
@@ -20,7 +21,7 @@ export async function sendVerificationEmail(email: string, otp: string) {
   });
 
   if (error) {
-    console.error("Failed to send verification email:", error);
+    logger.error("Failed to send verification email:", error);
     throw new Error("Failed to send verification email");
   }
 }
@@ -43,7 +44,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   });
 
   if (error) {
-    console.error("Failed to send password reset email:", error);
+    logger.error("Failed to send password reset email:", error);
     throw new Error("Failed to send password reset email");
   }
 }
@@ -67,7 +68,7 @@ export async function sendSubscriptionActiveEmail(
   });
 
   if (error) {
-    console.error("Failed to send subscription active email:", error);
+    logger.error("Failed to send subscription active email:", error);
   }
 }
 
@@ -91,7 +92,7 @@ export async function sendSubscriptionOnHoldEmail(
   });
 
   if (error) {
-    console.error("Failed to send subscription on hold email:", error);
+    logger.error("Failed to send subscription on hold email:", error);
   }
 }
 
@@ -114,7 +115,7 @@ export async function sendSubscriptionRenewedEmail(
   });
 
   if (error) {
-    console.error("Failed to send subscription renewed email:", error);
+    logger.error("Failed to send subscription renewed email:", error);
   }
 }
 
@@ -143,7 +144,7 @@ export async function sendSubscriptionPlanChangedEmail(
   });
 
   if (error) {
-    console.error("Failed to send subscription plan changed email:", error);
+    logger.error("Failed to send subscription plan changed email:", error);
   }
 }
 
@@ -166,7 +167,7 @@ export async function sendSubscriptionCancelledEmail(
   });
 
   if (error) {
-    console.error("Failed to send subscription cancelled email:", error);
+    logger.error("Failed to send subscription cancelled email:", error);
   }
 }
 
@@ -189,7 +190,7 @@ export async function sendSubscriptionExpiredEmail(
   });
 
   if (error) {
-    console.error("Failed to send subscription expired email:", error);
+    logger.error("Failed to send subscription expired email:", error);
   }
 }
 
@@ -212,6 +213,6 @@ export async function sendSubscriptionFailedEmail(
   });
 
   if (error) {
-    console.error("Failed to send subscription failed email:", error);
+    logger.error("Failed to send subscription failed email:", error);
   }
 }

@@ -1,4 +1,5 @@
 import db from "../lib/db";
+import logger from "../lib/logger";
 import { Reddit } from "../services/reddit";
 import { processLeads, LeadData } from "./ai.processor";
 import type { Job } from "bullmq";
@@ -117,8 +118,8 @@ async function handleJobFailure(
 
   if (!skipRetry && currentRetryCount < MAX_SCRAPE_RETRY_COUNT) {
     const nextRetryAt = new Date(Date.now() + SCRAPE_RETRY_DELAY_MS);
-    console.log(
-      `Scheduling retry for job ${jobId} at ${nextRetryAt.toISOString()}`,
+    logger.info(
+      `[Reddit Processor] Scheduling retry for job ${jobId} at ${nextRetryAt.toISOString()}`,
     );
 
     await db.scrapeJob.update({
@@ -131,8 +132,8 @@ async function handleJobFailure(
       },
     });
   } else {
-    console.log(
-      `Job ${jobId} failed permanently after ${MAX_SCRAPE_RETRY_COUNT} retries: ${errorMessage}`,
+    logger.error(
+      `[Reddit Processor] Job ${jobId} failed permanently after ${MAX_SCRAPE_RETRY_COUNT} retries: ${errorMessage}`,
     );
 
     await db.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -160,14 +161,16 @@ async function handleJobFailure(
 export async function processRedditScrape(job: Job) {
   const { monitorId, jobId } = job.data;
 
-  console.log(`Processing scrape job: ${jobId} for monitor: ${monitorId}`);
+  logger.info(
+    `[Reddit Processor] Processing scrape job: ${jobId} for monitor: ${monitorId}`,
+  );
 
   const scrapeJob = await db.scrapeJob.findUnique({
     where: { id: jobId },
   });
 
   if (!scrapeJob) {
-    console.log("Scrape job not found:", jobId);
+    logger.warn("[Reddit Processor] Scrape job not found:", jobId);
     return;
   }
 
@@ -177,12 +180,12 @@ export async function processRedditScrape(job: Job) {
   });
 
   if (!monitor) {
-    console.log("Monitor not found:", monitorId);
+    logger.warn("[Reddit Processor] Monitor not found:", monitorId);
     return;
   }
 
   if (!monitor.icp) {
-    console.log("Monitor has no ICP:", monitorId);
+    logger.warn("[Reddit Processor] Monitor has no ICP:", monitorId);
     await db.scrapeJob.update({
       where: { id: jobId },
       data: {
@@ -200,7 +203,7 @@ export async function processRedditScrape(job: Job) {
       monitor as MonitorWithIcpAndUser,
     );
 
-    console.log(
+    logger.info(
       JSON.stringify({
         evt: "scrape.completed",
         jobId,
@@ -209,7 +212,7 @@ export async function processRedditScrape(job: Job) {
       }),
     );
   } catch (error) {
-    console.error("Scrape failed:", error);
+    logger.error("[Reddit Processor] Scrape failed:", error);
 
     await handleJobFailure(
       jobId,
@@ -222,7 +225,9 @@ export async function processRedditScrape(job: Job) {
 }
 
 export async function processStuckJob(monitorId: string, jobId: string) {
-  console.log(`Processing stuck job: ${jobId} for monitor: ${monitorId}`);
+  logger.info(
+    `[Reddit Processor] Processing stuck job: ${jobId} for monitor: ${monitorId}`,
+  );
 
   const monitor = await db.monitor.findUnique({
     where: { id: monitorId },
@@ -230,7 +235,7 @@ export async function processStuckJob(monitorId: string, jobId: string) {
   });
 
   if (!monitor || !monitor.icp) {
-    console.log("Invalid monitor for stuck job:", monitorId);
+    logger.warn("[Reddit Processor] Invalid monitor for stuck job:", monitorId);
     await db.scrapeJob.update({
       where: { id: jobId },
       data: {
@@ -246,7 +251,7 @@ export async function processStuckJob(monitorId: string, jobId: string) {
   });
 
   if (!scrapeJob) {
-    console.log("Stuck job not found:", jobId);
+    logger.warn("[Reddit Processor] Stuck job not found:", jobId);
     return;
   }
 
@@ -257,7 +262,7 @@ export async function processStuckJob(monitorId: string, jobId: string) {
       monitor as MonitorWithIcpAndUser,
     );
 
-    console.log(
+    logger.info(
       JSON.stringify({
         evt: "stuck_scrape.completed",
         jobId,
@@ -266,7 +271,7 @@ export async function processStuckJob(monitorId: string, jobId: string) {
       }),
     );
   } catch (error) {
-    console.error("Stuck job processing failed:", error);
+    logger.error("[Reddit Processor] Stuck job processing failed:", error);
 
     await handleJobFailure(
       jobId,

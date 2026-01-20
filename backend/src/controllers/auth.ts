@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import {
   registerSchema,
   loginSchema,
@@ -142,7 +143,7 @@ export async function register(req: Request, res: Response) {
         await sendVerificationEmail(email, otp);
         await incrementRateLimit(req, "register");
       } catch (emailError) {
-        console.error("Failed to send verification email:", emailError);
+        logger.error("Failed to send verification email:", emailError);
       }
 
       return res
@@ -208,7 +209,7 @@ export async function register(req: Request, res: Response) {
       await sendVerificationEmail(email, otp);
       await incrementRateLimit(req, "register");
     } catch (emailError) {
-      console.error("Failed to send verification email:", emailError);
+      logger.error("Failed to send verification email:", emailError);
     }
 
     res
@@ -216,7 +217,7 @@ export async function register(req: Request, res: Response) {
       .status(201)
       .json({ message: "User created successfully", email: user.email });
   } catch (error) {
-    console.error("Registration failed:", error);
+    logger.error("Registration failed:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -277,7 +278,7 @@ export async function login(req: Request, res: Response) {
         await sendVerificationEmail(userInDb.email, otp);
         await incrementRateLimit(req, "resendOtp");
       } catch (e) {
-        console.error("Failed to resend verification email:", e);
+        logger.error("Failed to resend verification email:", e);
       }
 
       return res.status(403).json({
@@ -316,7 +317,7 @@ export async function logout(req: Request, res: Response) {
       .status(200)
       .json({ message: "Logout successful" });
   } catch (error) {
-    console.error("LOGOUT_ERROR:", error);
+    logger.error("LOGOUT_ERROR:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -369,7 +370,7 @@ export async function verifyEmail(req: Request, res: Response) {
 
     res.status(200).json({ message: "Email verified successfully" });
   } catch (error) {
-    console.error("Email verification failed:", error);
+    logger.error("Email verification failed:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -422,13 +423,13 @@ export async function resendVerificationEmail(req: Request, res: Response) {
       await sendVerificationEmail(user.email, otp);
       await incrementRateLimit(req, "resendOtp");
     } catch (emailError) {
-      console.error("Failed to send verification email:", emailError);
+      logger.error("Failed to send verification email:", emailError);
       return res.status(500).json({ error: "Failed to send email" });
     }
 
     res.status(200).json({ message: "Verification code sent" });
   } catch (error) {
-    console.error("Resend verification email failed:", error);
+    logger.error("Resend verification email failed:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -475,14 +476,14 @@ export async function forgotPassword(req: Request, res: Response) {
       await sendPasswordResetEmail(user.email, resetToken);
       await incrementRateLimit(req, "forgotPassword");
     } catch (emailError) {
-      console.error("Failed to send password reset email:", emailError);
+      logger.error("Failed to send password reset email:", emailError);
     }
 
     res
       .status(200)
       .json({ message: "If an account exists, a reset link has been sent" });
   } catch (error) {
-    console.error("Forgot password failed:", error);
+    logger.error("Forgot password failed:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -537,7 +538,7 @@ export async function resetPassword(req: Request, res: Response) {
 
     res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
-    console.error("Password reset failed:", error);
+    logger.error("Password reset failed:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }

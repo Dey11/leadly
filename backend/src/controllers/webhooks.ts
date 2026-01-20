@@ -4,6 +4,7 @@ import {
   type WebhookUnbrandedRequiredHeaders,
 } from "standardwebhooks";
 import { env } from "../env";
+import logger from "../lib/logger";
 import { getRedis } from "../lib/redis";
 import db from "../lib/db";
 import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
@@ -49,7 +50,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
       // verify returns the parsed payload when verification succeeds
       payload = await webhook.verify(raw, headers);
     } catch (e: unknown) {
-      console.error("Invalid webhook signature:", e);
+      logger.error("Invalid webhook signature:", e);
       return res.status(400).json({ error: "Invalid signature" });
     }
 
@@ -129,7 +130,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
     };
 
     const billingDetails = getBillingDetails(data);
-    console.log(
+    logger.info(
       "[Dodo Webhook] billingDetails:",
       JSON.stringify(billingDetails),
     );
@@ -198,9 +199,9 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 });
               }
             })
-            .catch((e) => console.error("Discord notify failed", e));
+            .catch((e) => logger.error("Discord notify failed", e));
 
-          console.log(
+          logger.info(
             JSON.stringify({
               evt: "subscription.active.persisted",
               userId,
@@ -210,7 +211,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
             }),
           );
         } else {
-          console.warn(
+          logger.warn(
             JSON.stringify({
               warn: "subscription.active.no_user_id",
               subscriptionId,
@@ -285,9 +286,9 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                 });
               }
             })
-            .catch((e) => console.error("Discord notify failed", e));
+            .catch((e) => logger.error("Discord notify failed", e));
 
-          console.log(
+          logger.info(
             JSON.stringify({
               evt: "subscription.renewed.persisted",
               userId,
@@ -298,7 +299,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
           );
           await attachCustomerId(userId, customerId);
         } else {
-          console.warn(
+          logger.warn(
             JSON.stringify({
               warn: "subscription.renewed.no_user_id",
               subscriptionId,
@@ -350,9 +351,9 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                   });
                 }
               })
-              .catch((e) => console.error("Discord notify failed", e));
+              .catch((e) => logger.error("Discord notify failed", e));
 
-            console.log(
+            logger.info(
               JSON.stringify({
                 evt: "subscription.plan_changed.persisted",
                 userId,
@@ -363,7 +364,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
             );
             await attachCustomerId(userId, customerId);
           } else {
-            console.warn(
+            logger.warn(
               JSON.stringify({
                 warn: "subscription.plan_changed.no_existing_subscription",
                 userId,
@@ -372,7 +373,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
             );
           }
         } else {
-          console.warn(
+          logger.warn(
             JSON.stringify({
               warn: "subscription.plan_changed.no_user_id",
               subscriptionId,
@@ -410,9 +411,9 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                   });
                 }
               })
-              .catch((e) => console.error("Discord notify failed", e));
+              .catch((e) => logger.error("Discord notify failed", e));
 
-            console.log(
+            logger.info(
               JSON.stringify({
                 evt: "subscription.on_hold.persisted",
                 userId,
@@ -454,9 +455,9 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                   });
                 }
               })
-              .catch((e) => console.error("Discord notify failed", e));
+              .catch((e) => logger.error("Discord notify failed", e));
 
-            console.log(
+            logger.info(
               JSON.stringify({
                 evt: "subscription.cancelled.persisted",
                 userId,
@@ -464,7 +465,7 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
               }),
             );
           } else {
-            console.log(
+            logger.info(
               JSON.stringify({
                 evt: "subscription.cancelled.skipped",
                 reason: "subscriptionId_mismatch",
@@ -505,9 +506,9 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
                   });
                 }
               })
-              .catch((e) => console.error("Discord notify failed", e));
+              .catch((e) => logger.error("Discord notify failed", e));
 
-            console.log(
+            logger.info(
               JSON.stringify({
                 evt: "subscription.failed.persisted",
                 userId,
@@ -520,13 +521,13 @@ export async function dodoWebhookHandler(req: Request, res: Response) {
       }
       default: {
         // Unknown/unsupported event: no-op
-        console.log(JSON.stringify({ evt: "webhook.unhandled", type }));
+        logger.info(JSON.stringify({ evt: "webhook.unhandled", type }));
         break;
       }
     }
     return res.status(200).json({ received: true });
   } catch (err) {
-    console.error("Webhook processing failed:", err);
+    logger.error("Webhook processing failed:", err);
     return res.status(200).json({ received: true, error: "handled_error" });
   }
 }

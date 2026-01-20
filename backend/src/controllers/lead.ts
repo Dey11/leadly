@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import {
   getLeadsQuerySchema,
@@ -85,7 +86,7 @@ export const getLeads = async (req: Request, res: Response) => {
       },
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch leads:", err);
     res.status(500).json({ error: "Failed to fetch leads" });
   }
 };
@@ -141,7 +142,7 @@ export const getLead = async (req: Request, res: Response) => {
       payload: { ...lead, status },
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch lead:", err);
     res.status(500).json({ error: "Failed to fetch lead" });
   }
 };
@@ -182,7 +183,7 @@ export const updateLead = async (req: Request, res: Response) => {
       payload: { id, status: payload.data.status },
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to update lead:", err);
     res.status(500).json({ error: "Failed to update lead" });
   }
 };
@@ -216,7 +217,7 @@ export const deleteLead = async (req: Request, res: Response) => {
       payload: {},
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to delete lead:", err);
     res.status(500).json({ error: "Failed to delete lead" });
   }
 };
@@ -289,7 +290,7 @@ export const getScrapeJobs = async (req: Request, res: Response) => {
       },
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch scrape jobs:", err);
     res.status(500).json({ error: "Failed to fetch scrape jobs" });
   }
 };
@@ -389,7 +390,7 @@ export const exportLeads = async (req: Request, res: Response) => {
     res.setHeader("Content-Disposition", "attachment; filename=leads.csv");
     res.send(csv);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to export leads:", err);
     res.status(500).json({ error: "Failed to export leads" });
   }
 };

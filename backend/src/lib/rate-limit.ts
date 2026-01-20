@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { env } from "../env";
 import { getRedis } from "./redis";
+import logger from "./logger";
 
 type RateLimitConfig = {
   windowMs: number;
@@ -138,7 +139,7 @@ export function rateLimit(action: keyof typeof rateLimitConfigs) {
 
       next();
     } catch (error) {
-      console.error("Rate limit error:", error);
+      logger.error("Rate limit error:", error);
       next();
     }
   };
@@ -241,7 +242,7 @@ export function userRateLimit(action: UserRateLimitAction) {
 
       next();
     } catch (error) {
-      console.error("User rate limit error:", error);
+      logger.error("User rate limit error:", error);
       next();
     }
   };

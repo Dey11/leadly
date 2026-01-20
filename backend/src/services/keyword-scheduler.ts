@@ -1,4 +1,5 @@
 import db from "../lib/db";
+import logger from "../lib/logger";
 import {
   processKeywordScrapeJob,
   processKeywordStuckJob,
@@ -30,13 +31,13 @@ async function pickupKeywordRetryJobs() {
     },
   });
 
-  console.log(
+  logger.info(
     `[Keyword Scheduler] Found ${jobsToRetry.length} jobs ready for retry`,
   );
 
   for (const job of jobsToRetry) {
     try {
-      console.log(
+      logger.info(
         `[Keyword Scheduler] Retrying job ${job.id} (attempt ${
           job.retryCount + 1
         }/${MAX_SCRAPE_RETRY_COUNT})`,
@@ -50,12 +51,9 @@ async function pickupKeywordRetryJobs() {
       // Process immediately (keyword matching is fast)
       await processKeywordScrapeJob(job.keywordMonitorId, job.id);
 
-      console.log(`[Keyword Scheduler] Retry completed for job ${job.id}`);
+      logger.info(`[Keyword Scheduler] Retry completed for job ${job.id}`);
     } catch (error) {
-      console.error(
-        `[Keyword Scheduler] Failed to retry job ${job.id}:`,
-        error,
-      );
+      logger.error(`[Keyword Scheduler] Failed to retry job ${job.id}:`, error);
     }
   }
 }
@@ -78,13 +76,13 @@ async function processStuckKeywordPendingJobs() {
     },
   });
 
-  console.log(
+  logger.info(
     `[Keyword Scheduler] Found ${stuckJobs.length} stuck PENDING jobs (>6 hours old)`,
   );
 
   for (const job of stuckJobs) {
     try {
-      console.log(
+      logger.info(
         JSON.stringify({
           evt: "keyword_scheduler.stuck_job_processing",
           jobId: job.id,
@@ -98,14 +96,14 @@ async function processStuckKeywordPendingJobs() {
 
       await processKeywordStuckJob(job.keywordMonitorId, job.id);
 
-      console.log(
+      logger.info(
         JSON.stringify({
           evt: "keyword_scheduler.stuck_job_completed",
           jobId: job.id,
         }),
       );
     } catch (error) {
-      console.error(
+      logger.error(
         JSON.stringify({
           evt: "keyword_scheduler.stuck_job_failed",
           jobId: job.id,
@@ -122,7 +120,7 @@ async function processStuckKeywordPendingJobs() {
  * Only processes monitors for users who have the current hour in their KeywordSchedule
  */
 export async function runKeywordScheduler() {
-  console.log("[Keyword Scheduler] Running...");
+  logger.info("[Keyword Scheduler] Running...");
 
   // Process stuck pending jobs first
   await processStuckKeywordPendingJobs();
@@ -131,7 +129,7 @@ export async function runKeywordScheduler() {
   await pickupKeywordRetryJobs();
 
   const currentHour = new Date().getUTCHours();
-  console.log(`[Keyword Scheduler] Current UTC hour: ${currentHour}`);
+  logger.info(`[Keyword Scheduler] Current UTC hour: ${currentHour}`);
 
   // Find all users who have the current hour in their keyword schedule
   const usersWithScheduledHour = await db.keywordSchedule.findMany({
@@ -163,7 +161,7 @@ export async function runKeywordScheduler() {
     },
   });
 
-  console.log(
+  logger.info(
     `[Keyword Scheduler] Found ${usersWithScheduledHour.length} users with current hour in keyword schedule`,
   );
 
@@ -177,7 +175,7 @@ export async function runKeywordScheduler() {
     const monitors = user.keywordMonitors;
 
     if (monitors.length === 0) {
-      console.log(
+      logger.info(
         `[Keyword Scheduler] User ${user.id} has no active keyword monitors`,
       );
       continue;
@@ -194,7 +192,7 @@ export async function runKeywordScheduler() {
     );
 
     if (!allowed) {
-      console.warn(
+      logger.warn(
         JSON.stringify({
           evt: "keyword_scheduler.blocked",
           userId: user.id,
@@ -207,7 +205,7 @@ export async function runKeywordScheduler() {
       continue;
     }
 
-    console.log(
+    logger.info(
       `[Keyword Scheduler] Processing ${monitors.length} monitors for user ${user.id}`,
     );
 
@@ -222,7 +220,7 @@ export async function runKeywordScheduler() {
         });
 
         if (existingJob) {
-          console.log(
+          logger.info(
             `[Keyword Scheduler] Skipping monitor ${monitor.id} - job already ${existingJob.status}`,
           );
           continue;
@@ -236,19 +234,21 @@ export async function runKeywordScheduler() {
           },
         });
 
-        console.log(`[Keyword Scheduler] Created job for monitor ${monitor.id}`);
+        logger.info(
+          `[Keyword Scheduler] Created job for monitor ${monitor.id}`,
+        );
 
         // Process immediately (keyword matching is fast, no need for queue)
         try {
           await processKeywordScrapeJob(monitor.id, scrapeJob.id);
         } catch (err) {
-          console.error(
+          logger.error(
             `[Keyword Scheduler] Failed to process monitor ${monitor.id}:`,
             err,
           );
         }
       } catch (err) {
-        console.error(
+        logger.error(
           `[Keyword Scheduler] Error scheduling monitor ${monitor.id}:`,
           err,
         );
@@ -256,6 +256,5 @@ export async function runKeywordScheduler() {
     }
   }
 
-  console.log("[Keyword Scheduler] Complete");
+  logger.info("[Keyword Scheduler] Complete");
 }
-

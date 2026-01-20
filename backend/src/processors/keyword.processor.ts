@@ -1,4 +1,5 @@
 import db from "../lib/db";
+import logger from "../lib/logger";
 import { Reddit } from "../services/reddit";
 import { env } from "../env";
 import {
@@ -50,14 +51,17 @@ async function executeKeywordCoreScrapeLogic(
     monitor.cursor,
   );
 
-  console.log(
+  logger.info(
     `[Keyword Processor] Fetched ${posts.length} posts from r/${target}`,
   );
 
   // Filter posts by keywords
-  const matchedPosts = filterPostsByKeywords(posts, monitor.keywordSet.keywords);
+  const matchedPosts = filterPostsByKeywords(
+    posts,
+    monitor.keywordSet.keywords,
+  );
 
-  console.log(
+  logger.info(
     `[Keyword Processor] ${matchedPosts.length}/${posts.length} posts matched keywords`,
   );
 
@@ -91,7 +95,7 @@ async function executeKeywordCoreScrapeLogic(
       createdCount++;
     } catch (err: any) {
       if (err.code === "P2002") {
-        console.log(`[Keyword Processor] Skipping duplicate URL: ${lead.url}`);
+        logger.info(`[Keyword Processor] Skipping duplicate URL: ${lead.url}`);
       } else {
         throw err;
       }
@@ -122,7 +126,7 @@ async function executeKeywordCoreScrapeLogic(
     });
   });
 
-  console.log(
+  logger.info(
     `[Keyword Processor] Job ${jobId} completed. Created ${createdCount} leads from ${matchedPosts.length} matches.`,
   );
 
@@ -140,7 +144,7 @@ async function handleKeywordJobFailure(
 
   if (!skipRetry && currentRetryCount < MAX_SCRAPE_RETRY_COUNT) {
     const nextRetryAt = new Date(Date.now() + SCRAPE_RETRY_DELAY_MS);
-    console.log(
+    logger.info(
       `[Keyword Processor] Scheduling retry for job ${jobId} at ${nextRetryAt.toISOString()}`,
     );
 
@@ -154,7 +158,7 @@ async function handleKeywordJobFailure(
       },
     });
   } else {
-    console.log(
+    logger.error(
       `[Keyword Processor] Job ${jobId} failed permanently after ${MAX_SCRAPE_RETRY_COUNT} retries: ${errorMessage}`,
     );
 
@@ -184,7 +188,7 @@ export async function processKeywordScrapeJob(
   keywordMonitorId: string,
   jobId: string,
 ) {
-  console.log(
+  logger.info(
     `[Keyword Processor] Starting job ${jobId} for monitor ${keywordMonitorId}`,
   );
 
@@ -193,7 +197,7 @@ export async function processKeywordScrapeJob(
   });
 
   if (!scrapeJob) {
-    console.log("[Keyword Processor] Scrape job not found:", jobId);
+    logger.warn("[Keyword Processor] Scrape job not found:", jobId);
     return;
   }
 
@@ -206,12 +210,15 @@ export async function processKeywordScrapeJob(
   });
 
   if (!monitor) {
-    console.log("[Keyword Processor] Monitor not found:", keywordMonitorId);
+    logger.warn("[Keyword Processor] Monitor not found:", keywordMonitorId);
     return;
   }
 
   if (!monitor.keywordSet) {
-    console.log("[Keyword Processor] Monitor has no KeywordSet:", keywordMonitorId);
+    console.log(
+      "[Keyword Processor] Monitor has no KeywordSet:",
+      keywordMonitorId,
+    );
     await db.keywordScrapeJob.update({
       where: { id: jobId },
       data: {
@@ -229,7 +236,7 @@ export async function processKeywordScrapeJob(
       monitor as KeywordMonitorWithSetAndUser,
     );
 
-    console.log(
+    logger.info(
       JSON.stringify({
         evt: "keyword_scrape.completed",
         jobId,
@@ -238,7 +245,7 @@ export async function processKeywordScrapeJob(
       }),
     );
   } catch (error) {
-    console.error("[Keyword Processor] Scrape failed:", error);
+    logger.error("[Keyword Processor] Scrape failed:", error);
 
     await handleKeywordJobFailure(
       jobId,
@@ -254,7 +261,7 @@ export async function processKeywordStuckJob(
   keywordMonitorId: string,
   jobId: string,
 ) {
-  console.log(
+  logger.info(
     `[Keyword Processor] Processing stuck job: ${jobId} for monitor: ${keywordMonitorId}`,
   );
 
@@ -264,7 +271,10 @@ export async function processKeywordStuckJob(
   });
 
   if (!monitor || !monitor.keywordSet) {
-    console.log("[Keyword Processor] Invalid monitor for stuck job:", keywordMonitorId);
+    console.log(
+      "[Keyword Processor] Invalid monitor for stuck job:",
+      keywordMonitorId,
+    );
     await db.keywordScrapeJob.update({
       where: { id: jobId },
       data: {
@@ -280,7 +290,7 @@ export async function processKeywordStuckJob(
   });
 
   if (!scrapeJob) {
-    console.log("[Keyword Processor] Stuck job not found:", jobId);
+    logger.warn("[Keyword Processor] Stuck job not found:", jobId);
     return;
   }
 
@@ -291,7 +301,7 @@ export async function processKeywordStuckJob(
       monitor as KeywordMonitorWithSetAndUser,
     );
 
-    console.log(
+    logger.info(
       JSON.stringify({
         evt: "keyword_stuck_scrape.completed",
         jobId,
@@ -300,7 +310,7 @@ export async function processKeywordStuckJob(
       }),
     );
   } catch (error) {
-    console.error("[Keyword Processor] Stuck job processing failed:", error);
+    logger.error("[Keyword Processor] Stuck job processing failed:", error);
 
     await handleKeywordJobFailure(
       jobId,

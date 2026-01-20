@@ -2,5 +2,7 @@ backend/dist
 backend/node_modules
 backend/*.env
 backend/output.log
+backend/logs/
+backend/*.log
 .pnpm-store
 script

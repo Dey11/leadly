@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import {
   createKeywordMonitorSchema,
@@ -76,7 +77,7 @@ export async function createKeywordMonitor(req: Request, res: Response) {
 
     res.status(201).json(monitor);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to create keyword monitor:", err);
     res.status(500).json({ error: "Failed to create keyword monitor" });
   }
 }
@@ -96,7 +97,7 @@ export async function getKeywordMonitors(req: Request, res: Response) {
 
     res.json(monitors);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch keyword monitors:", err);
     res.status(500).json({ error: "Failed to fetch keyword monitors" });
   }
 }
@@ -128,7 +129,7 @@ export async function getKeywordMonitor(req: Request, res: Response) {
 
     res.json(monitor);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch keyword monitor:", err);
     res.status(500).json({ error: "Failed to fetch keyword monitor" });
   }
 }
@@ -180,7 +181,7 @@ export async function updateKeywordMonitor(req: Request, res: Response) {
 
     res.json(monitor);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to update keyword monitor:", err);
     res.status(500).json({ error: "Failed to update keyword monitor" });
   }
 }
@@ -205,7 +206,7 @@ export async function deleteKeywordMonitor(req: Request, res: Response) {
 
     res.json({ message: "Monitor deleted successfully" });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to delete keyword monitor:", err);
     res.status(500).json({ error: "Failed to delete keyword monitor" });
   }
 }

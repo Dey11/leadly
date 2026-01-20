@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import {
   createKeywordSetSchema,
@@ -65,7 +66,8 @@ export async function createKeywordSet(req: Request, res: Response) {
     // Ensure at least one valid keyword remains after normalization
     if (normalizedKeywords.length === 0) {
       return res.status(400).json({
-        error: "At least one valid keyword is required (non-empty, non-whitespace).",
+        error:
+          "At least one valid keyword is required (non-empty, non-whitespace).",
       });
     }
 
@@ -79,7 +81,7 @@ export async function createKeywordSet(req: Request, res: Response) {
 
     res.status(201).json(keywordSet);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to create KeywordSet:", err);
     res.status(500).json({ error: "Failed to create KeywordSet" });
   }
 }
@@ -102,7 +104,7 @@ export async function getKeywordSets(req: Request, res: Response) {
 
     res.json(keywordSets);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch KeywordSets:", err);
     res.status(500).json({ error: "Failed to fetch KeywordSets" });
   }
 }
@@ -136,7 +138,7 @@ export async function getKeywordSet(req: Request, res: Response) {
 
     res.json(keywordSet);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch KeywordSet:", err);
     res.status(500).json({ error: "Failed to fetch KeywordSet" });
   }
 }
@@ -193,14 +195,15 @@ export async function updateKeywordSet(req: Request, res: Response) {
     }
     if (payload.data.keywords) {
       const normalizedKeywords = normalizeKeywords(payload.data.keywords);
-      
+
       // Ensure at least one valid keyword remains after normalization
       if (normalizedKeywords.length === 0) {
         return res.status(400).json({
-          error: "At least one valid keyword is required (non-empty, non-whitespace).",
+          error:
+            "At least one valid keyword is required (non-empty, non-whitespace).",
         });
       }
-      
+
       updateData.keywords = normalizedKeywords;
     }
 

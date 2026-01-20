@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import {
   createMonitorSchema,
@@ -73,7 +74,7 @@ export const createMonitor = async (req: Request, res: Response) => {
 
     res.status(201).json(monitor);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to create monitor:", err);
     res.status(500).json({ error: "Failed to create monitor" });
   }
 };

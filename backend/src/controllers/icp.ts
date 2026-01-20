@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import {
   createIcpSchema,
@@ -46,7 +47,7 @@ export const createIcp = async (req: Request, res: Response) => {
 
     res.status(201).json(icp);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to create ICP:", err);
     res.status(500).json({ error: "Failed to create ICP" });
   }
 };
@@ -68,7 +69,7 @@ export const getIcps = async (req: Request, res: Response) => {
 
     res.json(icps);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch ICPs:", err);
     res.status(500).json({ error: "Failed to fetch ICPs" });
   }
 };
@@ -101,7 +102,7 @@ export const getIcp = async (req: Request, res: Response) => {
 
     res.json(icp);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch ICP:", err);
     res.status(500).json({ error: "Failed to fetch ICP" });
   }
 };
@@ -135,6 +136,7 @@ export const updateIcp = async (req: Request, res: Response) => {
 
     res.json(updatedIcp);
   } catch (err) {
+    logger.error("Failed to update ICP:", err);
     res.status(500).json({ error: "Failed to update ICP" });
   }
 };
@@ -158,6 +160,7 @@ export const deleteIcp = async (req: Request, res: Response) => {
 
     res.json({ success: true });
   } catch (err) {
+    logger.error("Failed to delete ICP:", err);
     res.status(500).json({ error: "Failed to delete ICP" });
   }
 };

@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import { patchAccountSchema } from "../types/account";
 import { previewUsage } from "../lib/usage";
@@ -192,7 +193,7 @@ export async function getUsageSummary(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error(error);
+    logger.error("Failed to get usage summary:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }

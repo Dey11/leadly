@@ -244,7 +244,7 @@ export async function subscribe(req: Request, res: Response) {
 
     return res.status(200).json({ url: session.checkout_url });
   } catch (error) {
-    console.error(error);
+    logger.error("[BILLING] Subscribe failed:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -255,7 +255,7 @@ export async function cancelSubscription(req: Request, res: Response) {
     const url = await createCustomerPortalUrl(userId);
     return res.status(200).json({ url: `${url}?focus=cancel` });
   } catch (err) {
-    console.error("Failed to create cancel link:", err);
+    logger.error("Failed to create cancel link:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -266,7 +266,7 @@ export async function manageSubscription(req: Request, res: Response) {
     const url = await createCustomerPortalUrl(userId);
     return res.status(200).json({ url });
   } catch (err) {
-    console.error("Failed to create manage link:", err);
+    logger.error("Failed to create manage link:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -365,7 +365,7 @@ export async function previewPlanChange(req: Request, res: Response) {
       });
     }
   } catch (error) {
-    console.error("Preview plan change failed:", error);
+    logger.error("Preview plan change failed:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }

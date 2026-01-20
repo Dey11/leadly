@@ -1,4 +1,5 @@
 import { chromium, Browser, Page } from "playwright";
+import logger from "../lib/logger";
 import type { nitterTweet, nitterScrapeInput } from "../types/nitter";
 import { env } from "../env";
 
@@ -41,7 +42,7 @@ export async function scrapeNitter(
         timeout: 15000,
       });
     } catch (waitError) {
-      console.error("Error waiting for selector:", waitError);
+      logger.error("Error waiting for selector:", waitError);
     }
     const noResults = await page.$(".no-results");
     if (noResults) {
@@ -75,7 +76,7 @@ export async function scrapeNitter(
     });
     return tweets;
   } catch (error) {
-    console.error("Error scraping Nitter:", error);
+    logger.error("Error scraping Nitter:", error);
     if (
       error instanceof Error &&
       error.message.includes("net::ERR_CONNECTION_REFUSED")

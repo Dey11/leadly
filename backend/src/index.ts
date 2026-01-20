@@ -1,5 +1,6 @@
 import cors from "cors";
 import { env } from "./env";
+import logger from "./lib/logger";
 import express from "express";
 import cookieParser from "cookie-parser";
 import { authRouter } from "./routes/auth";
@@ -20,12 +21,14 @@ import keywordScheduleRouter from "./routes/keyword-schedule";
 import keywordStatsRouter from "./routes/keyword-stats";
 import keywordMonitorRouter from "./routes/keyword-monitor";
 import keywordLeadRouter from "./routes/keyword-lead";
+import { requestLogger } from "./middleware/request-logger";
 
 const PORT = env.PORT;
 
 const app = express();
 app.set("trust proxy", 1);
 
+app.use(requestLogger);
 app.use(
   cors({
     origin: env.FRONTEND_URL,
@@ -87,25 +90,25 @@ const keywordScheduler = cron.schedule(
 );
 
 const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log("Lead Gen Scheduler started (hourly at xx:00).");
-  console.log("Keyword Scheduler started (hourly at xx:30).");
+  logger.info(`Server is running on port ${PORT}`);
+  logger.info("Lead Gen Scheduler started (hourly at xx:00).");
+  logger.info("Keyword Scheduler started (hourly at xx:30).");
 });
 
 const stopServer = () => {
   leadGenScheduler.stop();
   server.close(() => {
-    console.log("Server closed.");
+    logger.info("Server closed.");
     process.exit(0);
   });
 };
 
 process.on("SIGINT", () => {
-  console.log("SIGINT received, stopping scheduler...");
+  logger.info("SIGINT received, stopping scheduler...");
   stopServer();
 });
 
 process.on("SIGTERM", () => {
-  console.log("SIGTERM received, stopping scheduler...");
+  logger.info("SIGTERM received, stopping scheduler...");
   stopServer();
 });

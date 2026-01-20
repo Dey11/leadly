@@ -1,4 +1,5 @@
 import axios from "axios";
+import logger from "../lib/logger";
 import { env } from "../env";
 import { cleanText, delay, fetchWithRetry } from "../lib/utils";
 import { RedditComment, RedditPost } from "../types/reddit";
@@ -129,9 +130,9 @@ export class Reddit {
         }
       } catch (err) {
         // Log error but continue to save the post
-        console.error(
+        logger.warn(
           `Warning: Failed to fetch comments for ${post.id} (saving post without comments):`,
-          err instanceof Error ? err.message : String(err)
+          err instanceof Error ? err.message : String(err),
         );
       }
 
@@ -150,4 +151,3 @@ export class Reddit {
     return results;
   }
 }
-

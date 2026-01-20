@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../lib/logger";
 import db from "../lib/db";
 import { updateScheduleSchema } from "../types/schedule";
 import { DEFAULT_HOURS_MAP, TIER_LIMITS } from "../lib/constants";
@@ -15,7 +16,7 @@ export const getSchedule = async (req: Request, res: Response) => {
 
     res.json(schedule);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch schedule:", err);
     res.status(500).json({ error: "Failed to fetch schedule" });
   }
 };
@@ -77,7 +78,7 @@ export const updateSchedule = async (req: Request, res: Response) => {
 
     res.json(schedule);
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to update schedule:", err);
     res.status(500).json({ error: "Failed to update schedule" });
   }
 };
@@ -109,7 +110,7 @@ export const getTierLimits = async (req: Request, res: Response) => {
       }),
     });
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to fetch tier limits:", err);
     res.status(500).json({ error: "Failed to fetch tier limits" });
   }
 };
