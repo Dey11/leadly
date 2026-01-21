@@ -60,6 +60,13 @@ export async function createKeywordSet(req: Request, res: Response) {
       });
     }
 
+    // Check fuzzy match restriction
+    if (payload.data.isFuzzyMatch && tier === "FREE") {
+      return res.status(403).json({
+        error: "Fuzzy matching is available only on Pro and Premium plans.",
+      });
+    }
+
     // Normalize and deduplicate keywords
     const normalizedKeywords = normalizeKeywords(payload.data.keywords);
 
@@ -76,6 +83,7 @@ export async function createKeywordSet(req: Request, res: Response) {
         name: payload.data.name,
         keywords: normalizedKeywords,
         userId: req.userId!,
+        isFuzzyMatch: payload.data.isFuzzyMatch ?? false,
       },
     });
 
@@ -188,8 +196,22 @@ export async function updateKeywordSet(req: Request, res: Response) {
       }
     }
 
+    // Check fuzzy match restriction if updating it
+    if (payload.data.isFuzzyMatch === true) {
+      const user = keywordSet.user;
+      if (!user.subscription || user.subscription.tier === "FREE") {
+        return res.status(403).json({
+          error: "Fuzzy matching is available only on Pro and Premium plans.",
+        });
+      }
+    }
+
     // Normalize keywords if provided
-    const updateData: { name?: string; keywords?: string[] } = {};
+    const updateData: {
+      name?: string;
+      keywords?: string[];
+      isFuzzyMatch?: boolean;
+    } = {};
     if (payload.data.name) {
       updateData.name = payload.data.name;
     }
@@ -205,6 +227,9 @@ export async function updateKeywordSet(req: Request, res: Response) {
       }
 
       updateData.keywords = normalizedKeywords;
+    }
+    if (payload.data.isFuzzyMatch !== undefined) {
+      updateData.isFuzzyMatch = payload.data.isFuzzyMatch;
     }
 
     const updatedKeywordSet = await db.keywordSet.update({

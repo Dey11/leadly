@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, Plus, X, HelpCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,14 +16,23 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { clientApi } from "@/lib/client/api";
 import type { KeywordSet } from "@/types/keyword";
+import { type BillingTier } from "@/constants/pricing";
 
 interface EditKeywordSetDialogProps {
   keywordSet: KeywordSet;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  tier?: BillingTier;
 }
 
 export function EditKeywordSetDialog({
@@ -31,24 +40,36 @@ export function EditKeywordSetDialog({
   open,
   onOpenChange,
   onSuccess,
+  tier = "FREE",
 }: EditKeywordSetDialogProps) {
   const [name, setName] = useState(keywordSet.name);
   const [keywordInput, setKeywordInput] = useState("");
   const [keywords, setKeywords] = useState<string[]>(keywordSet.keywords);
+  // Default to true (Strict) if isFuzzyMatch is undefined/false
+  const [isStrict, setIsStrict] = useState(!keywordSet.isFuzzyMatch);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       setName(keywordSet.name);
       setKeywords(keywordSet.keywords);
+      // Force strict state if on FREE tier, regardless of stored setting
+      if (tier === "FREE") {
+        setIsStrict(true);
+      } else {
+        setIsStrict(!keywordSet.isFuzzyMatch);
+      }
       setKeywordInput("");
       setError(null);
     }
-  }, [open, keywordSet]);
+  }, [open, keywordSet, tier]);
 
   const updateMutation = useMutation({
-    mutationFn: (data: { name?: string; keywords?: string[] }) =>
-      clientApi.updateKeywordSet(keywordSet.id, data),
+    mutationFn: (data: {
+      name?: string;
+      keywords?: string[];
+      isFuzzyMatch?: boolean;
+    }) => clientApi.updateKeywordSet(keywordSet.id, data),
     onSuccess: () => {
       onSuccess();
     },
@@ -107,12 +128,22 @@ export function EditKeywordSetDialog({
       return;
     }
 
-    const updates: { name?: string; keywords?: string[] } = {};
+    const updates: {
+      name?: string;
+      keywords?: string[];
+      isFuzzyMatch?: boolean;
+    } = {};
+
     if (name.trim() !== keywordSet.name) {
       updates.name = name.trim();
     }
     if (JSON.stringify(keywords) !== JSON.stringify(keywordSet.keywords)) {
       updates.keywords = keywords;
+    }
+    // Check if strict mode changed
+    const currentIsFuzzy = !isStrict;
+    if (currentIsFuzzy !== keywordSet.isFuzzyMatch) {
+      updates.isFuzzyMatch = currentIsFuzzy;
     }
 
     if (Object.keys(updates).length === 0) {
@@ -142,6 +173,43 @@ export function EditKeywordSetDialog({
                 placeholder="e.g., SaaS Pain Points"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between space-x-2 rounded-lg border p-3 shadow-sm">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="edit-strict-mode" className="text-base">
+                    Strict Checking
+                  </Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="text-muted-foreground h-4 w-4 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[280px]">
+                        <p>
+                          Enable to require exact phrase matches. Disable to match
+                          posts containing at least 50% of your keyword phrase
+                          words.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  {tier === "FREE"
+                    ? "Available on Pro and Premium plans."
+                    : isStrict
+                      ? "Matching exact phrases only."
+                      : "Matching fuzzy phrases (50% word overlap)."}
+                </p>
+              </div>
+              <Switch
+                id="edit-strict-mode"
+                checked={tier === "FREE" ? true : isStrict}
+                onCheckedChange={setIsStrict}
+                disabled={tier === "FREE"}
               />
             </div>
 

@@ -13,6 +13,7 @@ export interface KeywordSet {
   userId: string;
   name: string;
   keywords: string[];
+  isFuzzyMatch: boolean;
   createdAt: string;
   updatedAt: string;
   keywordMonitors?: KeywordMonitorSummary[];

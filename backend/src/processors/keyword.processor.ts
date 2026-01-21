@@ -56,9 +56,11 @@ async function executeKeywordCoreScrapeLogic(
   );
 
   // Filter posts by keywords
+  const strict = !monitor.keywordSet.isFuzzyMatch;
   const matchedPosts = filterPostsByKeywords(
     posts,
     monitor.keywordSet.keywords,
+    strict,
   );
 
   logger.info(
@@ -68,7 +70,7 @@ async function executeKeywordCoreScrapeLogic(
   // Create leads for matched posts
   const leads = matchedPosts.map((post) => {
     const keywords = monitor.keywordSet.keywords;
-    const matchSnippet = getMatchingSnippet(post, keywords);
+    const matchSnippet = getMatchingSnippet(post, keywords, strict);
 
     // Construct content: Title + (Context if applicable)
     let content = post.title;
@@ -82,7 +84,7 @@ async function executeKeywordCoreScrapeLogic(
       content, // Now contains Title + Context
       url: post.urlToPost,
       author: post.posterId || null,
-      matchedKeywords: getMatchedKeywords(post, keywords),
+      matchedKeywords: getMatchedKeywords(post, keywords, strict),
       status: "NEW" as const,
     };
   });

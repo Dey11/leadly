@@ -29,14 +29,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getKeywordStats, getKeywordSchedule } from "@/lib/backend-queries";
-import { formatRelative } from "@/lib/format";
+import { getKeywordStats, getKeywordSchedule, getAccountSessions } from "@/lib/backend-queries";
+import { formatDateTime, formatRelative } from "@/lib/format";
 import { numberFormatter, JOB_STATUS_STYLES } from "@/constants/dashboard";
 
 export async function KeywordOverviewContent() {
-  const [stats, schedule] = await Promise.all([
+  const [stats, schedule, sessions] = await Promise.all([
     getKeywordStats(),
     getKeywordSchedule(),
+    getAccountSessions(),
   ]);
 
   const keywordSetsCount = stats?.keywordSetsCount ?? 0;
@@ -256,8 +257,59 @@ export async function KeywordOverviewContent() {
           </CardContent>
         </Card>
 
-        <DashboardScheduleCard schedule={schedule} productMode="keyword" />
+        <div className="flex flex-col gap-6">
+          <DashboardScheduleCard schedule={schedule} productMode="keyword" />
+        </div>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,2.1fr)_minmax(0,1fr)]">
+        <Card className="border-border/60 bg-card/95 rounded-3xl border shadow-sm">
+          <CardHeader className="border-border/50 border-b pb-6">
+            <CardTitle>Recent matches</CardTitle>
+            <CardDescription>
+              Highlights from the latest keyword matches.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="border-border/60 bg-background/80 text-muted-foreground rounded-2xl border p-6 text-center text-sm">
+              Recent matches will appear here. (Coming soon)
+            </div>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/dashboard/keyword-leads">Open keyword matches</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/60 bg-card/95 rounded-3xl border shadow-sm">
+          <CardHeader>
+            <CardTitle>Active sessions</CardTitle>
+            <CardDescription>Devices currently authenticated.</CardDescription>
+          </CardHeader>
+          <CardContent className="text-muted-foreground space-y-3 text-sm">
+            {sessions.length === 0 ? (
+              <p>No other sessions detected.</p>
+            ) : (
+              sessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="border-border/60 bg-background/85 rounded-2xl border px-4 py-3"
+                >
+                  <p className="text-foreground font-medium">
+                    {session.userAgent ?? "Session"}
+                  </p>
+                  <p className="text-xs">
+                    Expires {formatDateTime(session.expiresAt)}
+                  </p>
+                </div>
+              ))
+            )}
+            <Button asChild size="sm" variant="outline" className="w-full">
+              <Link href="/dashboard/account">Manage sessions</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </section>
     </div>
   );
 }
+

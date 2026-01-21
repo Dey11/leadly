@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -24,52 +23,49 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { clientApi } from "@/lib/client/api";
-import type { KeywordSet } from "@/types/keyword";
+import type { KeywordMonitor, KeywordSet } from "@/types/keyword";
 
-interface CreateKeywordMonitorDialogProps {
+interface EditKeywordMonitorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  monitor: KeywordMonitor;
   keywordSets: KeywordSet[];
   onSuccess: () => void;
-  currentMonitorsCount?: number;
-  maxMonitors?: number;
 }
 
-export function CreateKeywordMonitorDialog({
+export function EditKeywordMonitorDialog({
   open,
   onOpenChange,
+  monitor,
   keywordSets,
   onSuccess,
-  currentMonitorsCount = 0,
-  maxMonitors = 3,
-}: CreateKeywordMonitorDialogProps) {
-  const [keywordSetId, setKeywordSetId] = useState("");
-  const [target, setTarget] = useState("");
+}: EditKeywordMonitorDialogProps) {
+  const [keywordSetId, setKeywordSetId] = useState(monitor.keywordSetId);
+  const [target, setTarget] = useState(monitor.target);
   const [error, setError] = useState<string | null>(null);
 
-  const createMutation = useMutation({
-    mutationFn: (data: {
-      keywordSetId: string;
-      target: string;
-      platform: string;
-    }) => clientApi.createKeywordMonitor(data),
+  // Reset form when monitor changes
+  useEffect(() => {
+    setKeywordSetId(monitor.keywordSetId);
+    setTarget(monitor.target);
+    setError(null);
+  }, [monitor]);
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { keywordSetId?: string; target?: string }) =>
+      clientApi.updateKeywordMonitor(monitor.id, data),
     onSuccess: () => {
-      resetForm();
       onSuccess();
     },
     onError: (err: unknown) => {
-      setError(err instanceof Error ? err.message : "Failed to create monitor");
+      setError(err instanceof Error ? err.message : "Failed to update monitor");
     },
   });
 
-  const resetForm = () => {
-    setKeywordSetId("");
-    setTarget("");
-    setError(null);
-  };
-
   const handleClose = (next: boolean) => {
-    if (!next) resetForm();
+    if (!next) {
+      setError(null);
+    }
     onOpenChange(next);
   };
 
@@ -93,48 +89,39 @@ export function CreateKeywordMonitorDialog({
       formattedTarget = `r/${formattedTarget}`;
     }
 
-    createMutation.mutate({
-      keywordSetId,
-      target: formattedTarget,
-      platform: "REDDIT",
-    });
-  };
+    // Only include changed fields
+    const updates: { keywordSetId?: string; target?: string } = {};
+    if (keywordSetId !== monitor.keywordSetId) {
+      updates.keywordSetId = keywordSetId;
+    }
+    if (formattedTarget !== monitor.target) {
+      updates.target = formattedTarget;
+    }
 
-  const atLimit = currentMonitorsCount >= maxMonitors;
+    if (Object.keys(updates).length === 0) {
+      // No changes
+      handleClose(false);
+      return;
+    }
+
+    updateMutation.mutate(updates);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Add Keyword Monitor</DialogTitle>
+            <DialogTitle>Edit Keyword Monitor</DialogTitle>
             <DialogDescription>
-              Choose a keyword set and specify a subreddit to monitor for
-              matches.
+              Update the keyword set or target subreddit for this monitor.
             </DialogDescription>
           </DialogHeader>
-
-          {/* Quota indicator */}
-          <div className="mt-3 flex items-center gap-2 text-xs">
-            <Badge variant={atLimit ? "destructive" : "outline"}>
-              {currentMonitorsCount}/{maxMonitors} monitors used
-            </Badge>
-            {atLimit && (
-              <span className="text-destructive flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                Upgrade to create more
-              </span>
-            )}
-          </div>
 
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="keyword-set">Keyword Set</Label>
-              <Select 
-                value={keywordSetId} 
-                onValueChange={setKeywordSetId}
-                disabled={atLimit}
-              >
+              <Select value={keywordSetId} onValueChange={setKeywordSetId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a keyword set" />
                 </SelectTrigger>
@@ -156,7 +143,6 @@ export function CreateKeywordMonitorDialog({
                 value={target}
                 onChange={(e) => setTarget(e.target.value)}
                 maxLength={50}
-                disabled={atLimit}
               />
               <p className="text-muted-foreground text-xs">
                 Enter the subreddit name (with or without r/ prefix)
@@ -174,11 +160,11 @@ export function CreateKeywordMonitorDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending || atLimit}>
-              {createMutation.isPending && (
+            <Button type="submit" disabled={updateMutation.isPending}>
+              {updateMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Create Monitor
+              Save Changes
             </Button>
           </DialogFooter>
         </form>
@@ -186,4 +172,3 @@ export function CreateKeywordMonitorDialog({
     </Dialog>
   );
 }
-

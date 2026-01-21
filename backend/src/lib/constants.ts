@@ -39,6 +39,8 @@ export const TIER_LIMITS: Record<
     keywordMonitors: number;
     maxKeywordSets: number;
     maxKeywordsPerSet: number;
+    keywordScrapesPerDay: number;
+    keywordMonthlyScrapeLimit: number;
   }
 > = {
   FREE: {
@@ -47,9 +49,11 @@ export const TIER_LIMITS: Record<
     selectableHours: 1,
     monthlyScrapeLimit: 30,
     maxIcps: 25,
-    keywordMonitors: 3,
-    maxKeywordSets: 5,
-    maxKeywordsPerSet: 10,
+    keywordMonitors: 1,
+    maxKeywordSets: 1,
+    maxKeywordsPerSet: 6,
+    keywordScrapesPerDay: 1,
+    keywordMonthlyScrapeLimit: 30,
   },
   PRO: {
     monitors: 10,
@@ -57,9 +61,11 @@ export const TIER_LIMITS: Record<
     selectableHours: 6,
     monthlyScrapeLimit: 180,
     maxIcps: 50,
-    keywordMonitors: 10,
-    maxKeywordSets: 15,
-    maxKeywordsPerSet: 25,
+    keywordMonitors: 3,
+    maxKeywordSets: 3,
+    maxKeywordsPerSet: 15,
+    keywordScrapesPerDay: 6,
+    keywordMonthlyScrapeLimit: 180,
   },
   PREMIUM: {
     monitors: 20,
@@ -67,9 +73,11 @@ export const TIER_LIMITS: Record<
     selectableHours: 24,
     monthlyScrapeLimit: 720,
     maxIcps: 100,
-    keywordMonitors: 20,
-    maxKeywordSets: 30,
-    maxKeywordsPerSet: 50,
+    keywordMonitors: 10,
+    maxKeywordSets: 10,
+    maxKeywordsPerSet: 30,
+    keywordScrapesPerDay: 24,
+    keywordMonthlyScrapeLimit: 720,
   },
 } as const;
 

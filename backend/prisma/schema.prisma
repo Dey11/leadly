@@ -245,6 +245,9 @@ model KeywordSet {
   name     String
   keywords String[]
 
+  // If true, we match if >= 50% of words are present
+  isFuzzyMatch Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Radar, Trash2, Pause, Play } from "lucide-react";
+import { Plus, Radar, Trash2, Pause, Play, Pencil } from "lucide-react";
 
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +20,14 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { clientApi } from "@/lib/client/api";
 import { formatRelative } from "@/lib/format";
 import { CreateKeywordMonitorDialog } from "./create-keyword-monitor-dialog";
+import { EditKeywordMonitorDialog } from "./edit-keyword-monitor-dialog";
 import type { KeywordMonitor, KeywordSet } from "@/types/keyword";
+import { BILLING_PLANS, type BillingTier } from "@/constants/pricing";
 
 export function KeywordMonitorsContent() {
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editingMonitor, setEditingMonitor] = useState<KeywordMonitor | null>(null);
   const [deletingMonitor, setDeletingMonitor] = useState<KeywordMonitor | null>(
     null,
   );
@@ -40,6 +43,15 @@ export function KeywordMonitorsContent() {
     queryKey: ["keyword-sets"],
     queryFn: () => clientApi.listKeywordSets(),
   });
+
+  const usageQuery = useQuery({
+    queryKey: ["usage-summary"],
+    queryFn: () => clientApi.getUsageSummary(),
+  });
+
+  // Get limits from BILLING_PLANS based on user tier
+  const tier = (usageQuery.data?.payload?.tier ?? "FREE") as BillingTier;
+  const planLimits = BILLING_PLANS[tier];
 
   const updateMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
@@ -87,13 +99,18 @@ export function KeywordMonitorsContent() {
         title="Keyword Monitors"
         description="Track specific subreddits for your keywords. Each monitor watches a target and reports matches."
         action={
-          <Button
-            onClick={() => setCreateDialogOpen(true)}
-            className="shadow-primary/20 shadow-lg"
-            disabled={keywordSets.length === 0}
-          >
-            <Plus className="mr-2 h-4 w-4" /> Add Monitor
-          </Button>
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="text-xs">
+              {monitors.length}/{planLimits.keywordMonitors} monitors
+            </Badge>
+            <Button
+              onClick={() => setCreateDialogOpen(true)}
+              className="shadow-primary/20 shadow-lg"
+              disabled={keywordSets.length === 0 || monitors.length >= planLimits.keywordMonitors}
+            >
+              <Plus className="mr-2 h-4 w-4" /> Add Monitor
+            </Button>
+          </div>
         }
       />
 
@@ -203,6 +220,13 @@ export function KeywordMonitorsContent() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => setEditingMonitor(monitor)}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => toggleStatus(monitor)}
                     disabled={updateMutation.isPending}
                   >
@@ -235,12 +259,28 @@ export function KeywordMonitorsContent() {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         keywordSets={keywordSets}
+        currentMonitorsCount={monitors.length}
+        maxMonitors={planLimits.keywordMonitors}
         onSuccess={() => {
           setCreateDialogOpen(false);
           setFeedback("Monitor created successfully.");
           queryClient.invalidateQueries({ queryKey: ["keyword-monitors"] });
         }}
       />
+
+      {editingMonitor && (
+        <EditKeywordMonitorDialog
+          open={!!editingMonitor}
+          onOpenChange={(open) => !open && setEditingMonitor(null)}
+          monitor={editingMonitor}
+          keywordSets={keywordSets}
+          onSuccess={() => {
+            setEditingMonitor(null);
+            setFeedback("Monitor updated successfully.");
+            queryClient.invalidateQueries({ queryKey: ["keyword-monitors"] });
+          }}
+        />
+      )}
 
       <ConfirmDialog
         open={!!deletingMonitor}
@@ -261,3 +301,4 @@ export function KeywordMonitorsContent() {
     </div>
   );
 }
+

@@ -205,12 +205,23 @@ export function KeywordLeadsView({ monitors, tier }: KeywordLeadsViewProps) {
               <SearchX className="text-muted-foreground/50 h-8 w-8" />
             </div>
             <h3 className="mb-2 text-xl font-semibold">No matches found</h3>
-            <p className="text-muted-foreground max-w-sm text-center">
-              We couldn't find any keyword matches matching your current filters.
+            <p className="text-muted-foreground max-w-md text-center">
               {filters.status || filters.search
-                ? " Try adjusting your filters."
-                : " Waiting for the next scrape cycle."}
+                ? "No matches found with your current filters. Try adjusting your search or status filter."
+                : monitors.length === 0
+                  ? "Set up keyword monitors to start finding matches. Create a keyword set first, then add monitors for the subreddits you want to track."
+                  : "Matches will appear here once your monitors detect posts containing your keywords. This typically happens within 24 hours."}
             </p>
+            {monitors.length === 0 && !filters.status && !filters.search && (
+              <div className="mt-5 flex gap-3">
+                <Button asChild variant="outline">
+                  <a href="/dashboard/keyword-sets">Create Keyword Set</a>
+                </Button>
+                <Button asChild>
+                  <a href="/dashboard/keyword-monitors">Add Monitor</a>
+                </Button>
+              </div>
+            )}
           </Card>
         ) : (
           <KeywordLeadsTable

@@ -146,7 +146,7 @@ export async function BillingContent() {
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-x-4 gap-y-1.5 pt-1">
-                        {plan.features.slice(0, 3).map((feature, i) => (
+                        {plan.features.slice(0, 6).map((feature, i) => (
                           <div
                             key={i}
                             className="text-muted-foreground/80 flex items-center gap-1 text-[11px]"
