@@ -1,7 +1,7 @@
 import { KeywordMonitorsContent } from "@/components/keywords/keyword-monitors-content";
 
 export const metadata = {
-  title: "Keyword Monitors | Leadly",
+  title: "Keyword Monitors",
   description: "Manage your keyword monitors",
 };
 

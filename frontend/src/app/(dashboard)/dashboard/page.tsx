@@ -7,7 +7,7 @@ import { OverviewSwitcher } from "@/components/dashboard/overview/overview-switc
 import { siteConfig } from "@/config/site";
 
 export const metadata = {
-  title: `Dashboard · ${siteConfig.name}`,
+  title: "Dashboard",
 };
 
 export default function DashboardHome() {

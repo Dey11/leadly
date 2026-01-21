@@ -5,7 +5,7 @@ import { AccountContent } from "@/components/account/account-content";
 import { siteConfig } from "@/config/site";
 
 export const metadata = {
-  title: `Account · ${siteConfig.name}`,
+  title: "Account",
 };
 
 export default function AccountPage() {

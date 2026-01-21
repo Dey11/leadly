@@ -5,7 +5,7 @@ import { IcpsContent } from "@/components/icps/icps-content";
 import { siteConfig } from "@/config/site";
 
 export const metadata = {
-  title: `ICPs · ${siteConfig.name}`,
+  title: "ICPs",
 };
 
 export default function IcpsPage() {

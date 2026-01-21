@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SearchX } from "lucide-react";
+import { toast } from "sonner";
 
 import { clientApi } from "@/lib/client/api";
 import type { LeadStatus } from "@/types/backend";
@@ -39,6 +40,9 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
     label: string;
   } | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  // Track previous total for new leads detection
+  const prevTotalRef = useRef<number | null>(null);
 
   const leadsQueryKey = useMemo(
     () => [
@@ -85,6 +89,23 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
     },
     refetchInterval: DATA_REFRESH_INTERVAL,
   });
+
+  // Show toast when new leads are detected
+  useEffect(() => {
+    const currentTotal = leadsQuery.data?.pagination?.total;
+    if (currentTotal !== undefined && prevTotalRef.current !== null) {
+      const newLeads = currentTotal - prevTotalRef.current;
+      if (newLeads > 0 && filters.page === 1) {
+        toast.success(
+          newLeads === 1 ? "1 new lead found" : `${newLeads} new leads found`,
+          { duration: 3000 },
+        );
+      }
+    }
+    if (currentTotal !== undefined) {
+      prevTotalRef.current = currentTotal;
+    }
+  }, [leadsQuery.data?.pagination?.total, filters.page]);
 
   const updateLeadMutation = useMutation({
     mutationFn: ({ leadId, status }: { leadId: string; status: LeadStatus }) =>
@@ -186,7 +207,7 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
       )}
 
       <section className="space-y-4" aria-label="Leads list">
-        {leadsQuery.isLoading ? (
+        {leadsQuery.isPending ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <div
@@ -194,13 +215,6 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
                 className="bg-muted/70 h-32 animate-pulse rounded-2xl"
               />
             ))}
-          </div>
-        ) : leadsQuery.isFetching ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="border-primary/30 border-t-primary h-10 w-10 animate-spin rounded-full border-4" />
-            <p className="text-muted-foreground mt-4 text-sm">
-              Loading leads...
-            </p>
           </div>
         ) : leads.length === 0 ? (
           <Card className="bg-muted/10 flex flex-col items-center justify-center border-2 border-dashed p-12">

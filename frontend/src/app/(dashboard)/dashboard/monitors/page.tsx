@@ -5,7 +5,7 @@ import { MonitorsContent } from "@/components/monitors/monitors-content";
 import { siteConfig } from "@/config/site";
 
 export const metadata = {
-  title: `Monitors · ${siteConfig.name}`,
+  title: "Monitors",
 };
 
 export default function MonitorsPage() {

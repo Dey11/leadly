@@ -3,7 +3,8 @@ import { KeywordLeadsContent } from "@/components/keywords/keyword-leads-content
 import { siteConfig } from "@/config/site";
 
 export const metadata = {
-  title: `Matches · ${siteConfig.name}`,
+  title: "Matches",
+  description: "View your keyword matches and leads",
 };
 
 function KeywordLeadsSkeleton() {

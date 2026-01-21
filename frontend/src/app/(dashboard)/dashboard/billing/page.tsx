@@ -5,7 +5,7 @@ import { BillingContent } from "@/components/billing/billing-content";
 import { siteConfig } from "@/config/site";
 
 export const metadata = {
-  title: `Billing · ${siteConfig.name}`,
+  title: "Billing",
 };
 
 export default function BillingPage() {

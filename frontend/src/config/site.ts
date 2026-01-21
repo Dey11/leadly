@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: "Leadly",
   description:
-    "Leadly is the AI-powered Reddit lead generation platform. Monitor subreddits, score buying intent, and generate qualified B2B leads automatically.",
+    "Leadly is the AI-powered Reddit monitoring platform. Use ICP-based lead generation or keyword tracking to find qualified B2B leads and brand mentions automatically.",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://leadly.live",
   ogImage: "/assets/og-image.png",
   author: "Leadly",
@@ -12,6 +12,8 @@ export const siteConfig = {
     "B2B lead generation",
     "sales intelligence",
     "community monitoring",
+    "Reddit keyword monitoring",
+    "brand mention tracking",
     // Long-tail keywords (high intent, low competition)
     "Reddit lead generation tool",
     "find leads on Reddit",
@@ -20,22 +22,28 @@ export const siteConfig = {
     "Reddit outreach tool",
     "Reddit sales leads",
     "find B2B customers on Reddit",
+    "track Reddit mentions",
+    "Reddit keyword alerts",
     // Feature keywords
     "AI lead scoring",
     "buying intent signals",
     "community lead generation",
     "social selling Reddit",
     "Reddit marketing automation",
+    "ICP matching",
+    "keyword set monitoring",
     // Use case keywords
     "startup lead generation",
     "SaaS lead generation",
     "founder led sales",
     "SDR prospecting tool",
     "outbound lead generation",
+    "competitor monitoring Reddit",
     // Competitor alternatives
     "GummySearch alternative",
     "Syften alternative",
     "Reddit monitoring tool",
+    "F5Bot alternative",
     // Brand + category
     "Leadly",
     "Leadly.live",

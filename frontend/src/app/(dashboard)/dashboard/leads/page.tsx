@@ -5,7 +5,7 @@ import { LeadsContent } from "@/components/leads/leads-content";
 import { siteConfig } from "@/config/site";
 
 export const metadata = {
-  title: `Leads · ${siteConfig.name}`,
+  title: "Leads",
 };
 
 export default function LeadsPage() {

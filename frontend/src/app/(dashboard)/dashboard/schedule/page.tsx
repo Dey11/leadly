@@ -7,7 +7,7 @@ import { ScheduleSwitcher } from "@/components/schedule/schedule-switcher";
 import { siteConfig } from "@/config/site";
 
 export const metadata = {
-  title: `Schedule · ${siteConfig.name}`,
+  title: "Schedule",
 };
 
 export default function SchedulePage() {
