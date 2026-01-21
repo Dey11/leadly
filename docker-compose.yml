@@ -1,75 +1,43 @@
+# Production docker-compose for Coolify deployment
+# Uses Coolify-managed PostgreSQL and Redis (not included here)
+
 services:
-  leadly_redis:
-    container_name: leadly_redis
-    image: redis:7-alpine
-    network_mode: host
-    restart: always
-    pull_policy: if_not_present
-    environment:
-      - REDIS_PORT
-    command: redis-server --port ${REDIS_PORT} --save 60 1 --loglevel warning
-    volumes:
-      - leadly_redis_data:/data
-
-  leadly_db:
-    image: postgres:15-alpine
-    container_name: leadly_db
-    network_mode: host
-    restart: always
-    environment:
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - POSTGRES_DB
-      - POSTGRES_PORT
-      - POSTGRES_HOST
-    volumes:
-      - leadly_postgres_data:/var/lib/postgresql/data
-
-    command: >
-      postgres 
-      -p ${POSTGRES_PORT}
-      -c listen_addresses='${POSTGRES_HOST}'
-      -c max_connections=20
-      -c shared_buffers=1GB 
-      -c effective_cache_size=3GB 
-      -c maintenance_work_mem=64MB 
-      -c checkpoint_completion_target=0.9 
-      -c wal_buffers=16MB 
-      -c default_statistics_target=100 
-      -c random_page_cost=1.1 
-      -c effective_io_concurrency=200
-
   leadly_backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    network_mode: host
-    image: leadly_backend:${TAG}
+    image: leadly_backend:${TAG:-latest}
     container_name: leadly_backend
     restart: always
     pull_policy: build
+    ports:
+      - "${BACKEND_PORT:-3001}:${BACKEND_PORT:-3001}"
     environment:
-      - PORT=${BACKEND_PORT}
-      - DATABASE_URL
-      - NODE_ENV
-      - SESSION_SECRET
-      - FRONTEND_URL
-      - NITTER_URL
-      - REDIS_URL
-      - DODO_API_KEY
-      - DODO_ENVIRONMENT
-      - DODO_WEBHOOK_SECRET
-      - DODO_PRO_PRODUCT_ID
-      - DODO_PREMIUM_PRODUCT_ID
-      - REDDIT_CLIENT_ID
-      - REDDIT_CLIENT_SECRET
-      - REDDIT_USERNAME
-      - GOOGLE_GENERATIVE_AI_API_KEY
-      - RESEND_API_KEY
-      - DISCORD_WEBHOOK_URL
-      - DISCORD_PAYMENT_WEBHOOK_URL
-    depends_on:
-      - leadly_redis
+      PORT: ${BACKEND_PORT:-3001}
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: ${NODE_ENV:-production}
+      SESSION_SECRET: ${SESSION_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      NITTER_URL: ${NITTER_URL}
+      REDIS_URL: ${REDIS_URL}
+      DODO_API_KEY: ${DODO_API_KEY}
+      DODO_ENVIRONMENT: ${DODO_ENVIRONMENT}
+      DODO_WEBHOOK_SECRET: ${DODO_WEBHOOK_SECRET}
+      DODO_PRO_PRODUCT_ID: ${DODO_PRO_PRODUCT_ID}
+      DODO_PREMIUM_PRODUCT_ID: ${DODO_PREMIUM_PRODUCT_ID}
+      REDDIT_CLIENT_ID: ${REDDIT_CLIENT_ID}
+      REDDIT_CLIENT_SECRET: ${REDDIT_CLIENT_SECRET}
+      REDDIT_USERNAME: ${REDDIT_USERNAME}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL}
+      DISCORD_PAYMENT_WEBHOOK_URL: ${DISCORD_PAYMENT_WEBHOOK_URL}
+      DISCORD_LOGS_WEBHOOK_URL: ${DISCORD_LOGS_WEBHOOK_URL}
+      DISCORD_BACKUP_WEBHOOK_URL: ${DISCORD_BACKUP_WEBHOOK_URL}
+      ADMIN_API_KEY: ${ADMIN_API_KEY}
+      FEATURE_BILLING_ENFORCEMENT: ${FEATURE_BILLING_ENFORCEMENT:-on}
+    volumes:
+      - backend_logs:/usr/src/app/logs
 
   leadly_worker:
     build:
@@ -77,33 +45,19 @@ services:
       dockerfile: Dockerfile
     entrypoint: ["bun", "dist/workers/reddit.worker.js"]
     container_name: leadly_worker
-    image: leadly_worker:${TAG}
-    network_mode: host
+    image: leadly_worker:${TAG:-latest}
     restart: always
     pull_policy: build
     environment:
-      - PORT=${BACKEND_PORT}
-      - DATABASE_URL
-      - NODE_ENV
-      - SESSION_SECRET
-      - FRONTEND_URL
-      - NITTER_URL
-      - REDIS_URL
-      - DODO_API_KEY
-      - DODO_ENVIRONMENT
-      - DODO_WEBHOOK_SECRET
-      - DODO_PRO_PRODUCT_ID
-      - DODO_PREMIUM_PRODUCT_ID
-      - REDDIT_CLIENT_ID
-      - REDDIT_CLIENT_SECRET
-      - REDDIT_USERNAME
-      - GOOGLE_GENERATIVE_AI_API_KEY
-      - RESEND_API_KEY
-      - DISCORD_WEBHOOK_URL
-      - DISCORD_PAYMENT_WEBHOOK_URL
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: ${NODE_ENV:-production}
+      REDIS_URL: ${REDIS_URL}
+      NITTER_URL: ${NITTER_URL}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY}
+    volumes:
+      - worker_logs:/usr/src/app/logs
     depends_on:
       - leadly_backend
-      - leadly_redis
 
   leadly_frontend:
     build:
@@ -113,58 +67,21 @@ services:
         NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
         NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID}
-    network_mode: host
-    image: leadly_frontend:${TAG}
+    image: leadly_frontend:${TAG:-latest}
     container_name: leadly_frontend
     restart: always
     pull_policy: build
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
       BACKEND_URL: ${BACKEND_URL}
       NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
-      PORT: ${FRONTEND_PORT}
+      PORT: "3000"
       APP_URL: ${APP_URL}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
     depends_on:
       - leadly_backend
 
-  leadly_db_viewer:
-    image: adminer
-    container_name: leadly_db_viewer
-    network_mode: host
-    restart: always
-    environment:
-      - ADMINER_DEFAULT_SERVER=localhost:${POSTGRES_PORT}
-    command: php -S 0.0.0.0:8888 -t /var/www/html
-    depends_on:
-      - leadly_db
-
-  leadly_backup:
-    image: prodrigestivill/postgres-backup-local
-    container_name: leadly_backup
-    restart: always
-    network_mode: host
-    environment:
-      - POSTGRES_HOST
-      - POSTGRES_PORT
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - POSTGRES_DB
-      - SCHEDULE=0 */6 * * *
-      - HEALTHCHECK_PORT
-      - BACKUP_KEEP_DAYS=7
-      - DISCORD_BACKUP_WEBHOOK_URL
-    volumes:
-      - leadly_backup_data:/backups
-      - ./backup-hooks:/hooks:ro
-    depends_on:
-      - leadly_db
-
 volumes:
-  leadly_redis_data:
-  leadly_postgres_data:
-  leadly_backup_data:
-
-networks:
-  default:
-    external: true
-    name: host
+  backend_logs:
+  worker_logs:
