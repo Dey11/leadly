@@ -42,6 +42,9 @@ COPY --from=prerelease /usr/src/app/dist dist
 COPY --from=prerelease /usr/src/app/prisma prisma
 COPY --from=prerelease /usr/src/app/prisma.config.ts .
 
+# Create logs directory with proper permissions for bun user
+RUN mkdir -p /usr/src/app/logs && chown -R bun:bun /usr/src/app/logs
+
 # run the app
 USER bun
 ENTRYPOINT [ "bun", "dist/index.js" ]
