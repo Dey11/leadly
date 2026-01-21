@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Tags, Trash2, Pencil } from "lucide-react";
 
@@ -22,6 +22,7 @@ import { formatRelative } from "@/lib/format";
 import { CreateKeywordSetDialog } from "./create-keyword-set-dialog";
 import { EditKeywordSetDialog } from "./edit-keyword-set-dialog";
 import type { KeywordSet } from "@/types/keyword";
+import { BILLING_PLANS, type BillingTier } from "@/constants/pricing";
 
 export function KeywordSetsContent() {
   const queryClient = useQueryClient();
@@ -35,6 +36,15 @@ export function KeywordSetsContent() {
     queryKey: ["keyword-sets"],
     queryFn: () => clientApi.listKeywordSets(),
   });
+
+  const usageQuery = useQuery({
+    queryKey: ["usage-summary"],
+    queryFn: () => clientApi.getUsageSummary(),
+  });
+
+  // Get limits from BILLING_PLANS based on user tier
+  const tier = (usageQuery.data?.payload?.tier ?? "FREE") as BillingTier;
+  const planLimits = BILLING_PLANS[tier];
 
   const deleteSetMutation = useMutation({
     mutationFn: (id: string) => clientApi.deleteKeywordSet(id),
@@ -224,6 +234,10 @@ export function KeywordSetsContent() {
       <CreateKeywordSetDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
+        keywordsLimit={planLimits.keywordsPerSet}
+        currentSetsCount={keywordSets.length}
+        maxSets={planLimits.keywordSets}
+        tier={tier}
         onSuccess={() => {
           setCreateDialogOpen(false);
           setFeedback("Keyword set created successfully.");
@@ -236,6 +250,7 @@ export function KeywordSetsContent() {
           keywordSet={editingSet}
           open={!!editingSet}
           onOpenChange={(open) => !open && setEditingSet(null)}
+          tier={tier}
           onSuccess={() => {
             setEditingSet(null);
             setFeedback("Keyword set updated successfully.");

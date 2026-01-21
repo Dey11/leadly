@@ -86,7 +86,7 @@ export function DashboardShell({
     <div className="flex h-full flex-col">
       <Link
         href="/dashboard"
-        className="group text-sidebar-foreground hover:text-primary flex items-center gap-3 px-6 pt-8 transition-colors"
+        className="group text-sidebar-foreground hover:text-primary flex items-center gap-3 px-6 pt-6 transition-colors"
       >
         <div className="relative size-11 overflow-hidden">
           <img
@@ -108,7 +108,7 @@ export function DashboardShell({
         </div>
       </Link>
 
-      <div className="px-4 pt-6">
+      <div className="px-4 pt-4">
         <ProductModeToggle
           mode={productMode}
           onModeChange={setProductMode}
@@ -116,7 +116,7 @@ export function DashboardShell({
         />
       </div>
 
-      <div className="px-4 pt-6 pb-6">
+      <div className="px-4 py-4">
         <DashboardNav
           items={navItems}
           orientation="vertical"
@@ -125,7 +125,7 @@ export function DashboardShell({
         />
       </div>
 
-      <div className="mt-auto space-y-4 px-5 pb-8">
+      <div className="mt-auto space-y-3 px-5 pb-6">
         <section className="border-sidebar-border bg-sidebar/80 rounded-2xl border p-4 text-sm shadow-sm backdrop-blur">
           <div className="flex items-center justify-between">
             <div>

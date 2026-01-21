@@ -6,6 +6,7 @@ export const createKeywordSetSchema = z.object({
     .array(z.string().min(1).max(50))
     .min(1, "At least one keyword is required")
     .max(50, "Maximum 50 keywords allowed"),
+  isFuzzyMatch: z.boolean().optional(),
 });
 
 export const updateKeywordSetSchema = z
@@ -16,8 +17,9 @@ export const updateKeywordSetSchema = z
       .min(1, "At least one keyword is required")
       .max(50, "Maximum 50 keywords allowed")
       .optional(),
+    isFuzzyMatch: z.boolean().optional(),
   })
-  .refine((data) => data.name || data.keywords, {
+  .refine((data) => data.name || data.keywords || data.isFuzzyMatch !== undefined, {
     message: "At least one field must be provided to update the KeywordSet.",
   });
 

@@ -17,22 +17,58 @@ export function matchesWholeWord(text: string, keyword: string): boolean {
   return pattern.test(text);
 }
 
+
 /**
- * Filters posts that contain ANY of the specified keywords (whole word match)
+ * Check if a keyword matches fuzzily (>= 50% of words present)
+ */
+export function matchesFuzzy(text: string, keyword: string): boolean {
+  const keywordWords = keyword.toLowerCase().trim().split(/\s+/);
+  if (keywordWords.length === 0) return false;
+
+  // Count how many keyword words appear in the text as whole words
+  let matchCount = 0;
+  for (const word of keywordWords) {
+    if (matchesWholeWord(text, word)) {
+      matchCount++;
+    }
+  }
+
+  // Calculate percentage
+  const percentage = matchCount / keywordWords.length;
+  // Match if >= 50%
+  return percentage >= 0.5;
+}
+
+/**
+ * Check if text matches a keyword based on strictness
+ */
+export function matchesKeyword(
+  text: string,
+  keyword: string,
+  strict: boolean = true,
+): boolean {
+  return strict
+    ? matchesWholeWord(text, keyword)
+    : matchesFuzzy(text, keyword);
+}
+
+/**
+ * Filters posts that contain ANY of the specified keywords
  * Searches in: title, post body, and comments (recursively)
  */
 export function filterPostsByKeywords(
   posts: RedditPost[],
   keywords: string[],
+  strict: boolean = true,
 ): RedditPost[] {
   if (!keywords || keywords.length === 0) {
-    return posts; // No keywords = return all posts
+    return []; // No keywords = no matches (don't match everything)
   }
 
   return posts.filter((post) => {
     const searchableText = buildSearchableText(post);
     return keywords.some((keyword) =>
-      matchesWholeWord(searchableText, keyword),
+      matchesKeyword(searchableText, keyword, strict),
     );
   });
 }
@@ -58,29 +94,33 @@ function buildSearchableText(post: RedditPost): string {
 }
 
 /**
- * Get which keywords matched in a post (whole word match)
+ * Get which keywords matched in a post
  */
 export function getMatchedKeywords(
   post: RedditPost,
   keywords: string[],
+  strict: boolean = true,
 ): string[] {
   const searchableText = buildSearchableText(post);
   return keywords.filter((keyword) =>
-    matchesWholeWord(searchableText, keyword),
+    matchesKeyword(searchableText, keyword, strict),
   );
 }
 
 /**
- * Check if a post matches ANY of the keywords (whole word match)
+ * Check if a post matches ANY of the keywords
  */
 export function postMatchesKeywords(
   post: RedditPost,
   keywords: string[],
+  strict: boolean = true,
 ): boolean {
-  if (!keywords || keywords.length === 0) return true;
+  if (!keywords || keywords.length === 0) return false;
 
   const searchableText = buildSearchableText(post);
-  return keywords.some((keyword) => matchesWholeWord(searchableText, keyword));
+  return keywords.some((keyword) =>
+    matchesKeyword(searchableText, keyword, strict),
+  );
 }
 
 /**
@@ -90,14 +130,15 @@ export function postMatchesKeywords(
 export function getMatchingSnippet(
   post: RedditPost,
   keywords: string[],
+  strict: boolean = true,
 ): { type: "title" | "body" | "comment"; text: string } | null {
   // 1. Check Title
-  if (keywords.some((kw) => matchesWholeWord(post.title, kw))) {
+  if (keywords.some((kw) => matchesKeyword(post.title, kw, strict))) {
     return { type: "title", text: post.title };
   }
 
   // 2. Check Body
-  if (post.post && keywords.some((kw) => matchesWholeWord(post.post, kw))) {
+  if (post.post && keywords.some((kw) => matchesKeyword(post.post, kw, strict))) {
     return { type: "body", text: post.post };
   }
 
@@ -109,7 +150,7 @@ export function getMatchingSnippet(
     for (const c of comments) {
       if (
         c.commentText &&
-        keywords.some((kw) => matchesWholeWord(c.commentText, kw))
+        keywords.some((kw) => matchesKeyword(c.commentText, kw, strict))
       ) {
         return { type: "comment", text: c.commentText };
       }

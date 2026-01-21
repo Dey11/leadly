@@ -43,7 +43,7 @@ const faqs = [
   {
     question: "Can I try before I pay?",
     answer:
-      "Absolutely! Our Free tier gives you 3 subreddits to monitor with 30 scrapes per month. No credit card required. Upgrade only if you see value and need more capacity.",
+      "Absolutely! Our Free tier lets you monitor 3 subreddits with 1 daily scrape (30/month) for lead generation, plus 1 keyword set with 6 keywords. No credit card required. Upgrade only if you see value — Pro gives you 10 subreddits + 3 keyword sets, and Premium unlocks 20 subreddits + 10 keyword sets.",
   },
   {
     question: "Do you support platforms other than Reddit?",

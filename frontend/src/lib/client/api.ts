@@ -212,6 +212,20 @@ export const clientApi = {
     return response.payload;
   },
 
+  // Account/Usage
+  getUsageSummary: async () => {
+    return request<{
+      message: string;
+      payload: {
+        tier: string;
+        dailyUsed: number;
+        dailyLimit: number;
+        monthlyUsed: number;
+        monthlyLimit: number;
+      };
+    }>(`${apiBaseUrl}/account/usage`);
+  },
+
   // Billing
   subscribe: async (plan: "pro" | "premium") => {
     return request<{ url: string }>(`${apiBaseUrl}/billing/subscribe`, {
@@ -305,11 +319,14 @@ export const clientApi = {
     const response = await request<any[]>(`${apiBaseUrl}/keyword-sets`);
     return response;
   },
-  createKeywordSet: (body: { name: string; keywords: string[] }) =>
-    request(`${apiBaseUrl}/keyword-sets`, { method: "POST", body }),
+  createKeywordSet: (body: {
+    name: string;
+    keywords: string[];
+    isFuzzyMatch?: boolean;
+  }) => request(`${apiBaseUrl}/keyword-sets`, { method: "POST", body }),
   updateKeywordSet: (
     id: string,
-    body: { name?: string; keywords?: string[] },
+    body: { name?: string; keywords?: string[]; isFuzzyMatch?: boolean },
   ) => request(`${apiBaseUrl}/keyword-sets/${id}`, { method: "PATCH", body }),
   deleteKeywordSet: (id: string) =>
     request(`${apiBaseUrl}/keyword-sets/${id}`, { method: "DELETE" }),
