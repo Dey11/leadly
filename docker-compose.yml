@@ -145,14 +145,13 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - POSTGRES_DB
-      - SCHEDULE
+      - SCHEDULE=0 */6 * * *
       - HEALTHCHECK_PORT
-      - BACKUP_KEEP_DAYS
-      - BACKUP_CHANNEL_ID
-      - BACKUP_BOT_TOKEN
+      - BACKUP_KEEP_DAYS=7
+      - DISCORD_BACKUP_WEBHOOK_URL
     volumes:
       - leadly_backup_data:/backups
-      - leadly_backup_hooks:/hooks
+      - ./backup-hooks:/hooks:ro
     depends_on:
       - leadly_db
 
@@ -160,7 +159,6 @@ volumes:
   leadly_redis_data:
   leadly_postgres_data:
   leadly_backup_data:
-  leadly_backup_hooks:
 
 networks:
   default:

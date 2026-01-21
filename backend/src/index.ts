@@ -21,6 +21,7 @@ import keywordScheduleRouter from "./routes/keyword-schedule";
 import keywordStatsRouter from "./routes/keyword-stats";
 import keywordMonitorRouter from "./routes/keyword-monitor";
 import keywordLeadRouter from "./routes/keyword-lead";
+import adminRouter from "./routes/admin";
 import { requestLogger } from "./middleware/request-logger";
 
 const PORT = env.PORT;
@@ -73,6 +74,9 @@ apiRouter.use("/keyword-schedule", keywordScheduleRouter);
 apiRouter.use("/keyword-stats", keywordStatsRouter);
 apiRouter.use("/keyword-monitors", keywordMonitorRouter);
 apiRouter.use("/keyword-leads", keywordLeadRouter);
+
+// Admin routes (protected by API key)
+apiRouter.use("/admin", adminRouter);
 
 // Lead Gen scheduler (hourly at xx:00)
 const leadGenScheduler = cron.schedule(CRON_INTERVAL, runScheduler, {

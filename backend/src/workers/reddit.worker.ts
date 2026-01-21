@@ -1,12 +1,7 @@
 import { Worker } from "bullmq";
-import Redis from "ioredis";
 import { env } from "../env";
 import { processRedditScrape } from "../processors/reddit.processor";
 import logger from "../lib/logger";
-
-const connection = new Redis(env.REDIS_URL, {
-  maxRetriesPerRequest: null,
-});
 
 const worker = new Worker(
   "scrapeJobs",
@@ -14,7 +9,12 @@ const worker = new Worker(
     logger.info("Processing job:", job.data);
     await processRedditScrape(job);
   },
-  { connection: connection as any },
+  {
+    connection: {
+      url: env.REDIS_URL,
+      maxRetriesPerRequest: null,
+    },
+  },
 );
 
 worker.on("completed", (job) => {
