@@ -4,11 +4,10 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     image: leadly_backend:${TAG:-latest}
-    container_name: leadly_backend
     restart: always
     pull_policy: build
-    ports:
-      - "${BACKEND_PORT:-3001}:${BACKEND_PORT:-3001}"
+    expose:
+      - "${BACKEND_PORT:-3001}"
     environment:
       PORT: ${BACKEND_PORT:-3001}
       DATABASE_URL: ${DATABASE_URL}
@@ -43,7 +42,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     entrypoint: ["bun", "dist/workers/reddit.worker.js"]
-    container_name: leadly_worker
     image: leadly_worker:${TAG:-latest}
     restart: always
     pull_policy: build
@@ -71,11 +69,10 @@ services:
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
         NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID}
     image: leadly_frontend:${TAG:-latest}
-    container_name: leadly_frontend
     restart: always
     pull_policy: build
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+    expose:
+      - "3000"
     environment:
       BACKEND_URL: ${BACKEND_URL}
       NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
