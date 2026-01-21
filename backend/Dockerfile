@@ -45,6 +45,10 @@ COPY --from=prerelease /usr/src/app/prisma.config.ts .
 # Create logs directory with proper permissions for bun user
 RUN mkdir -p /usr/src/app/logs && chown -R bun:bun /usr/src/app/logs
 
+# Create startup script that runs migrations then starts app
+RUN echo '#!/bin/sh\nbunx prisma migrate deploy\nexec bun dist/index.js' > /usr/src/app/start.sh && \
+    chmod +x /usr/src/app/start.sh
+
 # run the app
 USER bun
-ENTRYPOINT [ "bun", "dist/index.js" ]
+ENTRYPOINT [ "/usr/src/app/start.sh" ]
