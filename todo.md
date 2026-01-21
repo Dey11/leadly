@@ -5,6 +5,8 @@
 - [ ] make a seed script for the db
 - [ ] run db migrations
 - [ ] make it prod ready and migrate providers -> docker stuff
+- [ ] schedule . leadly . leadly -> fix
+- [ ] weird mail icon in registration fix
 
 ## Future scope
 
