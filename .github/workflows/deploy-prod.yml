@@ -22,4 +22,4 @@ jobs:
 
       - name: Trigger Coolify deployment
         run: |
-          curl -s -X POST -k "${{ secrets.COOLIFY_PROD_WEBHOOK }}?TAG=${{ steps.vars.outputs.sha_short }}"
+          curl -s -X POST -k "${{ secrets.COOLIFY_PROD_WEBHOOK }}&TAG=${{ steps.vars.outputs.sha_short }}"

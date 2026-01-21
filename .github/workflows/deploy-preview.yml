@@ -35,7 +35,7 @@ jobs:
 
       - name: Trigger Coolify preview deployment
         run: |
-          curl -s -X POST -k "${{ secrets.COOLIFY_PREVIEW_WEBHOOK }}?TAG=${{ steps.vars.outputs.sha_short }}&BRANCH=${{ steps.branch.outputs.slug }}"
+          curl -s -X POST -k "${{ secrets.COOLIFY_PREVIEW_WEBHOOK }}&TAG=${{ steps.vars.outputs.sha_short }}&BRANCH=${{ steps.branch.outputs.slug }}"
 
   # Cleanup preview environment on branch deletion
   cleanup-preview:
