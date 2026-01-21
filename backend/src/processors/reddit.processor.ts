@@ -1,7 +1,7 @@
 import db from "../lib/db";
 import logger from "../lib/logger";
 import { Reddit } from "../services/reddit";
-import { processLeads, LeadData } from "./ai.processor";
+import { processLeads } from "./ai.processor";
 import type { Job } from "bullmq";
 import type { LeadStatus, Monitor, Icp, User } from "@prisma/client";
 import type { Prisma } from "@prisma/client";

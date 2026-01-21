@@ -1,0 +1,65 @@
+name: Deploy Preview
+
+on:
+  push:
+    branches:
+      - "**"
+      - "!master"
+      - "!staging"
+  delete:
+    branches:
+      - "**"
+      - "!master"
+      - "!staging"
+
+jobs:
+  # Deploy preview environment on push
+  deploy-preview:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get branch slug
+        id: branch
+        run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          BRANCH_SLUG=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
+          echo "name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "slug=$BRANCH_SLUG" >> $GITHUB_OUTPUT
+
+      - name: Get commit short hash
+        id: vars
+        run: |
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Trigger Coolify preview deployment
+        run: |
+          curl -s -X POST -k "${{ secrets.COOLIFY_PREVIEW_WEBHOOK }}?TAG=${{ steps.vars.outputs.sha_short }}&BRANCH=${{ steps.branch.outputs.slug }}"
+
+  # Cleanup preview environment on branch deletion
+  cleanup-preview:
+    if: github.event_name == 'delete'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get branch slug
+        id: branch
+        run: |
+          BRANCH_NAME="${{ github.event.ref }}"
+          BRANCH_SLUG=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
+          echo "slug=$BRANCH_SLUG" >> $GITHUB_OUTPUT
+
+      - name: Delete preview deployment from Coolify
+        run: |
+          # Trigger Coolify cleanup webhook
+          curl -s -X DELETE -k "${{ secrets.COOLIFY_API_URL }}/api/v1/applications/leadly-preview-${{ steps.branch.outputs.slug }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || true
+
+      - name: Drop preview database
+        run: |
+          PGPASSWORD="${{ secrets.POSTGRES_PASSWORD }}" dropdb \
+            -h "${{ secrets.POSTGRES_HOST }}" \
+            -U "${{ secrets.POSTGRES_USER }}" \
+            "leadly_preview_${{ steps.branch.outputs.slug }}" \
+            --if-exists || true
+        continue-on-error: true

@@ -1,6 +1,9 @@
 import winston from "winston";
-import "winston-daily-rotate-file";
+import DailyRotateFile from "winston-daily-rotate-file";
 import { env } from "../env";
+
+// Side-effect import - register transport with winston
+void DailyRotateFile;
 
 const { combine, timestamp, json, colorize, printf } = winston.format;
 

@@ -31,7 +31,9 @@ export function filterPostsByKeywords(
 
   return posts.filter((post) => {
     const searchableText = buildSearchableText(post);
-    return keywords.some((keyword) => matchesWholeWord(searchableText, keyword));
+    return keywords.some((keyword) =>
+      matchesWholeWord(searchableText, keyword),
+    );
   });
 }
 
@@ -63,7 +65,9 @@ export function getMatchedKeywords(
   keywords: string[],
 ): string[] {
   const searchableText = buildSearchableText(post);
-  return keywords.filter((keyword) => matchesWholeWord(searchableText, keyword));
+  return keywords.filter((keyword) =>
+    matchesWholeWord(searchableText, keyword),
+  );
 }
 
 /**
@@ -122,4 +126,3 @@ export function getMatchingSnippet(
 
   return null;
 }
-

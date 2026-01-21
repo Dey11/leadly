@@ -7,9 +7,8 @@ import {
 import {
   MAX_SCRAPE_RETRY_COUNT,
   STUCK_PENDING_THRESHOLD_MS,
-  TIER_LIMITS,
 } from "../lib/constants";
-import { tryConsumeScrapeCredit, previewUsage } from "../lib/usage";
+import { tryConsumeScrapeCredit } from "../lib/usage";
 import { env } from "../env";
 
 async function pickupKeywordRetryJobs() {

@@ -298,9 +298,11 @@ export async function tryConsumeScrapeCredit(
           : "daily_limit_exceeded_logged"
         : undefined,
     summary: {
-      dailyUsed: type === "KEYWORD" ? updated.keywordDailyCount : updated.dailyCount,
+      dailyUsed:
+        type === "KEYWORD" ? updated.keywordDailyCount : updated.dailyCount,
       dailyLimit,
-      monthlyUsed: type === "KEYWORD" ? updated.keywordScrapesUsed : updated.scrapesUsed,
+      monthlyUsed:
+        type === "KEYWORD" ? updated.keywordScrapesUsed : updated.scrapesUsed,
       monthlyLimit,
     },
   };

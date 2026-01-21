@@ -1,5 +1,4 @@
 import { Queue } from "bullmq";
-import Redis from "ioredis";
 import { env } from "../env";
 
 interface ScrapeJobData {
@@ -7,8 +6,11 @@ interface ScrapeJobData {
   jobId: string;
 }
 
-const connection = new Redis(env.REDIS_URL);
-
-export const scrapeJobsQueue = new Queue<ScrapeJobData>("scrapeJobs", {
-  connection,
-});
+export const scrapeJobsQueue = new Queue<ScrapeJobData, void, "scrapeJobs">(
+  "scrapeJobs",
+  {
+    connection: {
+      url: env.REDIS_URL,
+    },
+  },
+);

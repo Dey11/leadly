@@ -46,6 +46,10 @@ const envSchema = z.object({
   // Discord
   DISCORD_WEBHOOK_URL: z.string().url().optional(),
   DISCORD_PAYMENT_WEBHOOK_URL: z.string().url().optional(),
+  DISCORD_LOGS_WEBHOOK_URL: z.string().url().optional(),
+
+  // Admin
+  ADMIN_API_KEY: z.string().min(32).optional(),
 });
 
 export const env = envSchema.parse(process.env);
