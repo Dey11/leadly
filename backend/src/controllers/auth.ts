@@ -19,6 +19,9 @@ import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/email";
 import { validateEmail } from "../lib/email-validator";
 import { checkRateLimit, incrementRateLimit } from "../lib/rate-limit";
 
+// const isDevelopment = env.NODE_ENV === "development";
+const isDevelopment = false; // turn this on when testing non registration
+
 function generateSecureSessionToken(): string {
   const randomBytes = crypto.randomBytes(32).toString("hex");
   const timestamp = Date.now().toString();
@@ -120,8 +123,10 @@ export async function register(req: Request, res: Response) {
           data: {
             name: payload.data.name,
             passwordHash: hashedPassword,
-            emailOtp: otp,
-            emailOtpExpiresAt: otpExpiresAt,
+            // In development, auto-verify; in production, require OTP
+            emailVerified: isDevelopment,
+            emailOtp: isDevelopment ? null : otp,
+            emailOtpExpiresAt: isDevelopment ? null : otpExpiresAt,
           },
         });
 
@@ -139,17 +144,25 @@ export async function register(req: Request, res: Response) {
         return { user, session };
       });
 
-      try {
-        await sendVerificationEmail(email, otp);
-        await incrementRateLimit(req, "register");
-      } catch (emailError) {
-        logger.error("Failed to send verification email:", emailError);
+      // Only send verification email in production
+      if (!isDevelopment) {
+        try {
+          await sendVerificationEmail(email, otp);
+          await incrementRateLimit(req, "register");
+        } catch (emailError) {
+          logger.error("Failed to send verification email:", emailError);
+        }
       }
 
       return res
         .cookie("session_token", session.token, getCookieOptions())
         .status(200)
-        .json({ message: "Verification email resent", email: user.email });
+        .json({
+          message: isDevelopment
+            ? "User registered (dev mode - auto-verified)"
+            : "Verification email resent",
+          email: user.email,
+        });
     }
 
     const { user, session } = await db.$transaction(async (tx) => {
@@ -158,8 +171,10 @@ export async function register(req: Request, res: Response) {
           name: payload.data.name,
           email,
           passwordHash: hashedPassword as string,
-          emailOtp: otp,
-          emailOtpExpiresAt: otpExpiresAt,
+          // In development, auto-verify; in production, require OTP
+          emailVerified: isDevelopment,
+          emailOtp: isDevelopment ? null : otp,
+          emailOtpExpiresAt: isDevelopment ? null : otpExpiresAt,
         },
       });
 
@@ -205,17 +220,25 @@ export async function register(req: Request, res: Response) {
       return { user, session };
     });
 
-    try {
-      await sendVerificationEmail(email, otp);
-      await incrementRateLimit(req, "register");
-    } catch (emailError) {
-      logger.error("Failed to send verification email:", emailError);
+    // Only send verification email in production
+    if (!isDevelopment) {
+      try {
+        await sendVerificationEmail(email, otp);
+        await incrementRateLimit(req, "register");
+      } catch (emailError) {
+        logger.error("Failed to send verification email:", emailError);
+      }
     }
 
     res
       .cookie("session_token", session.token, getCookieOptions())
       .status(201)
-      .json({ message: "User created successfully", email: user.email });
+      .json({
+        message: isDevelopment
+          ? "User created successfully (dev mode - auto-verified)"
+          : "User created successfully",
+        email: user.email,
+      });
   } catch (error) {
     logger.error("Registration failed:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -257,35 +280,49 @@ export async function login(req: Request, res: Response) {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
+    // In development, auto-verify unverified users on login
     if (!userInDb.emailVerified) {
-      const rateLimitCheck = await checkRateLimit(req, "resendOtp");
-      if (rateLimitCheck.exceeded) {
-        return res.status(429).json({
-          error: rateLimitCheck.error,
-          retryAfter: rateLimitCheck.retryAfter,
+      if (env.NODE_ENV === "development") {
+        // Auto-verify in development mode
+        await db.user.update({
+          where: { id: userInDb.id },
+          data: {
+            emailVerified: true,
+            emailOtp: null,
+            emailOtpExpiresAt: null,
+          },
+        });
+        logger.info(`[DEV] Auto-verified user ${userInDb.email} on login`);
+      } else {
+        const rateLimitCheck = await checkRateLimit(req, "resendOtp");
+        if (rateLimitCheck.exceeded) {
+          return res.status(429).json({
+            error: rateLimitCheck.error,
+            retryAfter: rateLimitCheck.retryAfter,
+          });
+        }
+
+        const otp = crypto.randomInt(100000, 999999).toString();
+        const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+        await db.user.update({
+          where: { id: userInDb.id },
+          data: { emailOtp: otp, emailOtpExpiresAt: otpExpiresAt },
+        });
+
+        try {
+          await sendVerificationEmail(userInDb.email, otp);
+          await incrementRateLimit(req, "resendOtp");
+        } catch (e) {
+          logger.error("Failed to resend verification email:", e);
+        }
+
+        return res.status(403).json({
+          error: "Email not verified",
+          requiresVerification: true,
+          email: userInDb.email,
         });
       }
-
-      const otp = crypto.randomInt(100000, 999999).toString();
-      const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-      await db.user.update({
-        where: { id: userInDb.id },
-        data: { emailOtp: otp, emailOtpExpiresAt: otpExpiresAt },
-      });
-
-      try {
-        await sendVerificationEmail(userInDb.email, otp);
-        await incrementRateLimit(req, "resendOtp");
-      } catch (e) {
-        logger.error("Failed to resend verification email:", e);
-      }
-
-      return res.status(403).json({
-        error: "Email not verified",
-        requiresVerification: true,
-        email: userInDb.email,
-      });
     }
 
     const session = await createUserSession(userInDb.id);
