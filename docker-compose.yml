@@ -111,15 +111,19 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID}
     network_mode: host
     image: leadly_frontend:${TAG}
     container_name: leadly_frontend
     restart: always
     pull_policy: build
     environment:
-      - BACKEND_URL
-      - NEXT_PUBLIC_BACKEND_URL
-      - PORT=${FRONTEND_PORT}
+      BACKEND_URL: ${BACKEND_URL}
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
+      PORT: ${FRONTEND_PORT}
+      APP_URL: ${APP_URL}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
     depends_on:
       - leadly_backend
 
