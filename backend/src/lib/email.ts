@@ -22,7 +22,10 @@ const COLORS = {
 // Read logo file for attachment
 // Note: We need to handle this carefully to work in both dev and prod if paths differ
 // Assuming standard repo structure for now
-const LOGO_PATH = path.join(process.cwd(), "../frontend/public/assets/logo.svg");
+const LOGO_PATH = path.join(
+  process.cwd(),
+  "../frontend/public/assets/logo.svg",
+);
 let LOGO_BUFFER: Buffer | null = null;
 
 try {
@@ -190,6 +193,7 @@ export async function sendVerificationEmail(email: string, otp: string) {
             filename: "logo.svg",
             content: LOGO_BUFFER,
             contentId: "leadly-logo",
+            contentType: "image/svg+xml",
           },
         ]
       : undefined,
