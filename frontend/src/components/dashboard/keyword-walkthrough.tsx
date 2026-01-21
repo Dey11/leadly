@@ -4,17 +4,12 @@ import { useEffect, useRef } from "react";
 import { driver, type Driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import { useRouter, usePathname } from "next/navigation";
-import { clientApi } from "@/lib/client/api";
 import { useProductMode } from "@/components/dashboard/product-mode-toggle";
-
-interface WalkthroughProps {
-  hasSeenWalkthrough: boolean;
-}
 
 interface StepConfig {
   index: number;
   route: string;
-  element?: string; // Optional - no element creates centered modal
+  element?: string;
   popover: {
     title: string;
     description: string;
@@ -23,8 +18,7 @@ interface StepConfig {
   };
 }
 
-const STEPS: StepConfig[] = [
-  // Dashboard
+const KEYWORD_STEPS: StepConfig[] = [
   {
     index: 0,
     route: "/dashboard",
@@ -32,7 +26,7 @@ const STEPS: StepConfig[] = [
     popover: {
       title: "Navigation Sidebar",
       description:
-        "Access all your tools here: Leads, ICPs, Monitors, Schedule and Billing.",
+        "Access all your keyword tools here: Matches, Keywords, Monitors, Schedule and Billing.",
       side: "right",
       align: "start",
     },
@@ -42,74 +36,70 @@ const STEPS: StepConfig[] = [
     route: "/dashboard",
     element: "#dashboard-metrics",
     popover: {
-      title: "Performance Metrics",
+      title: "Keyword Metrics",
       description:
-        "Get a high-level view of your lead generation performance and active monitors.",
+        "Get a high-level view of your keyword monitoring performance and match counts.",
       side: "top",
       align: "center",
     },
   },
-  // Leads
   {
     index: 2,
-    route: "/dashboard/leads",
-    element: "#leads-view",
+    route: "/dashboard/keyword-leads",
+    element: "#keyword-leads-view",
     popover: {
-      title: "Your Leads",
-      description: "Browse and filter the leads Leadly has found for you.",
+      title: "Your Matches",
+      description: "Browse and filter all the keyword matches Leadly has found for you.",
       side: "top",
       align: "start",
     },
   },
-  // ICPs
   {
     index: 3,
-    route: "/dashboard/icps",
-    element: "#create-icp-form",
+    route: "/dashboard/keyword-sets",
+    element: "#create-keyword-set-button",
     popover: {
-      title: "Define Ideal Customers",
+      title: "Create Keyword Sets",
       description:
-        "Create profiles for your target audience. This helps our AI score leads accurately.",
-      side: "right",
+        "Define groups of keywords to monitor. Each set can track multiple terms across subreddits.",
+      side: "bottom",
       align: "start",
     },
   },
   {
     index: 4,
-    route: "/dashboard/icps",
-    element: "#icp-list",
+    route: "/dashboard/keyword-sets",
+    element: "#keyword-sets-list",
     popover: {
-      title: "Manage Profiles",
-      description: "View and edit your existing Ideal Customer Profiles here.",
+      title: "Manage Keyword Groups",
+      description: "View, edit, and organise your existing keyword sets here.",
       side: "top",
       align: "start",
     },
   },
-  // Monitors
   {
     index: 5,
-    route: "/dashboard/monitors",
-    element: "#create-monitor-form",
+    route: "/dashboard/keyword-monitors",
+    element: "#create-keyword-monitor-button",
     popover: {
       title: "Add Monitors",
       description:
-        "Tell Leadly where to look. Add subreddits or keywords linked to an ICP.",
-      side: "right",
+        "Create monitors to track specific subreddits for your keywords. Link a keyword set to start capturing matches.",
+      side: "bottom",
       align: "start",
     },
   },
   {
     index: 6,
-    route: "/dashboard/monitors",
-    element: "#monitor-list",
+    route: "/dashboard/keyword-monitors",
+    element: "#keyword-monitor-list",
     popover: {
       title: "Active Monitors",
-      description: "Track the status and performance of your active scrapes.",
+      description: "Track the status and performance of your keyword monitors here.",
       side: "top",
       align: "start",
     },
   },
-  // Schedule
   {
     index: 7,
     route: "/dashboard/schedule",
@@ -117,7 +107,7 @@ const STEPS: StepConfig[] = [
     popover: {
       title: "Scrape Schedule",
       description:
-        "Configure the exact hours you want Leadly to look for new posts.",
+        "Configure the exact hours you want Leadly to scan for keyword matches.",
       side: "right",
       align: "start",
     },
@@ -134,27 +124,28 @@ const STEPS: StepConfig[] = [
       align: "start",
     },
   },
-  // Final Welcome Step - Full screen overlay
   {
     index: 9,
     route: "/dashboard",
-    // No element specified - creates full-screen centered modal
     popover: {
       title: "Ready to go!",
       description:
-        "You are all set. Start by creating an ICP or setting up your first monitor.",
+        "You are all set. Start by creating a keyword set and linking it to a monitor.",
     },
   },
 ];
 
-export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
+export function KeywordWalkthrough() {
   const [productMode] = useProductMode();
   const driverObj = useRef<Driver | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    // Styling injection for app-like look
+    if (productMode !== "keyword") {
+      return;
+    }
+
     const styleId = "driver-js-theme";
     if (!document.getElementById(styleId)) {
       const style = document.createElement("style");
@@ -200,40 +191,28 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
       document.head.appendChild(style);
     }
 
-    // Only run lead gen walkthrough if in leadgen mode
-    if (productMode !== "leadgen") {
-      return;
-    }
-
-    // Check backend prop AND local storage to prevent optimistic restart loop
-    // BUT allow restart if query param is present
     const urlParams = new URLSearchParams(window.location.search);
-    const forceRestart = urlParams.get("walkthrough") === "restart";
+    const forceRestart = urlParams.get("keyword-walkthrough") === "restart";
 
     if (forceRestart) {
-      // Clear the query param from URL without reload
       window.history.replaceState({}, "", window.location.pathname);
     } else if (
-      hasSeenWalkthrough ||
-      window.localStorage.getItem("leadly-walkthrough-completed") === "true"
+      window.localStorage.getItem("leadly-keyword-walkthrough-completed") === "true"
     ) {
       return;
     }
 
-    // Retrieve storage state
-    const storageKey = "leadly-walkthrough-step";
+    const storageKey = "leadly-keyword-walkthrough-step";
     const storedStepIndex = parseInt(
       window.sessionStorage.getItem(storageKey) || "0",
       10,
     );
 
-    // If finished previously but session storage lingers, or backend mismatch
-    if (storedStepIndex >= STEPS.length) {
+    if (storedStepIndex >= KEYWORD_STEPS.length) {
       window.sessionStorage.removeItem(storageKey);
       return;
     }
 
-    // Initialize driver
     driverObj.current = driver({
       showProgress: true,
       animate: true,
@@ -241,36 +220,30 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
       doneBtnText: "Finish",
       nextBtnText: "Next",
       prevBtnText: "Previous",
-      steps: STEPS.map((s) => ({
+      steps: KEYWORD_STEPS.map((s) => ({
         element: s.element,
         popover: s.popover,
-        // Pass custom metadata to access in callbacks
         index: s.index,
         route: s.route,
       })),
       onNextClick: (elem, step, opts) => {
-        // Use the index from the step definition to avoid stale closure issues
         const currentIndex = (step as any).index as number;
         const nextIndex = currentIndex + 1;
 
-        if (nextIndex >= STEPS.length) {
+        if (nextIndex >= KEYWORD_STEPS.length) {
           driverObj.current?.destroy();
           return;
         }
 
-        const nextStepConfig = STEPS[nextIndex];
+        const nextStepConfig = KEYWORD_STEPS[nextIndex];
 
-        // Always scroll to top before processing next step to ensure clean positioning
         window.scrollTo(0, 0);
 
-        // Check if route change is needed
         if (nextStepConfig.route !== pathname) {
-          // Need to change route
           window.sessionStorage.setItem(storageKey, nextIndex.toString());
-          driverObj.current?.destroy(); // Tear down UI on this page
+          driverObj.current?.destroy();
           router.push(nextStepConfig.route);
         } else {
-          // Same page, just move
           window.sessionStorage.setItem(storageKey, nextIndex.toString());
           driverObj.current?.moveNext();
         }
@@ -281,9 +254,8 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
 
         if (prevIndex < 0) return;
 
-        const prevStepConfig = STEPS[prevIndex];
+        const prevStepConfig = KEYWORD_STEPS[prevIndex];
 
-        // Always scroll to top
         window.scrollTo(0, 0);
 
         if (prevStepConfig.route !== pathname) {
@@ -296,44 +268,31 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
         }
       },
       onDestroyed: () => {
-        // Check if we are really done (i.e. user clicked "Finish" or "Skip" or "Close")
         const currentIndex = parseInt(
           window.sessionStorage.getItem(storageKey) || "0",
           10,
         );
 
-        // Only mark as complete if we're on the last step AND we're on the final route
-        // This prevents marking as complete when navigating TO the final step
         if (
-          currentIndex >= STEPS.length - 1 &&
-          pathname === STEPS[STEPS.length - 1]?.route
+          currentIndex >= KEYWORD_STEPS.length - 1 &&
+          pathname === KEYWORD_STEPS[KEYWORD_STEPS.length - 1]?.route
         ) {
-          clientApi.updateWalkthroughStatus().catch(console.error);
-          window.localStorage.setItem("leadly-walkthrough-completed", "true");
+          window.localStorage.setItem("leadly-keyword-walkthrough-completed", "true");
           window.sessionStorage.removeItem(storageKey);
         }
-        // Otherwise, we're just navigating and the tour will resume on the next page
       },
       onCloseClick: () => {
-        // Explicit close/skip
-        clientApi.updateWalkthroughStatus().catch(console.error);
-        window.localStorage.setItem("leadly-walkthrough-completed", "true");
+        window.localStorage.setItem("leadly-keyword-walkthrough-completed", "true");
         window.sessionStorage.removeItem(storageKey);
         driverObj.current?.destroy();
       },
     });
 
-    // Start the tour at the stored index
-    // Check if we are on the correct page for this index
-    const currentStepConfig = STEPS[storedStepIndex];
+    const currentStepConfig = KEYWORD_STEPS[storedStepIndex];
     if (currentStepConfig && currentStepConfig.route === pathname) {
-      // Ensure scroll is at top before starting
       window.scrollTo(0, 0);
 
-      // Give small delay for hydration/rendering.
-      // increased to 800ms to be safe with page transitions.
       setTimeout(() => {
-        // Verify driver instance still exists (component didn't unmount in the meantime)
         if (driverObj.current) {
           driverObj.current.drive(storedStepIndex);
         }
@@ -341,9 +300,8 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
     }
 
     return () => {
-      // Cleanup not typically needed as driver cleanup is handled via destroy
     };
-  }, [hasSeenWalkthrough, productMode, pathname, router]);
+  }, [productMode, pathname, router]);
 
   return null;
 }

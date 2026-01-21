@@ -72,6 +72,7 @@ export function KeywordSetsContent() {
         description="Define groups of keywords to monitor across platforms. Each group can be linked to multiple monitors for targeted match discovery."
         action={
           <Button
+            id="create-keyword-set-button"
             onClick={() => setCreateDialogOpen(true)}
             className="shadow-primary/20 shadow-lg"
           >

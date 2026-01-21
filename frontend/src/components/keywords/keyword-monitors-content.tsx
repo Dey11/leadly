@@ -104,6 +104,7 @@ export function KeywordMonitorsContent() {
               {monitors.length}/{planLimits.keywordMonitors} monitors
             </Badge>
             <Button
+              id="create-keyword-monitor-button"
               onClick={() => setCreateDialogOpen(true)}
               className="shadow-primary/20 shadow-lg"
               disabled={keywordSets.length === 0 || monitors.length >= planLimits.keywordMonitors}
@@ -128,7 +129,7 @@ export function KeywordMonitorsContent() {
         </Alert>
       )}
 
-      <section className="space-y-6">
+      <section id="keyword-monitor-list" className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           {monitorsQuery.isLoading ? (
             Array.from({ length: 2 }).map((_, i) => (

@@ -5,6 +5,7 @@ import { type DashboardNavItem } from "@/components/dashboard/nav";
 import { getAccountSummary, getScheduleLimits } from "@/lib/backend-queries";
 import type { AccountSummary } from "@/types/backend";
 import { Walkthrough } from "@/components/dashboard/walkthrough";
+import { KeywordWalkthrough } from "@/components/dashboard/keyword-walkthrough";
 
 const leadGenNavItems: DashboardNavItem[] = [
   { href: "/dashboard", label: "Overview", icon: "overview" },
@@ -106,6 +107,7 @@ export default async function DashboardLayout({
         limitsDescription={limitsDescription}
         accountName={account.name ?? "Leadly user"}
         accountEmail={account.email}
+        keywordWalkthrough={<KeywordWalkthrough />}
       >
         {children}
       </DashboardShell>

@@ -43,6 +43,7 @@ type DashboardShellProps = {
   limitsDescription: string;
   accountName?: string | null;
   accountEmail?: string | null;
+  keywordWalkthrough?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -53,6 +54,7 @@ export function DashboardShell({
   limitsDescription,
   accountName,
   accountEmail,
+  keywordWalkthrough,
   children,
 }: DashboardShellProps) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -75,11 +77,15 @@ export function DashboardShell({
   const resolvedEmail = accountEmail || "member@leadly.app";
 
   const restartWalkthrough = () => {
-    // Clear walkthrough completion flags
-    window.localStorage.removeItem("leadly-walkthrough-completed");
-    window.sessionStorage.removeItem("leadly-walkthrough-step");
-    // Redirect with query param to force walkthrough restart
-    window.location.href = "/dashboard?walkthrough=restart";
+    if (productMode === "keyword") {
+      window.localStorage.removeItem("leadly-keyword-walkthrough-completed");
+      window.sessionStorage.removeItem("leadly-keyword-walkthrough-step");
+      window.location.href = "/dashboard?keyword-walkthrough=restart";
+    } else {
+      window.localStorage.removeItem("leadly-walkthrough-completed");
+      window.sessionStorage.removeItem("leadly-walkthrough-step");
+      window.location.href = "/dashboard?walkthrough=restart";
+    }
   };
 
   const sidebarContent = (
@@ -297,6 +303,7 @@ export function DashboardShell({
             {children}
           </div>
         </main>
+        {keywordWalkthrough}
       </div>
 
       {isHydrated ? (
