@@ -12,6 +12,7 @@ The sections below summarise architecture, design decisions, API behaviour, and 
 ## Backend (`backend/`)
 
 ### Stack & entry points
+
 - **Runtime:** Node 20+ with Express 5 (`src/index.ts`) powering `/api/v1`.
 - **Database:** Prisma ORM (`prisma/schema.prisma`) backed by PostgreSQL.
 - **Queue & Cache:** BullMQ + Redis (`src/lib/queue.ts`, `src/lib/redis.ts`) for job queues and webhook idempotency.
@@ -22,6 +23,7 @@ The sections below summarise architecture, design decisions, API behaviour, and 
 - **Scraping:** Reddit API client (OAuth2) + scaffolding for Playwright-driven Nitter scraping (currently inactive).
 
 ### Module map
+
 - `src/routes/` hold Express routers grouped by resource:
   - `auth`, `account`, `icps`, `monitors`, `schedule`, `leads`, `scrape-jobs`
   - `billing` (Dodo Payments checkout & portal sessions)
@@ -34,7 +36,9 @@ The sections below summarise architecture, design decisions, API behaviour, and 
 - `src/workers/reddit.worker.ts` consumer process that executes queued scrape jobs.
 
 ### Data model essentials
+
 Entities (see `prisma/schema.prisma`):
+
 - `User`: Core identity, soft-deletable (`isDeleted`).
 - `Subscription`: One-to-one with User. Tracks status (`ACTIVE`, `PAST_DUE`, etc.), tier (`FREE`, `PRO`, `PREMIUM`), current period end, and Dodo `subscriptionCustomerId`.
 - `Icp`: Ideal Customer Profile (name, persona, pains, signals) belonging to a user.
@@ -45,6 +49,7 @@ Entities (see `prisma/schema.prisma`):
 - `UserSchedule`: Defines when the scheduler should queue jobs for a user.
 
 ### Background processing pipeline
+
 1. **Scheduler** (`cron */30 * * * *`):
    - Locates users with `UserSchedule` matching the current hour.
    - Verifies active subscription (status `ACTIVE`).
@@ -61,9 +66,11 @@ Entities (see `prisma/schema.prisma`):
    - Updates `Subscription` status/tier and resets usage limits (`initializeOrResetUsagePeriod`) on renewal or plan change.
 
 ### Environment variables
+
 Defined in `src/env.ts` and `.env`. All are required unless noted:
 
 **Core & Auth**
+
 - `PORT` (default 3000)
 - `DATABASE_URL` (Postgres connection string)
 - `REDIS_URL` (default `redis://localhost:6380`)
@@ -72,11 +79,13 @@ Defined in `src/env.ts` and `.env`. All are required unless noted:
 - `BACKEND_URL` (Self-reference for callbacks)
 
 **AI & Scraping**
+
 - `GOOGLE_GENERATIVE_AI_API_KEY` (Gemini API key)
 - `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USERNAME`
 - `NITTER_URL` (Required structure, even if unused)
 
 **Billing (Dodo Payments)**
+
 - `DODO_API_KEY` (Live/Test key)
 - `DODO_ENVIRONMENT` (`test_mode` or `live_mode`)
 - `DODO_WEBHOOK_SECRET` (from Dodo dashboard)
@@ -84,6 +93,7 @@ Defined in `src/env.ts` and `.env`. All are required unless noted:
 - `DODO_PREMIUM_PRODUCT_ID` (Product ID for Premium plan)
 
 ### Running the backend locally
+
 1. `pnpm install`
 2. Provision Postgres + Redis (ensure Redis is running for detailed job/webhook handling).
 3. Populate `.env` with all variables above.
@@ -94,6 +104,7 @@ Defined in `src/env.ts` and `.env`. All are required unless noted:
 > **Note:** The scheduler runs inside the API process, but the actual scraping happens in the worker process. Both must be running.
 
 ### API surface
+
 All routes live under `/api/v1`.
 
 **Auth & Account**
@@ -133,12 +144,14 @@ All routes live under `/api/v1`.
 ## Frontend (`frontend/`)
 
 ### Stack & global setup
+
 - **Framework:** Next.js 16 App Router (React 19).
 - **Styling:** Tailwind CSS v4, `tw-animate-css`, `shadcn`-compatible components in `src/components/ui`.
 - **State:** TanStack Query (`@tanstack/react-query`) for server state management.
 - **Icons:** `lucide-react`.
 
 ### Directory highlights
+
 - `src/app/` – App Router structure:
   - `(auth)`: Login/Register layouts.
   - `(dashboard)`: Authenticated app shell, includes `billing` pages.
@@ -149,6 +162,7 @@ All routes live under `/api/v1`.
 - `src/types/backend.ts` – TypeScript definitions matching Backend API responses.
 
 ### Data flow & session handling
+
 1. **Server-rendered reads:**
    - Components use helpers in `backend-queries.ts`.
    - Helpers resolve `BACKEND_URL` and forward the `session_token` cookie.
@@ -160,6 +174,7 @@ All routes live under `/api/v1`.
    - Optimistic updates or invalidation triggers UI refreshes.
 
 ### Key design decisions
+
 - **Auth Gate:** `src/app/(dashboard)/layout.tsx` validates session on server entry.
 - **Design Mode:** `NEXT_PUBLIC_DESIGN_MODE=1` enables mock data for UI development without a running backend.
 - **Billing Flow:**
@@ -169,11 +184,13 @@ All routes live under `/api/v1`.
   - UI typically polls or relies on React Query invalidation to reflect "PRO" status.
 
 ### Environment & scripts
+
 - `.env.local`: `NEXT_PUBLIC_BACKEND_URL` (e.g., `http://localhost:3000`).
 - `pnpm dev`: Start dev server.
 - `pnpm build`: Build production bundle.
 
 ### Known gaps / observations
+
 - **Client Logic:** Assumes `session_token` is always cookie-managed.
 - **Platform Support:** UI hardcodes `REDDIT` options, though backend `Platform` enum is extensible.
 - **Billing Sync:** There's a slight race condition between user returning to the app and the webhook processing. The UI may need a refresh to gaze the new "PRO" badge immediately if the webhook is slow.
@@ -181,6 +198,7 @@ All routes live under `/api/v1`.
 ---
 
 ## End-to-end flow summary
+
 1. **Signup:** User registers. Backend creates `User` & `Subscription` (FREE).
 2. **Subscription:** User upgrades to PRO. Backend generates Dodo link. User pays. Webhook fires -> Backend updates `Subscription` to PRO + resets usage limits.
 3. **Setup:** User creates ICP (persona) and Monitors (subreddits).
@@ -193,6 +211,7 @@ All routes live under `/api/v1`.
 6. **Consumption:** User logs in. Dashboard shows fresh leads. User qualifies/disqualifies them.
 
 ## Operational notes
+
 - **Webhooks:** Critical for billing. If Redis is down, idempotent checks fail (or pass through depending on config), but mainly `REDIS_URL` is vital.
 - **CORS:** `FRONTEND_URL` in Backend `.env` must match the actual browser origin of the Frontend.
 - **Worker:** Must be running to process any scrapes.
