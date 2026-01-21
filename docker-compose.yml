@@ -1,6 +1,3 @@
-# Production docker-compose for Coolify deployment
-# Uses Coolify-managed PostgreSQL and Redis (not included here)
-
 services:
   leadly_backend:
     build:
