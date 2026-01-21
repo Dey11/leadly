@@ -6,3 +6,4 @@ backend/logs/
 backend/*.log
 .pnpm-store
 script
+.env.prod
