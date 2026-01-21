@@ -1,7 +1,9 @@
 import { Worker } from "bullmq";
+import cron from "node-cron";
 import { env } from "../env";
 import { processRedditScrape } from "../processors/reddit.processor";
 import logger from "../lib/logger";
+import { sendAllLogsToDiscord } from "../services/logger.service";
 
 const worker = new Worker(
   "scrapeJobs",
@@ -27,6 +29,16 @@ worker.on("failed", (job, err) => {
   }
 });
 
+// Hourly log posting (at xx:30 to offset from backend)
+cron.schedule(
+  "30 * * * *",
+  async () => {
+    logger.info("Running hourly log report (worker)");
+    await sendAllLogsToDiscord("worker");
+  },
+  { timezone: "UTC" },
+);
+
 process.on("SIGINT", async () => {
   logger.info("SIGINT received, closing worker...");
   await worker.close();
@@ -40,3 +52,4 @@ process.on("SIGTERM", async () => {
 });
 
 logger.info("Worker started");
+logger.info("Worker log scheduler started (hourly at xx:30).");

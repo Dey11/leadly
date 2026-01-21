@@ -1,6 +1,6 @@
 ## Todo
 
-- [ ] update offerings properly in backend & readme (constants)
+- [ ] update deps
 - [ ] gotta store more data regarding the customer, in the db, from the dodo portal
 - [ ] make a seed script for the db
 - [ ] run db migrations

@@ -23,6 +23,7 @@ import keywordMonitorRouter from "./routes/keyword-monitor";
 import keywordLeadRouter from "./routes/keyword-lead";
 import adminRouter from "./routes/admin";
 import { requestLogger } from "./middleware/request-logger";
+import { sendAllLogsToDiscord } from "./services/logger.service";
 
 const PORT = env.PORT;
 
@@ -91,6 +92,16 @@ const keywordScheduler = cron.schedule(
   {
     timezone: "UTC",
   },
+);
+
+// Hourly Log Report (at xx:00)
+cron.schedule(
+  "0 * * * *",
+  async () => {
+    logger.info("Running hourly log report");
+    await sendAllLogsToDiscord("backend");
+  },
+  { timezone: "UTC" },
 );
 
 const server = app.listen(PORT, () => {
