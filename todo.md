@@ -1,11 +1,6 @@
 ## Todo
 
-- [ ] update deps
 - [ ] gotta store more data regarding the customer, in the db, from the dodo portal
-- [ ] make a seed script for the db
-- [ ] run db migrations
-- [ ] make it prod ready and migrate providers -> docker stuff
-- [ ] schedule . leadly . leadly -> fix
 - [ ] weird mail icon in registration fix
 
 ## Future scope
