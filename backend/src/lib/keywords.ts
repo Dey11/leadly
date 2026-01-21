@@ -17,7 +17,6 @@ export function matchesWholeWord(text: string, keyword: string): boolean {
   return pattern.test(text);
 }
 
-
 /**
  * Check if a keyword matches fuzzily (>= 50% of words present)
  */
@@ -47,9 +46,7 @@ export function matchesKeyword(
   keyword: string,
   strict: boolean = true,
 ): boolean {
-  return strict
-    ? matchesWholeWord(text, keyword)
-    : matchesFuzzy(text, keyword);
+  return strict ? matchesWholeWord(text, keyword) : matchesFuzzy(text, keyword);
 }
 
 /**
@@ -138,7 +135,10 @@ export function getMatchingSnippet(
   }
 
   // 2. Check Body
-  if (post.post && keywords.some((kw) => matchesKeyword(post.post, kw, strict))) {
+  if (
+    post.post &&
+    keywords.some((kw) => matchesKeyword(post.post, kw, strict))
+  ) {
     return { type: "body", text: post.post };
   }
 

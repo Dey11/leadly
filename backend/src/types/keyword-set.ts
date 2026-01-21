@@ -19,9 +19,12 @@ export const updateKeywordSetSchema = z
       .optional(),
     isFuzzyMatch: z.boolean().optional(),
   })
-  .refine((data) => data.name || data.keywords || data.isFuzzyMatch !== undefined, {
-    message: "At least one field must be provided to update the KeywordSet.",
-  });
+  .refine(
+    (data) => data.name || data.keywords || data.isFuzzyMatch !== undefined,
+    {
+      message: "At least one field must be provided to update the KeywordSet.",
+    },
+  );
 
 export const keywordSetIdParamSchema = z.object({
   id: z.string().cuid(),
