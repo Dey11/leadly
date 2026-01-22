@@ -167,6 +167,7 @@ export function Hero() {
                     width={3720}
                     height={1718}
                     priority
+                    fetchPriority="high"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
                     className={`-mt-[5px] object-cover transition-opacity duration-500 ${
                       mounted && resolvedTheme === "dark"
@@ -180,6 +181,7 @@ export function Hero() {
                     width={3720}
                     height={1718}
                     priority
+                    fetchPriority="high"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
                     className={`-mt-[5px] object-cover transition-opacity duration-500 ${
                       mounted && resolvedTheme === "dark"

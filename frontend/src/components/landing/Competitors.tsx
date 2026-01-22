@@ -154,6 +154,7 @@ export function Competitors() {
                     alt="Leadly"
                     width={120}
                     height={32}
+                    loading="lazy"
                     className="h-8 w-auto dark:hidden"
                   />
                   <Image
@@ -161,6 +162,7 @@ export function Competitors() {
                     alt="Leadly"
                     width={120}
                     height={32}
+                    loading="lazy"
                     className="hidden h-8 w-auto dark:block"
                   />
                 </div>

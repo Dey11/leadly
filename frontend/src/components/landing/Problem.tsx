@@ -169,7 +169,7 @@ export function Problem() {
                   width={320}
                   height={256}
                   className="h-auto w-full object-contain"
-                  priority
+                  loading="lazy"
                 />
               </div>
             </motion.div>
