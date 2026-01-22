@@ -1,13 +1,9 @@
 import type { Icp, LeadType } from "@prisma/client";
-import { google } from "@ai-sdk/google";
 import { RedditPost } from "../types/reddit";
-import { generateObject } from "ai";
 import { z } from "zod";
 import { leadGenerationPrompt } from "../lib/prompts";
-import { MIN_RELEVANCE_SCORE, MODEL } from "../lib/constants";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { MIN_RELEVANCE_SCORE } from "../lib/constants";
+import { generateObject } from "../lib/ai";
 
 const VENDOR_PATTERNS = [
   /\bfor\s*hire\b/i,
@@ -31,8 +27,6 @@ export interface LeadData {
   author?: string;
   reasoning: string;
 }
-
-const model = google(MODEL);
 
 function buildIcpBrief(
   icp: Pick<
@@ -75,7 +69,6 @@ export async function processLeads(
 
   for (const post of posts) {
     const { object: leadsArray } = await generateObject({
-      model,
       temperature: 0.15,
       topP: 1,
       schema: z.array(

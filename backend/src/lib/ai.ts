@@ -1,6 +1,20 @@
 import { google } from "@ai-sdk/google";
+import { cerebras } from "@ai-sdk/cerebras";
+import { generateObject as aiGenerateObject } from "ai";
 import { MODEL_LITE, MODEL } from "./constants";
 import logger from "./logger";
+
+const PROVIDERS = [
+  {
+    name: "gemini",
+    model: google(MODEL),
+    lite: google(MODEL_LITE),
+  },
+  {
+    name: "cerebras",
+    model: cerebras("llama-3.3-70b"),
+  },
+];
 
 export const AI_SAFETY_SETTINGS = [
   {
@@ -27,6 +41,51 @@ export const AI_PROVIDER_OPTIONS = {
 
 export const modelLite = google(MODEL_LITE);
 export const modelFlash = google(MODEL);
+
+type GenerateOptions<T> = {
+  schema: z.Schema<T>;
+  prompt: string;
+  system?: string;
+  temperature?: number;
+  topP?: number;
+  providerOptions?: Record<string, unknown>;
+  lite?: boolean;
+};
+
+export async function generateObject<T>(opts: GenerateOptions<T>) {
+  const errors: Error[] = [];
+
+  for (const provider of PROVIDERS) {
+    const model = opts.lite && provider.lite ? provider.lite : provider.model;
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-deprecated
+      const result = await (aiGenerateObject as any)({
+        model,
+        schema: opts.schema,
+        prompt: opts.prompt,
+        system: opts.system,
+        temperature: opts.temperature,
+        topP: opts.topP,
+        providerOptions: opts.providerOptions,
+      });
+
+      if (errors.length > 0) {
+        logger.info(
+          `[AI] ${provider.name} succeeded after ${errors.length} fallback(s)`,
+        );
+      }
+
+      return result;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      errors.push(error);
+      logger.warn(`[AI] ${provider.name} failed: ${error.message}`);
+    }
+  }
+
+  throw new AggregateError(errors, "All AI providers failed");
+}
 
 export function handleAiError(
   error: unknown,

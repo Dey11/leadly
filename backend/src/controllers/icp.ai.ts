@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
-import { generateObject } from "ai";
 import { z } from "zod";
-import { modelLite, AI_PROVIDER_OPTIONS, handleAiError } from "../lib/ai";
+import { generateObject, AI_PROVIDER_OPTIONS, handleAiError } from "../lib/ai";
 
 function sanitizeInput(input: string): string {
   return input
@@ -154,7 +153,7 @@ export async function suggestIcp(req: Request, res: Response) {
     const sanitizedDescription = sanitizeInput(description);
 
     const { object: icpFields } = await generateObject({
-      model: modelLite,
+      lite: true,
       temperature: 0.2,
       schema: icpFieldsSchema,
       system: SYSTEM_PROMPT,

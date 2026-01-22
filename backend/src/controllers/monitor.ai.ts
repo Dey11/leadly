@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
-import { generateObject } from "ai";
 import { z } from "zod";
-import { modelLite, AI_PROVIDER_OPTIONS, handleAiError } from "../lib/ai";
+import { generateObject, AI_PROVIDER_OPTIONS, handleAiError } from "../lib/ai";
 import db from "../lib/db";
 
 const requestSchema = z.object({
@@ -73,7 +72,7 @@ Qualifying Signals: ${icp.qualifyingSignals}
 `.trim();
 
     const { object: result } = await generateObject({
-      model: modelLite,
+      lite: true,
       temperature: 0.3,
       schema: subredditsSchema,
       system: SYSTEM_PROMPT,
