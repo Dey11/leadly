@@ -4,6 +4,12 @@ import { cerebras } from "@ai-sdk/cerebras";
 import { generateObject as aiGenerateObject } from "ai";
 import { MODEL_LITE, MODEL } from "./constants";
 import logger from "./logger";
+import { createOpenAI } from "@ai-sdk/openai";
+
+const nebius = createOpenAI({
+  baseURL: "https://api.tokenfactory.nebius.com/v1",
+  apiKey: process.env.NEBIUS_API_KEY,
+});
 
 const PROVIDERS = [
   {
@@ -14,6 +20,10 @@ const PROVIDERS = [
   {
     name: "cerebras",
     model: cerebras("llama-3.3-70b"),
+  },
+  {
+    name: "nebius",
+    model: nebius.chat("meta-llama/Llama-3.3-70B-Instruct"),
   },
 ];
 
