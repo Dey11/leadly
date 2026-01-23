@@ -134,7 +134,8 @@ async function main() {
   });
   
   const allPassed = results.filter(r => r.passed).length;
-  const expected = 3; // Scenarios 1-3 should pass, scenario 4 should fail
+  // Scenarios 1-3 should pass (have expectedProvider), scenario 4 should fail (no expectedProvider)
+  const expected = scenarios.filter(s => s.expectedProvider !== null).length;
   
   console.log("\n" + "-".repeat(60));
   console.log(`Results: ${allPassed}/${expected} scenarios passed as expected`);

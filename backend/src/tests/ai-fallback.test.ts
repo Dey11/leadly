@@ -154,7 +154,9 @@ async function checkEnvironmentVariables() {
   for (const varName of requiredVars) {
     if (process.env[varName]) {
       present.push(varName);
-      console.log(`✅ ${varName}: Set (${process.env[varName]?.substring(0, 10)}...)`);
+      const key = process.env[varName] || "";
+      const masked = key.length > 4 ? `***${key.slice(-4)}` : "***";
+      console.log(`✅ ${varName}: Set (${masked})`);
     } else {
       missing.push(varName);
       console.log(`❌ ${varName}: Not set`);

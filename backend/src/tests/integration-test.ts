@@ -67,8 +67,9 @@ async function runTest(
     
     const duration = Date.now() - startTime;
     
+    const PREVIEW_LENGTH = 100;
     console.log(`   ✅ Success (${duration}ms)`);
-    console.log(`   Result preview:`, JSON.stringify(result.object).substring(0, 100) + "...");
+    console.log(`   Result preview:`, JSON.stringify(result.object).substring(0, PREVIEW_LENGTH) + "...");
     
     return {
       name: testConfig.name,
