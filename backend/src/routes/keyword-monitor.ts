@@ -7,18 +7,37 @@ import {
   updateKeywordMonitor,
 } from "../controllers/keyword-monitor";
 import { suggestSubreddits } from "../controllers/keyword-monitor.ai";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 
 const router = Router();
 
-router.use(authMiddleware);
+router.get("/", authMiddleware, userRateLimit("read"), getKeywordMonitors);
+router.get("/:id", authMiddleware, userRateLimit("read"), getKeywordMonitor);
 
-router.get("/", userRateLimit("read"), getKeywordMonitors);
-router.post("/", userRateLimit("write"), createKeywordMonitor);
-router.post("/ai/suggest", userRateLimit("ai"), suggestSubreddits);
-router.get("/:id", userRateLimit("read"), getKeywordMonitor);
-router.patch("/:id", userRateLimit("write"), updateKeywordMonitor);
-router.delete("/:id", userRateLimit("delete"), deleteKeywordMonitor);
+router.post(
+  "/",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("write"),
+  createKeywordMonitor,
+);
+router.post(
+  "/ai/suggest",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("ai"),
+  suggestSubreddits,
+);
+router.patch(
+  "/:id",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("write"),
+  updateKeywordMonitor,
+);
+router.delete(
+  "/:id",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("delete"),
+  deleteKeywordMonitor,
+);
 
 export default router;

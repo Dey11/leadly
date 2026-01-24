@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 import * as monitorController from "../controllers/monitor";
 import * as monitorAiController from "../controllers/monitor.ai";
@@ -8,13 +8,13 @@ const router = Router();
 
 router.post(
   "/ai/suggest-subreddits",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("ai"),
   monitorAiController.suggestSubreddits,
 );
 router.post(
   "/",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("write"),
   monitorController.createMonitor,
 );
@@ -26,13 +26,13 @@ router.get(
 );
 router.put(
   "/:id",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("write"),
   monitorController.updateMonitor,
 );
 router.delete(
   "/:id",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("delete"),
   monitorController.deleteMonitor,
 );

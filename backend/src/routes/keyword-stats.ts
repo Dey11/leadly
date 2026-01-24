@@ -5,8 +5,6 @@ import { userRateLimit } from "../lib/rate-limit";
 
 const router = Router();
 
-router.use(authMiddleware);
-
-router.get("/", userRateLimit("read"), getKeywordStats);
+router.get("/", authMiddleware, userRateLimit("read"), getKeywordStats);
 
 export default router;

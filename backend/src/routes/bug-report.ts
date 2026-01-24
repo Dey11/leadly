@@ -11,6 +11,7 @@ bugReportRouter.post(
   userRateLimit("write"),
   createBugReport,
 );
+
 bugReportRouter.get("/", authMiddleware, userRateLimit("read"), listBugReports);
 
 export default bugReportRouter;

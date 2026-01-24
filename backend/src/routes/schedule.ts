@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 import * as scheduleController from "../controllers/schedule";
 
@@ -11,17 +11,18 @@ router.get(
   userRateLimit("read"),
   scheduleController.getSchedule,
 );
-router.patch(
-  "/",
-  authMiddleware,
-  userRateLimit("write"),
-  scheduleController.updateSchedule,
-);
 router.get(
   "/limits",
   authMiddleware,
   userRateLimit("read"),
   scheduleController.getTierLimits,
+);
+
+router.patch(
+  "/",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("write"),
+  scheduleController.updateSchedule,
 );
 
 export default router;

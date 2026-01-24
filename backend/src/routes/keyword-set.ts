@@ -6,17 +6,31 @@ import {
   getKeywordSets,
   updateKeywordSet,
 } from "../controllers/keyword-set";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 
 const router = Router();
 
-router.use(authMiddleware);
+router.get("/", authMiddleware, userRateLimit("read"), getKeywordSets);
+router.get("/:id", authMiddleware, userRateLimit("read"), getKeywordSet);
 
-router.post("/", userRateLimit("write"), createKeywordSet);
-router.get("/", userRateLimit("read"), getKeywordSets);
-router.get("/:id", userRateLimit("read"), getKeywordSet);
-router.patch("/:id", userRateLimit("write"), updateKeywordSet);
-router.delete("/:id", userRateLimit("delete"), deleteKeywordSet);
+router.post(
+  "/",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("write"),
+  createKeywordSet,
+);
+router.patch(
+  "/:id",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("write"),
+  updateKeywordSet,
+);
+router.delete(
+  "/:id",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("delete"),
+  deleteKeywordSet,
+);
 
 export default router;

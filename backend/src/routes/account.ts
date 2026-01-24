@@ -7,21 +7,12 @@ import {
   getUsageSummary,
   updateWalkthroughStatus,
 } from "../controllers/account";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 
 export const accountRouter = Router();
 
 accountRouter.get("/", authMiddleware, userRateLimit("read"), getAccount);
-
-accountRouter.patch("/", authMiddleware, userRateLimit("write"), patchAccount);
-
-accountRouter.delete(
-  "/",
-  authMiddleware,
-  userRateLimit("delete"),
-  deleteAccount,
-);
 
 accountRouter.get(
   "/sessions",
@@ -36,9 +27,20 @@ accountRouter.get(
   userRateLimit("read"),
   getUsageSummary,
 );
+
+accountRouter.patch("/", authMiddleware, userRateLimit("write"), patchAccount);
+
 accountRouter.patch(
   "/walkthrough",
   authMiddleware,
   userRateLimit("write"),
   updateWalkthroughStatus,
+);
+
+// Delete account requires verified email
+accountRouter.delete(
+  "/",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("delete"),
+  deleteAccount,
 );

@@ -20,9 +20,14 @@ import { Label } from "@/components/ui/label";
 type AccountFormProps = {
   defaultName: string;
   defaultEmail: string;
+  emailVerified: boolean;
 };
 
-export function AccountForm({ defaultName, defaultEmail }: AccountFormProps) {
+export function AccountForm({
+  defaultName,
+  defaultEmail,
+  emailVerified,
+}: AccountFormProps) {
   const router = useRouter();
   const [name, setName] = useState(defaultName);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -121,9 +126,15 @@ export function AccountForm({ defaultName, defaultEmail }: AccountFormProps) {
               </p>
               <p className="text-muted-foreground text-xs">Current email</p>
             </div>
-            <span className="rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-600">
-              Verified
-            </span>
+            {emailVerified ? (
+              <span className="rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-600">
+                Verified
+              </span>
+            ) : (
+              <span className="rounded-full bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-600">
+                Unverified
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>

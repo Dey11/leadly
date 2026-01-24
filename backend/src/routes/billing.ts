@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 import {
   cancelSubscription,
@@ -10,25 +10,30 @@ import {
 
 const router = Router();
 
-router.post("/subscribe", authMiddleware, userRateLimit("billing"), subscribe);
+router.post(
+  "/subscribe",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("billing"),
+  subscribe,
+);
 
 router.post(
   "/preview-plan-change",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("billing"),
   previewPlanChange,
 );
 
 router.post(
   "/portal/manage",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("billing"),
   manageSubscription,
 );
 
 router.post(
   "/portal/cancel",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("billing"),
   cancelSubscription,
 );
