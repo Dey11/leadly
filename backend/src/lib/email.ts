@@ -208,7 +208,7 @@ export async function sendVerificationEmail(email: string, otp: string) {
         <div class="otp-code">${otp}</div>
       </div>
       <p style="margin: 0; color: ${COLORS.mutedText}; font-size: 14px;">
-        ⏱️ This code expires in <strong>15 minutes</strong>
+        ⏱️ This code expires in <strong>60 minutes</strong>
       </p>
     </div>
     <hr style="border: none; border-top: 1px solid ${COLORS.paleDogwood}; margin: 32px 0;" />
