@@ -19,6 +19,7 @@ import { TrustSafety } from "@/components/landing/TrustSafety";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Pricing } from "@/components/landing/Pricing";
+import { AnimatedDemo } from "@/components/landing/animated-demo";
 
 export const metadata: Metadata = {
   title: SEO_CONFIG.landing.main.title,
@@ -108,6 +109,7 @@ export default function HomePage() {
 
       <main>
         <Hero />
+        <AnimatedDemo />
         <Features />
         <DualMonitoring />
         <ThreeSteps />
