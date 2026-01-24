@@ -45,13 +45,13 @@ const DEMO_STEPS = [
 
 const TOTAL_DURATION = DEMO_STEPS.reduce((acc, step) => acc + step.duration, 0);
 
-// Navigation items for sidebar
+// Navigation items for sidebar - using simple icons
 const NAV_ITEMS = [
-  { id: "overview", label: "Overview", icon: "⬜" },
-  { id: "icps", label: "ICPs", icon: "📋" },
-  { id: "monitors", label: "Monitors", icon: "📡" },
-  { id: "leads", label: "Leads", icon: "✨" },
-  { id: "schedule", label: "Schedule", icon: "🕐" },
+  { id: "overview", label: "Overview" },
+  { id: "icps", label: "ICPs" },
+  { id: "monitors", label: "Monitors" },
+  { id: "leads", label: "Leads" },
+  { id: "schedule", label: "Schedule" },
 ];
 
 export function AnimatedDemo() {
@@ -105,88 +105,85 @@ export function AnimatedDemo() {
   const currentStepData = DEMO_STEPS[currentStep];
 
   return (
-    <section className="relative py-16 sm:py-20 lg:py-24">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section className="relative py-12 sm:py-16 lg:py-20">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="mb-10 text-center sm:mb-12">
-          <span className="text-primary mb-3 inline-block text-sm font-semibold uppercase tracking-wider">
-            See It In Action
-          </span>
-          <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-            How Leadly Works
+        <div className="mb-8 text-center sm:mb-10">
+          <h2 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
+            See how it works
           </h2>
-          <p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg">
-            Watch how easy it is to find and manage Reddit leads
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+            {currentStepData?.description}
           </p>
         </div>
 
         {/* Browser Frame */}
-        <div className="relative mx-auto max-w-4xl">
+        <div className="relative mx-auto max-w-3xl">
           {/* Browser Window */}
-          <div className="bg-card overflow-hidden rounded-xl border shadow-2xl">
+          <div className="bg-card overflow-hidden rounded-xl border shadow-xl sm:rounded-2xl">
             {/* Browser Header */}
-            <div className="bg-muted/50 border-b px-4 py-3">
-              <div className="flex items-center gap-4">
+            <div className="bg-muted/30 border-b px-3 py-2 sm:px-4 sm:py-2.5">
+              <div className="flex items-center gap-3 sm:gap-4">
                 {/* Traffic Lights */}
-                <div className="flex gap-2">
-                  <div className="size-3 rounded-full bg-[#ff5f57]" />
-                  <div className="size-3 rounded-full bg-[#febc2e]" />
-                  <div className="size-3 rounded-full bg-[#28c840]" />
+                <div className="flex gap-1.5 sm:gap-2">
+                  <div className="size-2.5 rounded-full bg-[#ff5f57] sm:size-3" />
+                  <div className="size-2.5 rounded-full bg-[#febc2e] sm:size-3" />
+                  <div className="size-2.5 rounded-full bg-[#28c840] sm:size-3" />
                 </div>
                 {/* URL Bar */}
-                <div className="bg-background flex-1 rounded-md px-4 py-1.5 text-center">
-                  <span className="text-muted-foreground text-sm">
-                    app.leadly.io/dashboard
+                <div className="bg-background/60 flex-1 rounded-md px-3 py-1 sm:py-1.5">
+                  <span className="text-muted-foreground text-xs sm:text-sm">
+                    app.leadly.io
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Dashboard Content */}
-            <div className="flex h-[400px] sm:h-[450px] lg:h-[500px]">
-              {/* Sidebar */}
-              <div className="bg-sidebar hidden w-48 shrink-0 border-r p-4 md:block">
+            <div className="flex min-h-[320px] sm:min-h-[380px] lg:min-h-[420px]">
+              {/* Sidebar - Hidden on mobile */}
+              <div className="bg-muted/10 hidden w-36 shrink-0 border-r p-3 sm:block lg:w-44 lg:p-4">
                 {/* Logo */}
-                <div className="mb-6 flex items-center gap-2">
-                  <div className="bg-primary size-8 rounded-lg" />
-                  <span className="text-foreground font-semibold">Leadly</span>
+                <div className="mb-4 flex items-center gap-2 lg:mb-5">
+                  <div className="bg-primary size-6 rounded-md lg:size-7" />
+                  <span className="text-foreground text-sm font-medium lg:text-base">Leadly</span>
                 </div>
 
                 {/* Nav Items */}
-                <nav className="space-y-1">
+                <nav className="space-y-0.5">
                   {NAV_ITEMS.map((item) => (
                     <div
                       key={item.id}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-300",
+                        "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-all duration-300 lg:px-3 lg:py-2 lg:text-sm",
                         activeNavItem === item.id
-                          ? "bg-primary/15 text-primary font-medium"
+                          ? "bg-primary/10 text-primary font-medium"
                           : "text-muted-foreground"
                       )}
                     >
-                      <span>{item.icon}</span>
+                      <div className={cn(
+                        "size-1.5 rounded-full",
+                        activeNavItem === item.id ? "bg-primary" : "bg-muted-foreground/30"
+                      )} />
                       <span>{item.label}</span>
-                      {activeNavItem === item.id && (
-                        <div className="bg-primary ml-auto size-2 animate-pulse rounded-full" />
-                      )}
                     </div>
                   ))}
                 </nav>
               </div>
 
               {/* Main Content */}
-              <div className="flex-1 overflow-hidden p-4 sm:p-6">
+              <div className="flex-1 overflow-hidden p-3 sm:p-4 lg:p-5">
                 {/* Content Header with Step Indicator */}
-                <div className="mb-6 flex items-center justify-between">
+                <div className="mb-4 flex items-center justify-between sm:mb-5">
                   <div>
-                    <div className="text-muted-foreground mb-1 text-xs font-medium uppercase tracking-wider">
+                    <div className="text-muted-foreground mb-0.5 text-[10px] font-medium uppercase tracking-wider sm:text-xs">
                       Step {currentStep + 1} of {DEMO_STEPS.length}
                     </div>
-                    <h3 className="text-foreground text-lg font-semibold sm:text-xl">
+                    <h3 className="text-foreground text-sm font-medium sm:text-base lg:text-lg">
                       {currentStepData?.title}
                     </h3>
                   </div>
-                  <div className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-full text-lg font-bold shadow-lg">
+                  <div className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-full text-sm font-semibold shadow sm:size-8 sm:text-base">
                     {currentStep + 1}
                   </div>
                 </div>
@@ -264,41 +261,41 @@ export function AnimatedDemo() {
               </div>
             </div>
 
-            {/* Progress Bar & Controls */}
-            <div className="border-t bg-muted/30 px-4 py-3">
-              <div className="flex items-center gap-4">
-                {/* Controls */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 flex size-8 items-center justify-center rounded-full transition-colors"
-                    aria-label={isPlaying ? "Pause" : "Play"}
-                  >
-                    {isPlaying ? (
-                      <Pause className="size-4" />
-                    ) : (
-                      <Play className="size-4 ml-0.5" />
-                    )}
-                  </button>
-                  <button
-                    onClick={resetDemo}
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80 flex size-8 items-center justify-center rounded-full transition-colors"
-                    aria-label="Restart"
-                  >
-                    <RotateCcw className="size-4" />
-                  </button>
-                </div>
+            {/* Controls Bar */}
+            <div className="border-t bg-muted/20 px-3 py-2 sm:px-4 sm:py-2.5">
+              <div className="flex items-center gap-3 sm:gap-4">
+                {/* Play/Pause */}
+                <button
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  className="bg-foreground text-background flex size-6 items-center justify-center rounded-full transition-transform hover:scale-105 sm:size-7"
+                  aria-label={isPlaying ? "Pause" : "Play"}
+                >
+                  {isPlaying ? (
+                    <Pause className="size-3 sm:size-3.5" />
+                  ) : (
+                    <Play className="ml-0.5 size-3 sm:size-3.5" />
+                  )}
+                </button>
 
                 {/* Progress Bar */}
-                <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
+                <div className="bg-muted h-1 flex-1 overflow-hidden rounded-full sm:h-1.5">
                   <div
                     className="bg-primary h-full transition-all duration-100 ease-linear"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
 
-                {/* Step Dots */}
-                <div className="flex gap-1.5">
+                {/* Restart */}
+                <button
+                  onClick={resetDemo}
+                  className="text-muted-foreground hover:text-foreground flex size-6 items-center justify-center rounded-full transition-colors sm:size-7"
+                  aria-label="Restart"
+                >
+                  <RotateCcw className="size-3 sm:size-3.5" />
+                </button>
+
+                {/* Step Dots - Hidden on mobile */}
+                <div className="hidden gap-1 sm:flex">
                   {DEMO_STEPS.map((step, index) => (
                     <button
                       key={step.id}
@@ -307,23 +304,18 @@ export function AnimatedDemo() {
                         setStepProgress(0);
                       }}
                       className={cn(
-                        "size-2.5 rounded-full transition-all",
+                        "size-1.5 rounded-full transition-all",
                         index === currentStep
                           ? "bg-primary scale-125"
                           : index < currentStep
-                          ? "bg-primary/50"
-                          : "bg-muted-foreground/30"
+                          ? "bg-primary/40"
+                          : "bg-muted-foreground/20"
                       )}
                       aria-label={`Go to step ${index + 1}`}
                     />
                   ))}
                 </div>
               </div>
-
-              {/* Step Description */}
-              <p className="text-muted-foreground mt-2 text-center text-sm">
-                {currentStepData?.description}
-              </p>
             </div>
           </div>
         </div>
@@ -336,16 +328,16 @@ export function AnimatedDemo() {
 
 function IcpFormStep({ progress }: { progress: number }) {
   return (
-    <div className="bg-card rounded-lg border p-4 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <h4 className="text-foreground font-medium">Define a new ICP</h4>
+    <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
+      <div className="mb-3 flex items-center justify-between sm:mb-4">
+        <h4 className="text-foreground text-sm font-medium sm:text-base">Define a new ICP</h4>
         <button
           className={cn(
-            "text-primary border-primary/30 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all",
-            progress > 20 && "bg-primary/10 ring-2 ring-primary/30"
+            "text-primary border-primary/30 rounded-md border px-2 py-1 text-xs font-medium transition-all sm:px-3 sm:py-1.5 sm:text-sm",
+            progress > 20 && "bg-primary/10 ring-1 ring-primary/30"
           )}
         >
-          ✨ Use AI Help
+          Use AI Help
         </button>
       </div>
 
@@ -394,8 +386,8 @@ function IcpFormStep({ progress }: { progress: number }) {
       {/* Create Button */}
       <button
         className={cn(
-          "bg-primary text-primary-foreground mt-4 w-full rounded-lg py-2 text-sm font-medium transition-all",
-          progress > 85 && "ring-2 ring-primary/50 scale-[1.02]"
+          "bg-primary text-primary-foreground mt-3 w-full rounded-md py-1.5 text-xs font-medium transition-all sm:mt-4 sm:rounded-lg sm:py-2 sm:text-sm",
+          progress > 85 && "ring-1 ring-primary/50"
         )}
       >
         Create ICP
@@ -406,10 +398,10 @@ function IcpFormStep({ progress }: { progress: number }) {
 
 function MonitorFormStep({ progress }: { progress: number }) {
   return (
-    <div className="bg-card rounded-lg border p-4 shadow-sm">
-      <h4 className="text-foreground mb-4 font-medium">Create new monitor</h4>
+    <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
+      <h4 className="text-foreground mb-3 text-sm font-medium sm:mb-4 sm:text-base">Create new monitor</h4>
 
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {/* ICP Select */}
         <div>
           <label className="text-muted-foreground mb-1 block text-xs">
@@ -472,8 +464,8 @@ function MonitorFormStep({ progress }: { progress: number }) {
 
       <button
         className={cn(
-          "bg-primary text-primary-foreground mt-4 w-full rounded-lg py-2 text-sm font-medium transition-all",
-          progress > 90 && "ring-2 ring-primary/50 scale-[1.02]"
+          "bg-primary text-primary-foreground mt-3 w-full rounded-md py-1.5 text-xs font-medium transition-all sm:mt-4 sm:rounded-lg sm:py-2 sm:text-sm",
+          progress > 90 && "ring-1 ring-primary/50"
         )}
       >
         Create monitor
@@ -490,18 +482,18 @@ function ScheduleStep({ progress }: { progress: number }) {
   const selectedHours = progress > 30 ? [1, 3, 5] : progress > 15 ? [1, 3] : progress > 5 ? [1] : [];
 
   return (
-    <div className="bg-card rounded-lg border p-4 shadow-sm">
-      <h4 className="text-foreground mb-2 font-medium">Scrape cadence</h4>
-      <p className="text-muted-foreground mb-4 text-xs">
-        Select up to 6 unique hours. Leadly will scrape your monitors at these times.
+    <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
+      <h4 className="text-foreground mb-1 text-sm font-medium sm:mb-2 sm:text-base">Scrape cadence</h4>
+      <p className="text-muted-foreground mb-3 text-[10px] sm:mb-4 sm:text-xs">
+        Select up to 6 unique hours for scraping.
       </p>
 
-      <div className="mb-4 grid grid-cols-3 gap-2">
+      <div className="mb-3 grid grid-cols-3 gap-1.5 sm:mb-4 sm:gap-2">
         {hours.map((hour, i) => (
           <div
             key={hour}
             className={cn(
-              "rounded-lg border px-3 py-2 text-center text-sm transition-all duration-300",
+              "rounded-md border px-2 py-1.5 text-center text-xs transition-all duration-300 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm",
               selectedHours.includes(i)
                 ? "bg-primary/15 border-primary/50 text-primary font-medium"
                 : "bg-input text-muted-foreground"
@@ -512,15 +504,15 @@ function ScheduleStep({ progress }: { progress: number }) {
         ))}
       </div>
 
-      <div className="text-muted-foreground mb-4 flex items-center justify-between text-xs">
+      <div className="text-muted-foreground mb-3 flex items-center justify-between text-[10px] sm:mb-4 sm:text-xs">
         <span>{selectedHours.length}/6 hours selected</span>
         <span className="text-primary">PRO Plan</span>
       </div>
 
       <button
         className={cn(
-          "bg-primary text-primary-foreground w-full rounded-lg py-2 text-sm font-medium transition-all",
-          progress > 85 && "ring-2 ring-primary/50 scale-[1.02]"
+          "bg-primary text-primary-foreground w-full rounded-md py-1.5 text-xs font-medium transition-all sm:rounded-lg sm:py-2 sm:text-sm",
+          progress > 85 && "ring-1 ring-primary/50"
         )}
       >
         Save schedule
@@ -531,10 +523,10 @@ function ScheduleStep({ progress }: { progress: number }) {
 
 function LeadsTableStep({ progress }: { progress: number }) {
   const leads = [
-    { name: "u/startup_dev", type: "WARM", topic: "Looking for analytics solution" },
-    { name: "u/saas_jenny", type: "WARM", topic: "Need help tracking metrics" },
-    { name: "u/founder_mike", type: "NEUTRAL", topic: "Comparing dashboard tools" },
-    { name: "u/tech_lead_sam", type: "COLD", topic: "General SaaS discussion" },
+    { name: "u/startup_dev", type: "WARM", topic: "Looking for analytics" },
+    { name: "u/saas_jenny", type: "WARM", topic: "Need help tracking" },
+    { name: "u/founder_mike", type: "NEUTRAL", topic: "Comparing tools" },
+    { name: "u/tech_sam", type: "COLD", topic: "General discussion" },
   ];
 
   const typeStyles: Record<string, string> = {
@@ -546,12 +538,12 @@ function LeadsTableStep({ progress }: { progress: number }) {
   return (
     <div className="bg-card rounded-lg border shadow-sm">
       {/* Table Header */}
-      <div className="border-b px-4 py-3">
-        <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground">
-          <div className="col-span-3">User</div>
-          <div className="col-span-2">Type</div>
-          <div className="col-span-5">Topic</div>
-          <div className="col-span-2">Status</div>
+      <div className="border-b px-2 py-2 sm:px-4 sm:py-2.5">
+        <div className="grid grid-cols-12 gap-1 text-[10px] font-medium text-muted-foreground sm:gap-2 sm:text-xs">
+          <div className="col-span-4 sm:col-span-3">User</div>
+          <div className="col-span-3 sm:col-span-2">Type</div>
+          <div className="col-span-5 hidden sm:block">Topic</div>
+          <div className="col-span-5 sm:col-span-2">Status</div>
         </div>
       </div>
 
@@ -561,29 +553,29 @@ function LeadsTableStep({ progress }: { progress: number }) {
           <div
             key={lead.name}
             className={cn(
-              "grid grid-cols-12 gap-2 px-4 py-3 text-sm transition-all duration-300",
+              "grid grid-cols-12 gap-1 px-2 py-2 text-xs transition-all duration-300 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm",
               progress > 20 + i * 15 ? "opacity-100" : "opacity-0",
               i === 0 && progress > 70 && "bg-primary/5"
             )}
           >
-            <div className="col-span-3 font-medium text-foreground truncate">
+            <div className="col-span-4 font-medium text-foreground truncate sm:col-span-3">
               {lead.name}
             </div>
-            <div className="col-span-2">
+            <div className="col-span-3 sm:col-span-2">
               <span
                 className={cn(
-                  "rounded-full border px-2 py-0.5 text-xs font-medium",
+                  "rounded-full border px-1.5 py-0.5 text-[10px] font-medium sm:px-2 sm:text-xs",
                   typeStyles[lead.type]
                 )}
               >
                 {lead.type}
               </span>
             </div>
-            <div className="col-span-5 text-muted-foreground truncate">
+            <div className="col-span-5 hidden text-muted-foreground truncate sm:block">
               {lead.topic}
             </div>
-            <div className="col-span-2">
-              <span className="text-xs text-muted-foreground">New</span>
+            <div className="col-span-5 sm:col-span-2">
+              <span className="text-[10px] text-muted-foreground sm:text-xs">New</span>
             </div>
           </div>
         ))}
@@ -597,40 +589,39 @@ function ContactStep({ progress }: { progress: number }) {
   const showContacted = progress >= 80;
 
   return (
-    <div className="bg-card rounded-lg border p-4 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
+      <div className="mb-3 flex items-center justify-between sm:mb-4">
         <div>
-          <h4 className="text-foreground font-medium">u/startup_dev</h4>
-          <p className="text-muted-foreground text-xs">
+          <h4 className="text-foreground text-sm font-medium sm:text-base">u/startup_dev</h4>
+          <p className="text-muted-foreground text-[10px] sm:text-xs">
             Looking for analytics solution
           </p>
         </div>
-        <span className="bg-primary/15 text-primary rounded-full border border-primary/20 px-3 py-1 text-xs font-medium">
+        <span className="bg-primary/15 text-primary rounded-full border border-primary/20 px-2 py-0.5 text-[10px] font-medium sm:px-3 sm:py-1 sm:text-xs">
           WARM
         </span>
       </div>
 
-      <div className="bg-muted/50 mb-4 rounded-lg p-3">
-        <p className="text-foreground text-sm">
-          "We've been struggling to find a good analytics tool for our SaaS.
-          Something that integrates well and doesn't break the bank..."
+      <div className="bg-muted/50 mb-3 rounded-md p-2 sm:mb-4 sm:rounded-lg sm:p-3">
+        <p className="text-foreground text-xs sm:text-sm">
+          "We've been struggling to find a good analytics tool for our SaaS..."
         </p>
         <a
           href="#"
-          className="text-primary mt-2 inline-block text-xs hover:underline"
+          className="text-primary mt-1.5 inline-block text-[10px] hover:underline sm:mt-2 sm:text-xs"
         >
-          View full post on Reddit →
+          View full post on Reddit
         </a>
       </div>
 
       {/* Status Dropdown */}
       <div className="relative">
-        <label className="text-muted-foreground mb-1 block text-xs">
+        <label className="text-muted-foreground mb-1 block text-[10px] sm:text-xs">
           Lead Status
         </label>
         <div
           className={cn(
-            "bg-input flex h-9 items-center justify-between rounded-md border px-3 text-sm transition-all",
+            "bg-input flex h-7 items-center justify-between rounded-md border px-2 text-xs transition-all sm:h-9 sm:px-3 sm:text-sm",
             (showDropdown || showContacted) && "border-primary/50"
           )}
         >
@@ -639,9 +630,9 @@ function ContactStep({ progress }: { progress: number }) {
               showContacted ? "text-emerald-600 font-medium" : "text-foreground"
             )}
           >
-            {showContacted ? "✓ Contacted" : "New"}
+            {showContacted ? "Contacted" : "New"}
           </span>
-          <span className="text-muted-foreground">▼</span>
+          <span className="text-muted-foreground text-[10px] sm:text-sm">▼</span>
         </div>
 
         {/* Dropdown */}
@@ -651,7 +642,7 @@ function ContactStep({ progress }: { progress: number }) {
               <div
                 key={status}
                 className={cn(
-                  "rounded px-3 py-1.5 text-sm cursor-pointer hover:bg-muted",
+                  "rounded px-2 py-1 text-xs cursor-pointer hover:bg-muted sm:px-3 sm:py-1.5 sm:text-sm",
                   status === "Contacted" && "bg-primary/10 text-primary"
                 )}
               >
@@ -663,8 +654,8 @@ function ContactStep({ progress }: { progress: number }) {
       </div>
 
       {showContacted && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 mt-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-center text-sm text-emerald-700 dark:text-emerald-400">
-          ✓ Lead marked as contacted!
+        <div className="animate-in fade-in slide-in-from-bottom-2 mt-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-2 text-center text-xs text-emerald-700 dark:text-emerald-400 sm:mt-4 sm:rounded-lg sm:p-3 sm:text-sm">
+          Lead marked as contacted
         </div>
       )}
     </div>
