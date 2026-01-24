@@ -3,6 +3,8 @@ import { env } from "../env";
 import { SUPPORT_EMAIL } from "./constants";
 import { SubscriptionTier } from "@prisma/client";
 import logger from "./logger";
+import path from "path";
+import fs from "fs";
 
 const resend = new Resend(env.RESEND_API_KEY);
 
@@ -17,6 +19,57 @@ const COLORS = {
   mutedText: "#5c3241",
 };
 
+const BRAND_LOGO_CONTENT_ID = "leadly-logo";
+const BRAND_LOGO_PNG_MIME_TYPE = "image/png";
+const BRAND_LOGO_SVG_MIME_TYPE = "image/svg+xml";
+
+function getBrandAttachments():
+  | Array<{
+    filename: string;
+    content: string;
+    contentType?: string;
+    contentId?: string;
+  }>
+  | undefined {
+  // Prefer PNG for maximum email client compatibility (Gmail often blocks inline SVG).
+  // Support both common working directories:
+  // - cwd = repo root  -> backend/assets/*
+  // - cwd = backend/   -> assets/*
+  const candidatePaths = [
+    path.resolve(process.cwd(), "backend/assets/logo.png"),
+    path.resolve(process.cwd(), "backend/assets/logo.svg"),
+    path.resolve(process.cwd(), "assets/logo.png"),
+    path.resolve(process.cwd(), "assets/logo.svg"),
+  ];
+
+  const logoPath = candidatePaths.find((p) => fs.existsSync(p));
+  if (!logoPath) {
+    logger.warn(
+      `Logo not found. Tried: ${candidatePaths.map((p) => JSON.stringify(p)).join(", ")}`,
+    );
+    return undefined;
+  }
+
+  try {
+    // Resend inline images require base64 content + contentId, referenced as <img src="cid:...">
+    const base64 = fs.readFileSync(logoPath).toString("base64");
+    const ext = path.extname(logoPath).toLowerCase();
+    const isPng = ext === ".png";
+    return [
+      {
+        filename: isPng ? "logo.png" : "logo.svg",
+        content: base64,
+        contentType: isPng ? BRAND_LOGO_PNG_MIME_TYPE : BRAND_LOGO_SVG_MIME_TYPE,
+        contentId: BRAND_LOGO_CONTENT_ID,
+      },
+    ];
+  } catch (error) {
+    logger.error("Failed to read logo file:", error);
+    return undefined;
+  }
+}
+
+const BRAND_ATTACHMENTS = getBrandAttachments();
 
 // Reusable email template wrapper
 function wrapEmailContent(content: string, preheader?: string): string {
@@ -103,7 +156,8 @@ function wrapEmailContent(content: string, preheader?: string): string {
               <!-- Header with Logo -->
               <tr>
                 <td style="text-align: center; padding-bottom: 32px;">
-                  <span style="font-size: 28px; font-weight: 700; color: ${COLORS.wine}; vertical-align: middle;">Leadly</span>
+                  <img src="cid:${BRAND_LOGO_CONTENT_ID}" alt="Leadly" width="48" height="48" style="display: inline-block; vertical-align: middle;" />
+                  <span style="font-size: 28px; font-weight: 700; color: ${COLORS.wine}; vertical-align: middle; margin-left: 12px;">Leadly</span>
                 </td>
               </tr>
               <!-- Main Content Card -->
@@ -141,6 +195,9 @@ function wrapEmailContent(content: string, preheader?: string): string {
 export async function sendVerificationEmail(email: string, otp: string) {
   const content = `
     <div style="text-align: center;">
+      <div style="width: 64px; height: 64px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+        <img src="cid:${BRAND_LOGO_CONTENT_ID}" alt="Leadly" width="64" height="64" />
+      </div>
       <h2 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 700; color: ${COLORS.licorice};">Welcome to Leadly! 🎉</h2>
       <p style="margin: 0 0 32px 0; color: ${COLORS.mutedText}; font-size: 16px; line-height: 1.6;">
         We're excited to have you on board. Use the code below to verify your email and start finding your perfect leads.
@@ -163,6 +220,7 @@ export async function sendVerificationEmail(email: string, otp: string) {
     to: email,
     subject: "🔐 Verify your email - Leadly",
     html: wrapEmailContent(content, "Your verification code is ready"),
+    attachments: BRAND_ATTACHMENTS,
   });
 
   if (error) {
@@ -207,6 +265,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     to: email,
     subject: "🔑 Reset your password - Leadly",
     html: wrapEmailContent(content, "Reset your Leadly password"),
+    attachments: BRAND_ATTACHMENTS,
   });
 
   if (error) {
@@ -248,6 +307,7 @@ export async function sendSubscriptionActiveEmail(
     to: email,
     subject: "🎉 Your subscription is active - Leadly",
     html: wrapEmailContent(content, "Welcome to Leadly Premium!"),
+    attachments: BRAND_ATTACHMENTS,
   });
 
   if (error) {
@@ -293,6 +353,7 @@ export async function sendSubscriptionOnHoldEmail(
       content,
       "Action required: Update your payment details",
     ),
+    attachments: BRAND_ATTACHMENTS,
   });
 
   if (error) {
@@ -336,6 +397,7 @@ export async function sendSubscriptionRenewedEmail(
       content,
       "Your Leadly subscription has been renewed",
     ),
+    attachments: BRAND_ATTACHMENTS,
   });
 
   if (error) {
@@ -399,6 +461,7 @@ export async function sendSubscriptionPlanChangedEmail(
       content,
       `Your Leadly plan has been updated to ${planName}`,
     ),
+    attachments: BRAND_ATTACHMENTS,
   });
 
   if (error) {
@@ -443,6 +506,7 @@ export async function sendSubscriptionCancelledEmail(
       content,
       "Your Leadly subscription has been cancelled",
     ),
+    attachments: BRAND_ATTACHMENTS,
   });
 
   if (error) {
@@ -484,6 +548,7 @@ export async function sendSubscriptionExpiredEmail(
     to: email,
     subject: "⏰ Your subscription has expired - Leadly",
     html: wrapEmailContent(content, "Your Leadly subscription needs attention"),
+    attachments: BRAND_ATTACHMENTS,
   });
 
   if (error) {
@@ -527,6 +592,7 @@ export async function sendSubscriptionFailedEmail(
     to: email,
     subject: "❌ Payment failed - Action required - Leadly",
     html: wrapEmailContent(content, "Your payment needs attention"),
+    attachments: BRAND_ATTACHMENTS,
   });
 
   if (error) {
