@@ -11,6 +11,29 @@ const nebius = createOpenAI({
   apiKey: process.env.NEBIUS_API_KEY,
 });
 
+export const AI_SAFETY_SETTINGS = [
+  {
+    category: "HARM_CATEGORY_HATE_SPEECH",
+    threshold: "BLOCK_MEDIUM_AND_ABOVE",
+  },
+  {
+    category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+    threshold: "BLOCK_MEDIUM_AND_ABOVE",
+  },
+  { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+  {
+    category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+    threshold: "BLOCK_MEDIUM_AND_ABOVE",
+  },
+];
+
+export const AI_PROVIDER_OPTIONS = {
+  google: {
+    structuredOutputs: true,
+    safetySettings: AI_SAFETY_SETTINGS,
+  },
+};
+
 const RETRY_CONFIG = {
   maxRetries: 3,
   initialDelayMs: 1000,
@@ -21,7 +44,12 @@ const RETRY_CONFIG = {
 function isRetryableError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
   const message = error.message.toLowerCase();
-  const errorString = JSON.stringify(error).toLowerCase();
+  let errorString = "";
+  try {
+    errorString = JSON.stringify(error).toLowerCase();
+  } catch {
+    errorString = "circular_error";
+  }
 
   return (
     message.includes("rate") ||
@@ -89,29 +117,6 @@ const PROVIDERS: Array<{
     model: nebius.chat("Qwen/Qwen3-235B-A22B"),
   },
 ];
-
-export const AI_SAFETY_SETTINGS = [
-  {
-    category: "HARM_CATEGORY_HATE_SPEECH",
-    threshold: "BLOCK_MEDIUM_AND_ABOVE",
-  },
-  {
-    category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-    threshold: "BLOCK_MEDIUM_AND_ABOVE",
-  },
-  { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-  {
-    category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-    threshold: "BLOCK_MEDIUM_AND_ABOVE",
-  },
-];
-
-export const AI_PROVIDER_OPTIONS = {
-  google: {
-    structuredOutputs: true,
-    safetySettings: AI_SAFETY_SETTINGS,
-  },
-};
 
 export const modelLite = google(MODEL_LITE);
 export const modelFlash = google(MODEL);
@@ -230,7 +235,12 @@ export function handleAiError(
   logger.error(`AI ${context} error:`, error);
 
   const errorMessage = error instanceof Error ? error.message : String(error);
-  const errorString = JSON.stringify(error);
+  let errorString = "";
+  try {
+    errorString = JSON.stringify(error);
+  } catch {
+    errorString = errorMessage;
+  }
 
   if (
     errorString.includes("PROHIBITED_CONTENT") ||

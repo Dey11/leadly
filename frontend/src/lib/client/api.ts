@@ -345,6 +345,13 @@ export const clientApi = {
     target: string;
     platform?: string;
   }) => request(`${apiBaseUrl}/keyword-monitors`, { method: "POST", body }),
+  suggestKeywordSubreddits: async (body: { keywordSetId: string }) => {
+    const response = await request<{ message: string; payload: string[] }>(
+      `${apiBaseUrl}/keyword-monitors/ai/suggest`,
+      { method: "POST", body },
+    );
+    return response.payload;
+  },
   updateKeywordMonitor: (
     id: string,
     body: { keywordSetId?: string; target?: string; status?: string },

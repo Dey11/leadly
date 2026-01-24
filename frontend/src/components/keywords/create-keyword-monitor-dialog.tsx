@@ -35,6 +35,24 @@ interface CreateKeywordMonitorDialogProps {
   maxMonitors?: number;
 }
 
+
+function SparkleIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z" />
+    </svg>
+  );
+}
+
 export function CreateKeywordMonitorDialog({
   open,
   onOpenChange,
@@ -46,6 +64,11 @@ export function CreateKeywordMonitorDialog({
   const [keywordSetId, setKeywordSetId] = useState("");
   const [target, setTarget] = useState("");
   const [error, setError] = useState<string | null>(null);
+  
+  // AI Suggestion State
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const createMutation = useMutation({
     mutationFn: (data: {
@@ -66,11 +89,30 @@ export function CreateKeywordMonitorDialog({
     setKeywordSetId("");
     setTarget("");
     setError(null);
+    setSuggestions([]);
+    setSuggestError(null);
   };
 
   const handleClose = (next: boolean) => {
     if (!next) resetForm();
     onOpenChange(next);
+  };
+
+  const handleSuggest = async () => {
+    if (!keywordSetId) return;
+    
+    setIsSuggesting(true);
+    setSuggestError(null);
+    setSuggestions([]);
+
+    try {
+      const results = await clientApi.suggestKeywordSubreddits({ keywordSetId });
+      setSuggestions(results);
+    } catch (err) {
+      setSuggestError("Failed to fetch suggestions");
+    } finally {
+      setIsSuggesting(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -132,7 +174,10 @@ export function CreateKeywordMonitorDialog({
               <Label htmlFor="keyword-set">Keyword Set</Label>
               <Select 
                 value={keywordSetId} 
-                onValueChange={setKeywordSetId}
+                onValueChange={(val) => {
+                  setKeywordSetId(val);
+                  setSuggestions([]); // Clear suggestions on change
+                }}
                 disabled={atLimit}
               >
                 <SelectTrigger>
@@ -149,7 +194,30 @@ export function CreateKeywordMonitorDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="target">Target Subreddit</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="target">Target Subreddit</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSuggest}
+                  disabled={isSuggesting || !keywordSetId || atLimit}
+                  className="text-primary h-auto px-2 py-1 text-xs"
+                >
+                  {isSuggesting ? (
+                    <span className="flex items-center gap-1">
+                      <span className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                      Suggesting...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <SparkleIcon className="h-3 w-3" />
+                      Suggest
+                    </span>
+                  )}
+                </Button>
+              </div>
+              
               <Input
                 id="target"
                 placeholder="e.g., r/saas or saas"
@@ -161,6 +229,30 @@ export function CreateKeywordMonitorDialog({
               <p className="text-muted-foreground text-xs">
                 Enter the subreddit name (with or without r/ prefix)
               </p>
+
+              {suggestError && (
+                <p className="text-xs text-red-500">{suggestError}</p>
+              )}
+
+              {suggestions.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-muted-foreground mb-1.5 text-xs">Click to use:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {suggestions.map((subreddit) => (
+                      <Button
+                        key={subreddit}
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setTarget(subreddit)}
+                        className="bg-primary/10 text-primary hover:bg-primary/20 h-auto rounded-full px-2.5 py-1 text-xs font-medium"
+                      >
+                        {subreddit}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {error && <p className="text-destructive text-sm">{error}</p>}

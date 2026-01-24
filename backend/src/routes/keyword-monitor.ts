@@ -6,6 +6,7 @@ import {
   getKeywordMonitors,
   updateKeywordMonitor,
 } from "../controllers/keyword-monitor";
+import { suggestSubreddits } from "../controllers/keyword-monitor.ai";
 import { authMiddleware } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 
@@ -15,6 +16,7 @@ router.use(authMiddleware);
 
 router.get("/", userRateLimit("read"), getKeywordMonitors);
 router.post("/", userRateLimit("write"), createKeywordMonitor);
+router.post("/ai/suggest", userRateLimit("ai"), suggestSubreddits);
 router.get("/:id", userRateLimit("read"), getKeywordMonitor);
 router.patch("/:id", userRateLimit("write"), updateKeywordMonitor);
 router.delete("/:id", userRateLimit("delete"), deleteKeywordMonitor);
