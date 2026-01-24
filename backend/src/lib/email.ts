@@ -25,11 +25,11 @@ const BRAND_LOGO_SVG_MIME_TYPE = "image/svg+xml";
 
 function getBrandAttachments():
   | Array<{
-    filename: string;
-    content: string;
-    contentType?: string;
-    contentId?: string;
-  }>
+      filename: string;
+      content: string;
+      contentType?: string;
+      contentId?: string;
+    }>
   | undefined {
   // Prefer PNG for maximum email client compatibility (Gmail often blocks inline SVG).
   // Support both common working directories:
@@ -59,7 +59,9 @@ function getBrandAttachments():
       {
         filename: isPng ? "logo.png" : "logo.svg",
         content: base64,
-        contentType: isPng ? BRAND_LOGO_PNG_MIME_TYPE : BRAND_LOGO_SVG_MIME_TYPE,
+        contentType: isPng
+          ? BRAND_LOGO_PNG_MIME_TYPE
+          : BRAND_LOGO_SVG_MIME_TYPE,
         contentId: BRAND_LOGO_CONTENT_ID,
       },
     ];

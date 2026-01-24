@@ -1,5 +1,5 @@
 import { readdir, readFile, stat } from "fs/promises";
-import { join, basename } from "path";
+import { join } from "path";
 import { env } from "../env";
 import logger from "../lib/logger";
 

@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatUtcHourListAsLocal } from "@/lib/format";
 
 interface CurrentScheduleCardProps {
   scheduledHours: number[];

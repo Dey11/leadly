@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatUtcHourAsLocal } from "@/lib/format";
 
 interface DashboardScheduleCardProps {
   schedule: { scheduledHours: number[] } | null;
@@ -43,14 +42,10 @@ export function DashboardScheduleCard({
   // Select prime hours (first 4 hours sorted)
   const primeHours = [...scheduledHours].sort((a, b) => a - b).slice(0, 4);
   const primeHoursLabel =
-    primeHours.length > 0
-      ? primeHours.map(formatHour).join(" · ")
-      : "";
+    primeHours.length > 0 ? primeHours.map(formatHour).join(" · ") : "";
 
   // Format schedule hour badges
-  const scheduleHourBadges = scheduledHours
-    .slice(0, 8)
-    .map(formatHour);
+  const scheduleHourBadges = scheduledHours.slice(0, 8).map(formatHour);
 
   return (
     <Card className="border-border/60 bg-card/95 rounded-3xl border shadow-sm">

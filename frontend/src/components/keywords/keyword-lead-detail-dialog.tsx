@@ -92,34 +92,34 @@ export function KeywordLeadDetailDialog({
 
                   const highlightText = (text: string) => {
                     if (!lead.matchedKeywords?.length) return text;
-                    
+
                     const pattern = new RegExp(
                       `\\b(${lead.matchedKeywords.join("|")})\\b`,
-                      "gi"
+                      "gi",
                     );
-                    
-                   const splitText = text.split(pattern);
+
+                    const splitText = text.split(pattern);
                     return splitText.map((part, i) =>
                       pattern.test(part) ? (
                         <span
                           key={i}
-                          className="bg-primary/20 text-primary font-medium rounded-sm px-0.5"
+                          className="bg-primary/20 text-primary rounded-sm px-0.5 font-medium"
                         >
                           {part}
                         </span>
                       ) : (
                         part
-                      )
+                      ),
                     );
                   };
 
                   return (
                     <div className="space-y-3">
-                      <p className="text-foreground text-lg font-semibold leading-relaxed">
+                      <p className="text-foreground text-lg leading-relaxed font-semibold">
                         {highlightText(title)}
                       </p>
                       {context && (
-                        <div className="text-muted-foreground max-h-64 overflow-y-auto border-l-2 border-primary/20 pl-4 text-sm whitespace-pre-wrap">
+                        <div className="text-muted-foreground border-primary/20 max-h-64 overflow-y-auto border-l-2 pl-4 text-sm whitespace-pre-wrap">
                           {highlightText(context)}
                         </div>
                       )}

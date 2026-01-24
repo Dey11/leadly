@@ -82,9 +82,7 @@ export function KeywordLeadsFilterBar({
     <div className="border-border/60 bg-card/80 rounded-3xl border p-6 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-foreground text-2xl font-semibold">
-            Matches
-          </h1>
+          <h1 className="text-foreground text-2xl font-semibold">Matches</h1>
           <p className="text-muted-foreground text-sm">
             Review and manage posts matching your keywords.
           </p>

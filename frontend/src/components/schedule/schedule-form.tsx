@@ -8,8 +8,6 @@ import { useProductMode } from "@/components/dashboard/product-mode-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatUtcHourAsLocal } from "@/lib/format";
-
 type ScheduleFormProps = {
   scheduledHours: number[];
   maxSelectable: number;
@@ -20,7 +18,7 @@ export function ScheduleForm({
   maxSelectable,
 }: ScheduleFormProps) {
   const [productMode] = useProductMode();
-  
+
   // Initialize with UTC hours directly - no conversion needed for state
   const [selected, setSelected] = useState<Set<number>>(
     () => new Set(scheduledHours),
@@ -37,7 +35,7 @@ export function ScheduleForm({
       // Since 'selected' already contains UTC hours, we just send them as is
       const utcHours = Array.from(selected.values());
       const payload = { scheduledHours: utcHours.sort((a, b) => a - b) };
-      
+
       // Call the correct API based on product mode
       if (productMode === "keyword") {
         return clientApi.updateKeywordSchedule(payload);
@@ -102,7 +100,7 @@ export function ScheduleForm({
               // This handles half-hour timezones correctly (e.g. 12 UTC -> 17:30 IST)
               const date = new Date();
               date.setUTCHours(utcHour, 0, 0, 0);
-              
+
               // Shift label by 30 mins for keyword mode to match execution time (xx:30)
               if (productMode === "keyword") {
                 date.setMinutes(date.getMinutes() + 30);

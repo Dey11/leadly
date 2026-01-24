@@ -67,7 +67,10 @@ export async function KeywordScheduleContent() {
             </CardContent>
           </Card>
 
-          <CurrentScheduleCard scheduledHours={scheduledHours} productMode="keyword" />
+          <CurrentScheduleCard
+            scheduledHours={scheduledHours}
+            productMode="keyword"
+          />
         </aside>
       </div>
     </div>

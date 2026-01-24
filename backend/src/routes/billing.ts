@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
+import { authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 import {
   cancelSubscription,

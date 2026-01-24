@@ -35,7 +35,6 @@ interface CreateKeywordMonitorDialogProps {
   maxMonitors?: number;
 }
 
-
 function SparkleIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -64,7 +63,7 @@ export function CreateKeywordMonitorDialog({
   const [keywordSetId, setKeywordSetId] = useState("");
   const [target, setTarget] = useState("");
   const [error, setError] = useState<string | null>(null);
-  
+
   // AI Suggestion State
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestError, setSuggestError] = useState<string | null>(null);
@@ -100,13 +99,15 @@ export function CreateKeywordMonitorDialog({
 
   const handleSuggest = async () => {
     if (!keywordSetId) return;
-    
+
     setIsSuggesting(true);
     setSuggestError(null);
     setSuggestions([]);
 
     try {
-      const results = await clientApi.suggestKeywordSubreddits({ keywordSetId });
+      const results = await clientApi.suggestKeywordSubreddits({
+        keywordSetId,
+      });
       setSuggestions(results);
     } catch (err) {
       setSuggestError("Failed to fetch suggestions");
@@ -172,8 +173,8 @@ export function CreateKeywordMonitorDialog({
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="keyword-set">Keyword Set</Label>
-              <Select 
-                value={keywordSetId} 
+              <Select
+                value={keywordSetId}
                 onValueChange={(val) => {
                   setKeywordSetId(val);
                   setSuggestions([]); // Clear suggestions on change
@@ -217,7 +218,7 @@ export function CreateKeywordMonitorDialog({
                   )}
                 </Button>
               </div>
-              
+
               <Input
                 id="target"
                 placeholder="e.g., r/saas or saas"
@@ -236,7 +237,9 @@ export function CreateKeywordMonitorDialog({
 
               {suggestions.length > 0 && (
                 <div className="mt-2">
-                  <p className="text-muted-foreground mb-1.5 text-xs">Click to use:</p>
+                  <p className="text-muted-foreground mb-1.5 text-xs">
+                    Click to use:
+                  </p>
                   <div className="flex flex-wrap gap-1.5">
                     {suggestions.map((subreddit) => (
                       <Button
@@ -266,7 +269,10 @@ export function CreateKeywordMonitorDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending || atLimit}>
+            <Button
+              type="submit"
+              disabled={createMutation.isPending || atLimit}
+            >
               {createMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
@@ -278,4 +284,3 @@ export function CreateKeywordMonitorDialog({
     </Dialog>
   );
 }
-
