@@ -238,6 +238,9 @@ function VerifyEmailLogic() {
                   : "Resend"}
             </button>
           </p>
+          <p className="text-muted-foreground text-sm">
+            Please check your spam folder as well.
+          </p>
           <Link
             href="/login"
             className="text-muted-foreground hover:text-foreground inline-block text-sm font-medium transition"
