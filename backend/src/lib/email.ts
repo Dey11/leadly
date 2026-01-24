@@ -3,8 +3,6 @@ import { env } from "../env";
 import { SUPPORT_EMAIL } from "./constants";
 import { SubscriptionTier } from "@prisma/client";
 import logger from "./logger";
-import fs from "fs";
-import path from "path";
 
 const resend = new Resend(env.RESEND_API_KEY);
 
@@ -19,24 +17,6 @@ const COLORS = {
   mutedText: "#5c3241",
 };
 
-// Read logo file for attachment
-// Note: We need to handle this carefully to work in both dev and prod if paths differ
-// Assuming standard repo structure for now
-const LOGO_PATH = path.join(
-  process.cwd(),
-  "../frontend/public/assets/logo.svg",
-);
-let LOGO_BUFFER: Buffer | null = null;
-
-try {
-  if (fs.existsSync(LOGO_PATH)) {
-    LOGO_BUFFER = fs.readFileSync(LOGO_PATH);
-  } else {
-    logger.warn(`Logo not found at ${LOGO_PATH}`);
-  }
-} catch (error) {
-  logger.error("Failed to read logo file:", error);
-}
 
 // Reusable email template wrapper
 function wrapEmailContent(content: string, preheader?: string): string {
@@ -123,8 +103,7 @@ function wrapEmailContent(content: string, preheader?: string): string {
               <!-- Header with Logo -->
               <tr>
                 <td style="text-align: center; padding-bottom: 32px;">
-                  <img src="cid:leadly-logo" alt="Leadly" width="48" height="48" style="display: inline-block; vertical-align: middle;" />
-                  <span style="font-size: 28px; font-weight: 700; color: ${COLORS.wine}; vertical-align: middle; margin-left: 12px;">Leadly</span>
+                  <span style="font-size: 28px; font-weight: 700; color: ${COLORS.wine}; vertical-align: middle;">Leadly</span>
                 </td>
               </tr>
               <!-- Main Content Card -->
@@ -162,9 +141,6 @@ function wrapEmailContent(content: string, preheader?: string): string {
 export async function sendVerificationEmail(email: string, otp: string) {
   const content = `
     <div style="text-align: center;">
-      <div style="width: 64px; height: 64px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
-        <img src="cid:leadly-logo" alt="Leadly" width="64" height="64" />
-      </div>
       <h2 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 700; color: ${COLORS.licorice};">Welcome to Leadly! 🎉</h2>
       <p style="margin: 0 0 32px 0; color: ${COLORS.mutedText}; font-size: 16px; line-height: 1.6;">
         We're excited to have you on board. Use the code below to verify your email and start finding your perfect leads.
@@ -187,16 +163,6 @@ export async function sendVerificationEmail(email: string, otp: string) {
     to: email,
     subject: "🔐 Verify your email - Leadly",
     html: wrapEmailContent(content, "Your verification code is ready"),
-    attachments: LOGO_BUFFER
-      ? [
-          {
-            filename: "logo.svg",
-            content: LOGO_BUFFER,
-            contentId: "leadly-logo",
-            contentType: "image/svg+xml",
-          },
-        ]
-      : undefined,
   });
 
   if (error) {
