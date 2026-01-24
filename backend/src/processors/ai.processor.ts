@@ -68,9 +68,7 @@ const leadSchema = z.object({
     .enum(["WARM", "COLD", "NEUTRAL"])
     .describe("the type of lead based on the reasoning"),
   id: z.string().describe("Post ID of the post/comment"),
-  url: z
-    .string()
-    .describe("URL to the post/comment. urlToPost/urlToComment"),
+  url: z.string().describe("URL to the post/comment. urlToPost/urlToComment"),
   author: z.string().describe("Author name/ID if available"),
   subreddit: z.string().describe("Subreddit name"),
   relevanceScore: z
