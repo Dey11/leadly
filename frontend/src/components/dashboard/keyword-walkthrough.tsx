@@ -49,7 +49,8 @@ const KEYWORD_STEPS: StepConfig[] = [
     element: "#keyword-leads-view",
     popover: {
       title: "Your Matches",
-      description: "Browse and filter all the keyword matches Leadly has found for you.",
+      description:
+        "Browse and filter all the keyword matches Leadly has found for you.",
       side: "top",
       align: "start",
     },
@@ -95,7 +96,8 @@ const KEYWORD_STEPS: StepConfig[] = [
     element: "#keyword-monitor-list",
     popover: {
       title: "Active Monitors",
-      description: "Track the status and performance of your keyword monitors here.",
+      description:
+        "Track the status and performance of your keyword monitors here.",
       side: "top",
       align: "start",
     },
@@ -197,7 +199,8 @@ export function KeywordWalkthrough() {
     if (forceRestart) {
       window.history.replaceState({}, "", window.location.pathname);
     } else if (
-      window.localStorage.getItem("leadly-keyword-walkthrough-completed") === "true"
+      window.localStorage.getItem("leadly-keyword-walkthrough-completed") ===
+      "true"
     ) {
       return;
     }
@@ -277,12 +280,18 @@ export function KeywordWalkthrough() {
           currentIndex >= KEYWORD_STEPS.length - 1 &&
           pathname === KEYWORD_STEPS[KEYWORD_STEPS.length - 1]?.route
         ) {
-          window.localStorage.setItem("leadly-keyword-walkthrough-completed", "true");
+          window.localStorage.setItem(
+            "leadly-keyword-walkthrough-completed",
+            "true",
+          );
           window.sessionStorage.removeItem(storageKey);
         }
       },
       onCloseClick: () => {
-        window.localStorage.setItem("leadly-keyword-walkthrough-completed", "true");
+        window.localStorage.setItem(
+          "leadly-keyword-walkthrough-completed",
+          "true",
+        );
         window.sessionStorage.removeItem(storageKey);
         driverObj.current?.destroy();
       },
@@ -299,8 +308,7 @@ export function KeywordWalkthrough() {
       }, 800);
     }
 
-    return () => {
-    };
+    return () => {};
   }, [productMode, pathname, router]);
 
   return null;

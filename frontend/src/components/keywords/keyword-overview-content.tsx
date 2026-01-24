@@ -1,11 +1,5 @@
 import Link from "next/link";
-import {
-  Layers,
-  ListChecks,
-  Radar,
-  Search,
-  Tags,
-} from "lucide-react";
+import { Layers, ListChecks, Radar, Search, Tags } from "lucide-react";
 import { RefreshController } from "@/components/shared/refresh-controller";
 
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
@@ -29,7 +23,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getKeywordStats, getKeywordSchedule, getAccountSessions } from "@/lib/backend-queries";
+import {
+  getKeywordStats,
+  getKeywordSchedule,
+  getAccountSessions,
+} from "@/lib/backend-queries";
 import { formatDateTime, formatRelative } from "@/lib/format";
 import { numberFormatter, JOB_STATUS_STYLES } from "@/constants/dashboard";
 
@@ -78,9 +76,7 @@ export async function KeywordOverviewContent() {
     matchesLast7Days > 0 ? "positive" : "neutral";
 
   const totalTrendLabel =
-    totalMatches > 0
-      ? `${totalMatches} total captured`
-      : "No matches yet";
+    totalMatches > 0 ? `${totalMatches} total captured` : "No matches yet";
   const totalTrendTone: "positive" | "negative" | "neutral" =
     totalMatches > 0 ? "positive" : "neutral";
 
@@ -227,7 +223,10 @@ export async function KeywordOverviewContent() {
                   </TableRow>
                 ) : (
                   recentActivity.map((activity) => (
-                    <TableRow key={activity.lastScrapeJob.id} className="border-border/40">
+                    <TableRow
+                      key={activity.lastScrapeJob.id}
+                      className="border-border/40"
+                    >
                       <TableCell className="text-foreground py-4 pr-4 pl-6 font-medium">
                         {activity.target}
                       </TableCell>
@@ -312,4 +311,3 @@ export async function KeywordOverviewContent() {
     </div>
   );
 }
-

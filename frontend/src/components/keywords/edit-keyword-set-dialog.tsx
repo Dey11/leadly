@@ -189,9 +189,9 @@ export function EditKeywordSetDialog({
                       </TooltipTrigger>
                       <TooltipContent className="max-w-[280px]">
                         <p>
-                          Enable to require exact phrase matches. Disable to match
-                          posts containing at least 50% of your keyword phrase
-                          words.
+                          Enable to require exact phrase matches. Disable to
+                          match posts containing at least 50% of your keyword
+                          phrase words.
                         </p>
                       </TooltipContent>
                     </Tooltip>

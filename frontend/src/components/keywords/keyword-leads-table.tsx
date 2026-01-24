@@ -130,7 +130,7 @@ export function KeywordLeadsTable({
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  <TableCell className="px-4 overflow-hidden">
+                  <TableCell className="overflow-hidden px-4">
                     <div className="text-foreground truncate font-medium">
                       {lead.content}
                     </div>

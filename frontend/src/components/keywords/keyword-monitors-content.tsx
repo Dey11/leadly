@@ -27,7 +27,9 @@ import { BILLING_PLANS, type BillingTier } from "@/constants/pricing";
 export function KeywordMonitorsContent() {
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [editingMonitor, setEditingMonitor] = useState<KeywordMonitor | null>(null);
+  const [editingMonitor, setEditingMonitor] = useState<KeywordMonitor | null>(
+    null,
+  );
   const [deletingMonitor, setDeletingMonitor] = useState<KeywordMonitor | null>(
     null,
   );
@@ -107,7 +109,10 @@ export function KeywordMonitorsContent() {
               id="create-keyword-monitor-button"
               onClick={() => setCreateDialogOpen(true)}
               className="shadow-primary/20 shadow-lg"
-              disabled={keywordSets.length === 0 || monitors.length >= planLimits.keywordMonitors}
+              disabled={
+                keywordSets.length === 0 ||
+                monitors.length >= planLimits.keywordMonitors
+              }
             >
               <Plus className="mr-2 h-4 w-4" /> Add Monitor
             </Button>
@@ -302,4 +307,3 @@ export function KeywordMonitorsContent() {
     </div>
   );
 }
-

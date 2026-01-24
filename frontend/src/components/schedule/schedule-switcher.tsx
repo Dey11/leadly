@@ -18,17 +18,22 @@ export function ScheduleSwitcher({
 
   useEffect(() => {
     // Read mode from localStorage
-    const stored = localStorage.getItem("leadly-product-mode") as ProductMode | null;
+    const stored = localStorage.getItem(
+      "leadly-product-mode",
+    ) as ProductMode | null;
     setMode(stored === "keyword" ? "keyword" : "leadgen");
 
     // Listen for mode changes
     const handleModeChange = () => {
-      const newMode = localStorage.getItem("leadly-product-mode") as ProductMode | null;
+      const newMode = localStorage.getItem(
+        "leadly-product-mode",
+      ) as ProductMode | null;
       setMode(newMode === "keyword" ? "keyword" : "leadgen");
     };
 
     window.addEventListener("leadly-mode-change", handleModeChange);
-    return () => window.removeEventListener("leadly-mode-change", handleModeChange);
+    return () =>
+      window.removeEventListener("leadly-mode-change", handleModeChange);
   }, []);
 
   // Show skeleton until mode is determined

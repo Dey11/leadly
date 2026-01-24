@@ -18,7 +18,9 @@ export function OverviewSwitcher({
 
   useEffect(() => {
     // Read mode from localStorage
-    const stored = localStorage.getItem("leadly-product-mode") as ProductMode | null;
+    const stored = localStorage.getItem(
+      "leadly-product-mode",
+    ) as ProductMode | null;
     setMode(stored === "keyword" ? "keyword" : "leadgen");
 
     // Listen for storage changes (when mode is toggled)
@@ -30,7 +32,9 @@ export function OverviewSwitcher({
 
     // Also listen for custom event for same-tab updates
     const handleModeChange = () => {
-      const newMode = localStorage.getItem("leadly-product-mode") as ProductMode | null;
+      const newMode = localStorage.getItem(
+        "leadly-product-mode",
+      ) as ProductMode | null;
       setMode(newMode === "keyword" ? "keyword" : "leadgen");
     };
 

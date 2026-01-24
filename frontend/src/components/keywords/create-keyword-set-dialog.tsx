@@ -192,9 +192,9 @@ export function CreateKeywordSetDialog({
                       </TooltipTrigger>
                       <TooltipContent className="max-w-[280px]">
                         <p>
-                          Enable to require exact phrase matches. Disable to match
-                          posts containing at least 50% of your keyword phrase
-                          words.
+                          Enable to require exact phrase matches. Disable to
+                          match posts containing at least 50% of your keyword
+                          phrase words.
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -219,7 +219,9 @@ export function CreateKeywordSetDialog({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="keywords">Keywords</Label>
-                <span className={`text-xs ${atKeywordLimit ? "text-destructive" : "text-muted-foreground"}`}>
+                <span
+                  className={`text-xs ${atKeywordLimit ? "text-destructive" : "text-muted-foreground"}`}
+                >
                   {keywords.length}/{keywordsLimit}
                 </span>
               </div>
@@ -279,7 +281,10 @@ export function CreateKeywordSetDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending || atSetLimit}>
+            <Button
+              type="submit"
+              disabled={createMutation.isPending || atSetLimit}
+            >
               {createMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
@@ -291,4 +296,3 @@ export function CreateKeywordSetDialog({
     </Dialog>
   );
 }
-

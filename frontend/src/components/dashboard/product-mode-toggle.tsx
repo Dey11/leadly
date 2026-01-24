@@ -76,10 +76,10 @@ export function useProductMode(): [ProductMode, (mode: ProductMode) => void] {
     if (newMode === mode) return; // No change
     setMode(newMode);
     localStorage.setItem("leadly-product-mode", newMode);
-    
+
     // Dispatch custom event for same-tab listeners (like OverviewSwitcher)
     window.dispatchEvent(new Event("leadly-mode-change"));
-    
+
     // Always navigate to dashboard when switching modes
     if (pathname === "/dashboard") {
       router.refresh();
@@ -90,4 +90,3 @@ export function useProductMode(): [ProductMode, (mode: ProductMode) => void] {
 
   return [isHydrated ? mode : "leadgen", updateMode];
 }
-
