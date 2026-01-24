@@ -177,6 +177,17 @@ export async function getKeywordMonitors() {
   }
 }
 
+export interface RecentMatch {
+  id: string;
+  content: string;
+  url: string;
+  platform: string;
+  status: string;
+  matchedKeywords: string[];
+  createdAt: string;
+  target: string;
+}
+
 export interface KeywordStats {
   keywordSetsCount: number;
   keywordMonitorsCount: number;
@@ -199,6 +210,7 @@ export interface KeywordStats {
       createdAt: string;
     };
   }>;
+  recentMatches: RecentMatch[];
 }
 
 export async function getKeywordStats() {

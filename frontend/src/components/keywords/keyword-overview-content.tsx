@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { Layers, ListChecks, Radar, Search, Tags } from "lucide-react";
+import {
+  ExternalLink,
+  FileText,
+  Layers,
+  ListChecks,
+  Radar,
+  Search,
+  Tags,
+} from "lucide-react";
 import { RefreshController } from "@/components/shared/refresh-controller";
 
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
@@ -47,6 +55,7 @@ export async function KeywordOverviewContent() {
   const recentActivity = stats?.recentActivity ?? [];
   const lastCompletedAt = stats?.lastCompletedAt ?? null;
   const lastJobMatches = stats?.lastJobMatches ?? 0;
+  const recentMatches = stats?.recentMatches ?? [];
 
   const keywordsTrendLabel =
     keywordSetsCount === 0
@@ -269,12 +278,53 @@ export async function KeywordOverviewContent() {
               Highlights from the latest keyword matches.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="border-border/60 bg-background/80 text-muted-foreground rounded-2xl border p-6 text-center text-sm">
-              Recent matches will appear here. (Coming soon)
-            </div>
+          <CardContent className="space-y-3 pt-4">
+            {recentMatches.length === 0 ? (
+              <div className="border-border/60 bg-background/80 text-muted-foreground flex flex-col items-center justify-center rounded-2xl border p-8 text-center">
+                <div className="bg-muted mb-3 flex h-12 w-12 items-center justify-center rounded-full">
+                  <FileText className="text-muted-foreground/50 h-6 w-6" />
+                </div>
+                <p className="text-foreground font-medium">No matches yet</p>
+                <p className="text-sm mt-1">Matches will appear here once your monitors find posts.</p>
+              </div>
+            ) : (
+              recentMatches.map((match) => {
+                const contentPreview = match.content.split("\n")[0].slice(0, 120);
+                return (
+                  <a
+                    key={match.id}
+                    href={match.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border-border/60 bg-background/80 hover:bg-primary/5 hover:border-primary/30 group flex flex-col gap-2 rounded-2xl border p-4 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-foreground line-clamp-2 text-sm font-medium leading-snug">
+                        {contentPreview}{contentPreview.length < match.content.split("\n")[0].length ? "..." : ""}
+                      </p>
+                      <ExternalLink className="text-muted-foreground group-hover:text-primary h-4 w-4 shrink-0 transition-colors" />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {match.matchedKeywords.slice(0, 3).map((kw, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">
+                          {kw}
+                        </Badge>
+                      ))}
+                      {match.matchedKeywords.length > 3 && (
+                        <span className="text-muted-foreground text-xs">+{match.matchedKeywords.length - 3} more</span>
+                      )}
+                    </div>
+                    <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                      <span className="text-primary font-medium">r/{match.target}</span>
+                      <span>•</span>
+                      <span>{formatRelative(match.createdAt)}</span>
+                    </div>
+                  </a>
+                );
+              })
+            )}
             <Button asChild variant="outline" className="w-full">
-              <Link href="/dashboard/keyword-leads">Open keyword matches</Link>
+              <Link href="/dashboard/keyword-leads">View all matches</Link>
             </Button>
           </CardContent>
         </Card>

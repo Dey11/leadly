@@ -105,6 +105,35 @@ export async function getKeywordStats(req: Request, res: Response) {
       },
     });
 
+    // Fetch recent keyword matches for the dashboard
+    const recentMatches = await db.keywordLead.findMany({
+      where: {
+        scrapeJob: {
+          keywordMonitor: { userId: req.userId! },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        content: true,
+        url: true,
+        platform: true,
+        status: true,
+        matchedKeywords: true,
+        createdAt: true,
+        scrapeJob: {
+          select: {
+            keywordMonitor: {
+              select: {
+                target: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
     res.json({
       message: "Keyword stats retrieved successfully.",
       payload: {
@@ -117,6 +146,16 @@ export async function getKeywordStats(req: Request, res: Response) {
         recentActivity,
         lastCompletedAt: lastCompletedJob?.completedAt?.toISOString() ?? null,
         lastJobMatches: lastCompletedJob?.matchCount ?? 0,
+        recentMatches: recentMatches.map((m) => ({
+          id: m.id,
+          content: m.content,
+          url: m.url,
+          platform: m.platform,
+          status: m.status,
+          matchedKeywords: m.matchedKeywords,
+          createdAt: m.createdAt.toISOString(),
+          target: m.scrapeJob.keywordMonitor.target,
+        })),
       },
     });
   } catch (err) {
