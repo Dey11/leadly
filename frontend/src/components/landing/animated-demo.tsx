@@ -80,8 +80,8 @@ export function AnimatedDemo() {
       currentTick++;
       setStepProgress((currentTick / ticksPerStep) * 100);
       setProgress(
-        ((currentStep * 100) / DEMO_STEPS.length) +
-          (currentTick / ticksPerStep) * (100 / DEMO_STEPS.length)
+        (currentStep * 100) / DEMO_STEPS.length +
+          (currentTick / ticksPerStep) * (100 / DEMO_STEPS.length),
       );
 
       if (currentTick >= ticksPerStep) {
@@ -170,7 +170,7 @@ export function AnimatedDemo() {
                         "size-7 rounded-md transition-all duration-300 lg:size-8",
                         activeNavItem === item.id
                           ? "bg-primary/15"
-                          : "bg-muted/40"
+                          : "bg-muted/40",
                       )}
                     />
                   ))}
@@ -182,7 +182,7 @@ export function AnimatedDemo() {
                 {/* Content Header with Step Indicator */}
                 <div className="mb-4 flex items-center justify-between sm:mb-5">
                   <div>
-                    <div className="text-muted-foreground mb-0.5 text-[10px] font-medium uppercase tracking-wider sm:text-xs">
+                    <div className="text-muted-foreground mb-0.5 text-[10px] font-medium tracking-wider uppercase sm:text-xs">
                       Step {currentStep + 1} of {DEMO_STEPS.length}
                     </div>
                     <h3 className="text-foreground text-sm font-medium sm:text-base lg:text-lg">
@@ -194,74 +194,27 @@ export function AnimatedDemo() {
                   </div>
                 </div>
 
-                {/* Dynamic Step Content */}
+                {/* Dynamic Step Content - key forces animation on step change */}
                 <div className="relative">
-                  {/* Step 1: ICP Form */}
                   <div
-                    className={cn(
-                      "absolute inset-0 transition-all duration-700 ease-out",
-                      currentStep === 0
-                        ? "translate-x-0 opacity-100"
-                        : "-translate-x-4 opacity-0 pointer-events-none"
-                    )}
+                    key={currentStep}
+                    className="animate-in fade-in slide-in-from-bottom-3 fill-mode-both duration-500 ease-out"
                   >
-                    <IcpFormStep progress={stepProgress} />
-                  </div>
-
-                  {/* Step 2: Monitor Form */}
-                  <div
-                    className={cn(
-                      "absolute inset-0 transition-all duration-700 ease-out",
-                      currentStep === 1
-                        ? "translate-x-0 opacity-100"
-                        : currentStep < 1
-                        ? "translate-x-4 opacity-0 pointer-events-none"
-                        : "-translate-x-4 opacity-0 pointer-events-none"
+                    {currentStep === 0 && (
+                      <IcpFormStep progress={stepProgress} />
                     )}
-                  >
-                    <MonitorFormStep progress={stepProgress} />
-                  </div>
-
-                  {/* Step 3: Schedule */}
-                  <div
-                    className={cn(
-                      "absolute inset-0 transition-all duration-700 ease-out",
-                      currentStep === 2
-                        ? "translate-x-0 opacity-100"
-                        : currentStep < 2
-                        ? "translate-x-4 opacity-0 pointer-events-none"
-                        : "-translate-x-4 opacity-0 pointer-events-none"
+                    {currentStep === 1 && (
+                      <MonitorFormStep progress={stepProgress} />
                     )}
-                  >
-                    <ScheduleStep progress={stepProgress} />
-                  </div>
-
-                  {/* Step 4: Leads Table */}
-                  <div
-                    className={cn(
-                      "absolute inset-0 transition-all duration-700 ease-out",
-                      currentStep === 3
-                        ? "translate-x-0 opacity-100"
-                        : currentStep < 3
-                        ? "translate-x-4 opacity-0 pointer-events-none"
-                        : "-translate-x-4 opacity-0 pointer-events-none"
+                    {currentStep === 2 && (
+                      <ScheduleStep progress={stepProgress} />
                     )}
-                  >
-                    <LeadsTableStep progress={stepProgress} />
-                  </div>
-
-                  {/* Step 5: Contact Lead */}
-                  <div
-                    className={cn(
-                      "absolute inset-0 transition-all duration-700 ease-out",
-                      currentStep === 4
-                        ? "translate-x-0 opacity-100"
-                        : currentStep < 4
-                        ? "translate-x-4 opacity-0 pointer-events-none"
-                        : "-translate-x-4 opacity-0 pointer-events-none"
+                    {currentStep === 3 && (
+                      <LeadsTableStep progress={stepProgress} />
                     )}
-                  >
-                    <ContactStep progress={stepProgress} />
+                    {currentStep === 4 && (
+                      <ContactStep progress={stepProgress} />
+                    )}
                   </div>
                 </div>
               </div>
@@ -278,22 +231,25 @@ export function AnimatedDemo() {
   );
 }
 
-
 // Step Components
 
 function IcpFormStep({ progress }: { progress: number }) {
   // Button states: normal -> clicked (75%) -> creating (85%)
   const isButtonClicked = progress > 75 && progress <= 88;
   const isCreating = progress > 88;
-  
+
   return (
     <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
       <div className="mb-3 flex items-center justify-between sm:mb-4">
-        <h4 className="text-foreground text-sm font-medium sm:text-base">Define a new ICP</h4>
+        <h4 className="text-foreground text-sm font-medium sm:text-base">
+          Define a new ICP
+        </h4>
         <button
           className={cn(
             "text-primary border-primary/30 rounded-md border px-2 py-1 text-xs font-medium transition-all sm:px-3 sm:py-1.5 sm:text-sm",
-            progress > 10 && progress < 25 && "bg-primary/10 ring-1 ring-primary/30"
+            progress > 10 &&
+              progress < 25 &&
+              "bg-primary/10 ring-primary/30 ring-1",
           )}
         >
           Use AI Help
@@ -306,10 +262,12 @@ function IcpFormStep({ progress }: { progress: number }) {
           <label className="text-muted-foreground mb-1 block text-xs">
             ICP Name
           </label>
-          <div className={cn(
-            "bg-input h-9 overflow-hidden rounded-md border px-3",
-            progress > 5 && progress < 60 && "border-primary/50"
-          )}>
+          <div
+            className={cn(
+              "bg-input h-9 overflow-hidden rounded-md border px-3",
+              progress > 5 && progress < 60 && "border-primary/50",
+            )}
+          >
             <TypewriterText
               text="SaaS Founders looking for analytics tools"
               progress={progress}
@@ -327,19 +285,19 @@ function IcpFormStep({ progress }: { progress: number }) {
           <div
             className={cn(
               "bg-input h-16 rounded-md border px-3 py-2",
-              progress > 55 && progress < 75 && "border-primary/50"
+              progress > 55 && progress < 75 && "border-primary/50",
             )}
           >
             <div
               className={cn(
                 "bg-muted h-2.5 w-3/4 rounded transition-all",
-                progress > 58 && "bg-primary/30"
+                progress > 58 && "bg-primary/30",
               )}
             />
             <div
               className={cn(
                 "bg-muted mt-1.5 h-2.5 w-1/2 rounded transition-all",
-                progress > 62 && "bg-primary/30"
+                progress > 62 && "bg-primary/30",
               )}
             />
           </div>
@@ -350,18 +308,20 @@ function IcpFormStep({ progress }: { progress: number }) {
       <button
         className={cn(
           "bg-primary text-primary-foreground mt-3 w-full rounded-md py-1.5 text-xs font-medium transition-all sm:mt-4 sm:rounded-lg sm:py-2 sm:text-sm",
-          isButtonClicked && "scale-[0.975] ring-2 ring-primary/50 brightness-90",
-          isCreating && "scale-100"
+          isButtonClicked &&
+            "ring-primary/50 scale-[0.975] ring-2 brightness-90",
+          isCreating && "scale-100",
         )}
       >
-        {isCreating ? (
-          <span className="flex items-center justify-center gap-1.5">
-            <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            Creating...
-          </span>
-        ) : (
-          "Create ICP"
-        )}
+        <span className="inline-flex items-center justify-center gap-1.5">
+          <span
+            className={cn(
+              "size-3 rounded-full border-2 border-current border-t-transparent transition-opacity",
+              isCreating ? "animate-spin opacity-100" : "w-0 opacity-0",
+            )}
+          />
+          {isCreating ? "Creating..." : "Create ICP"}
+        </span>
       </button>
     </div>
   );
@@ -374,7 +334,9 @@ function MonitorFormStep({ progress }: { progress: number }) {
 
   return (
     <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
-      <h4 className="text-foreground mb-3 text-sm font-medium sm:mb-4 sm:text-base">Create new monitor</h4>
+      <h4 className="text-foreground mb-3 text-sm font-medium sm:mb-4 sm:text-base">
+        Create new monitor
+      </h4>
 
       <div className="space-y-2 sm:space-y-3">
         {/* ICP Select - Selects at 10% */}
@@ -385,13 +347,13 @@ function MonitorFormStep({ progress }: { progress: number }) {
           <div
             className={cn(
               "bg-input flex h-9 items-center justify-between rounded-md border px-3 text-sm",
-              progress > 5 && progress < 20 && "border-primary/50"
+              progress > 5 && progress < 20 && "border-primary/50",
             )}
           >
             <span
               className={cn(
                 "text-muted-foreground transition-all",
-                progress > 10 && "text-foreground"
+                progress > 10 && "text-foreground",
               )}
             >
               {progress > 10 ? "SaaS Founders" : "Select an ICP..."}
@@ -405,12 +367,19 @@ function MonitorFormStep({ progress }: { progress: number }) {
           <label className="text-muted-foreground mb-1 block text-xs">
             Target Subreddit
           </label>
-          <div className={cn(
-            "bg-input flex h-9 items-center rounded-md border px-3",
-            progress > 20 && progress < 50 && "border-primary/50"
-          )}>
+          <div
+            className={cn(
+              "bg-input flex h-9 items-center rounded-md border px-3",
+              progress > 20 && progress < 50 && "border-primary/50",
+            )}
+          >
             <span className="text-muted-foreground mr-1">r/</span>
-            <TypewriterText text="SaaS" progress={progress} startAt={20} endAt={40} />
+            <TypewriterText
+              text="SaaS"
+              progress={progress}
+              startAt={20}
+              endAt={40}
+            />
           </div>
         </div>
 
@@ -427,13 +396,13 @@ function MonitorFormStep({ progress }: { progress: number }) {
                     key={sub}
                     className={cn(
                       "bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-medium transition-all",
-                      progress > 48 + i * 5 && "opacity-100 scale-100",
-                      progress <= 48 + i * 5 && "opacity-0 scale-95"
+                      progress > 48 + i * 5 && "scale-100 opacity-100",
+                      progress <= 48 + i * 5 && "scale-95 opacity-0",
                     )}
                   >
                     {sub}
                   </span>
-                )
+                ),
               )}
             </div>
           </div>
@@ -444,37 +413,47 @@ function MonitorFormStep({ progress }: { progress: number }) {
       <button
         className={cn(
           "bg-primary text-primary-foreground mt-3 w-full rounded-md py-1.5 text-xs font-medium transition-all sm:mt-4 sm:rounded-lg sm:py-2 sm:text-sm",
-          isButtonClicked && "scale-[0.975] ring-2 ring-primary/50 brightness-90",
-          isCreating && "scale-100"
+          isButtonClicked &&
+            "ring-primary/50 scale-[0.975] ring-2 brightness-90",
+          isCreating && "scale-100",
         )}
       >
-        {isCreating ? (
-          <span className="flex items-center justify-center gap-1.5">
-            <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            Creating...
-          </span>
-        ) : (
-          "Create monitor"
-        )}
+        <span className="inline-flex items-center justify-center gap-1.5">
+          <span
+            className={cn(
+              "size-3 rounded-full border-2 border-current border-t-transparent transition-opacity",
+              isCreating ? "animate-spin opacity-100" : "w-0 opacity-0",
+            )}
+          />
+          {isCreating ? "Creating..." : "Create monitor"}
+        </span>
       </button>
     </div>
   );
 }
 
 function ScheduleStep({ progress }: { progress: number }) {
-  const hours = [
-    "12 AM", "4 AM", "8 AM", "12 PM", "4 PM", "8 PM",
-  ];
+  const hours = ["12 AM", "4 AM", "8 AM", "12 PM", "4 PM", "8 PM"];
 
   // Calculate which hours are selected and which is being "clicked"
-  const selectedHours = progress > 30 ? [1, 3, 5] : progress > 15 ? [1, 3] : progress > 5 ? [1] : [];
-  
+  const selectedHours =
+    progress > 30
+      ? [1, 3, 5]
+      : progress > 15
+        ? [1, 3]
+        : progress > 5
+          ? [1]
+          : [];
+
   // Determine which hour is being "clicked" right now (showing click animation)
-  const clickingHour = 
-    progress > 3 && progress <= 8 ? 1 :  // About to select 4 AM
-    progress > 13 && progress <= 18 ? 3 : // About to select 12 PM
-    progress > 28 && progress <= 33 ? 5 : // About to select 8 PM
-    null;
+  const clickingHour =
+    progress > 3 && progress <= 8
+      ? 1 // About to select 4 AM
+      : progress > 13 && progress <= 18
+        ? 3 // About to select 12 PM
+        : progress > 28 && progress <= 33
+          ? 5 // About to select 8 PM
+          : null;
 
   // Button states: normal -> clicked (75%) -> saving (88%)
   const isButtonClicked = progress > 75 && progress <= 88;
@@ -482,7 +461,9 @@ function ScheduleStep({ progress }: { progress: number }) {
 
   return (
     <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
-      <h4 className="text-foreground mb-1 text-sm font-medium sm:mb-2 sm:text-base">Scrape cadence</h4>
+      <h4 className="text-foreground mb-1 text-sm font-medium sm:mb-2 sm:text-base">
+        Scrape cadence
+      </h4>
       <p className="text-muted-foreground mb-3 text-[10px] sm:mb-4 sm:text-xs">
         Select up to 6 unique hours for scraping.
       </p>
@@ -491,7 +472,7 @@ function ScheduleStep({ progress }: { progress: number }) {
         {hours.map((hour, i) => {
           const isSelected = selectedHours.includes(i);
           const isBeingClicked = clickingHour === i;
-          
+
           return (
             <div
               key={hour}
@@ -500,7 +481,7 @@ function ScheduleStep({ progress }: { progress: number }) {
                 isSelected
                   ? "bg-primary/15 border-primary/50 text-primary font-medium"
                   : "bg-input text-muted-foreground",
-                isBeingClicked && "border-primary bg-primary/10"
+                isBeingClicked && "border-primary bg-primary/10",
               )}
             >
               {hour}
@@ -518,18 +499,20 @@ function ScheduleStep({ progress }: { progress: number }) {
       <button
         className={cn(
           "bg-primary text-primary-foreground w-full rounded-md py-1.5 text-xs font-medium transition-all sm:rounded-lg sm:py-2 sm:text-sm",
-          isButtonClicked && "scale-[0.975] ring-2 ring-primary/50 brightness-90",
-          isSaving && "scale-100"
+          isButtonClicked &&
+            "ring-primary/50 scale-[0.975] ring-2 brightness-90",
+          isSaving && "scale-100",
         )}
       >
-        {isSaving ? (
-          <span className="flex items-center justify-center gap-1.5">
-            <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            Saving...
-          </span>
-        ) : (
-          "Save schedule"
-        )}
+        <span className="inline-flex items-center justify-center gap-1.5">
+          <span
+            className={cn(
+              "size-3 rounded-full border-2 border-current border-t-transparent transition-opacity",
+              isSaving ? "animate-spin opacity-100" : "w-0 opacity-0",
+            )}
+          />
+          {isSaving ? "Saving..." : "Save schedule"}
+        </span>
       </button>
     </div>
   );
@@ -553,7 +536,7 @@ function LeadsTableStep({ progress }: { progress: number }) {
     <div className="bg-card rounded-lg border shadow-sm">
       {/* Table Header */}
       <div className="border-b px-2 py-2 sm:px-4 sm:py-2.5">
-        <div className="grid grid-cols-12 gap-1 text-[10px] font-medium text-muted-foreground sm:gap-2 sm:text-xs">
+        <div className="text-muted-foreground grid grid-cols-12 gap-1 text-[10px] font-medium sm:gap-2 sm:text-xs">
           <div className="col-span-4 sm:col-span-3">User</div>
           <div className="col-span-3 sm:col-span-2">Type</div>
           <div className="col-span-5 hidden sm:block">Topic</div>
@@ -569,27 +552,29 @@ function LeadsTableStep({ progress }: { progress: number }) {
             className={cn(
               "grid grid-cols-12 gap-1 px-2 py-2 text-xs transition-all duration-300 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm",
               progress > 20 + i * 15 ? "opacity-100" : "opacity-0",
-              i === 0 && progress > 70 && "bg-primary/5"
+              i === 0 && progress > 70 && "bg-primary/5",
             )}
           >
-            <div className="col-span-4 font-medium text-foreground truncate sm:col-span-3">
+            <div className="text-foreground col-span-4 truncate font-medium sm:col-span-3">
               {lead.name}
             </div>
             <div className="col-span-3 sm:col-span-2">
               <span
                 className={cn(
                   "rounded-full border px-1.5 py-0.5 text-[10px] font-medium sm:px-2 sm:text-xs",
-                  typeStyles[lead.type]
+                  typeStyles[lead.type],
                 )}
               >
                 {lead.type}
               </span>
             </div>
-            <div className="col-span-5 hidden text-muted-foreground truncate sm:block">
+            <div className="text-muted-foreground col-span-5 hidden truncate sm:block">
               {lead.topic}
             </div>
             <div className="col-span-5 sm:col-span-2">
-              <span className="text-[10px] text-muted-foreground sm:text-xs">New</span>
+              <span className="text-muted-foreground text-[10px] sm:text-xs">
+                New
+              </span>
             </div>
           </div>
         ))}
@@ -607,12 +592,14 @@ function ContactStep({ progress }: { progress: number }) {
     <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
       <div className="mb-3 flex items-center justify-between sm:mb-4">
         <div>
-          <h4 className="text-foreground text-sm font-medium sm:text-base">u/startup_dev</h4>
+          <h4 className="text-foreground text-sm font-medium sm:text-base">
+            u/startup_dev
+          </h4>
           <p className="text-muted-foreground text-[10px] sm:text-xs">
             Looking for analytics solution
           </p>
         </div>
-        <span className="bg-primary/15 text-primary rounded-full border border-primary/20 px-2 py-0.5 text-[10px] font-medium sm:px-3 sm:py-1 sm:text-xs">
+        <span className="bg-primary/15 text-primary border-primary/20 rounded-full border px-2 py-0.5 text-[10px] font-medium sm:px-3 sm:py-1 sm:text-xs">
           WARM
         </span>
       </div>
@@ -637,33 +624,41 @@ function ContactStep({ progress }: { progress: number }) {
         <div
           className={cn(
             "bg-input flex h-7 items-center justify-between rounded-md border px-2 text-xs transition-all sm:h-9 sm:px-3 sm:text-sm",
-            (showDropdown || showContacted) && "border-primary/50"
+            (showDropdown || showContacted) && "border-primary/50",
           )}
         >
           <span
             className={cn(
-              showContacted ? "text-emerald-600 font-medium" : "text-foreground"
+              showContacted
+                ? "font-medium text-emerald-600"
+                : "text-foreground",
             )}
           >
             {showContacted ? "Contacted" : "New"}
           </span>
           {/* Chevron - rotates when dropdown is open */}
-          <span className={cn(
-            "text-muted-foreground text-[10px] transition-transform duration-200 sm:text-sm",
-            showDropdown && "rotate-180"
-          )}>▼</span>
+          <span
+            className={cn(
+              "text-muted-foreground text-[10px] transition-transform duration-200 sm:text-sm",
+              showDropdown && "rotate-180",
+            )}
+          >
+            ▼
+          </span>
         </div>
 
         {/* Dropdown - opens upward to avoid cutoff */}
         {showDropdown && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 bg-popover absolute bottom-full left-0 right-0 z-10 mb-1 rounded-md border p-1 shadow-lg">
+          <div className="animate-in fade-in slide-in-from-bottom-2 bg-popover absolute right-0 bottom-full left-0 z-10 mb-1 rounded-md border p-1 shadow-lg">
             {["New", "Viewed", "Contacted", "Archived"].map((status) => (
               <div
                 key={status}
                 className={cn(
-                  "rounded px-2 py-1 text-xs cursor-pointer hover:bg-muted sm:px-3 sm:py-1.5 sm:text-sm transition-all",
+                  "hover:bg-muted cursor-pointer rounded px-2 py-1 text-xs transition-all sm:px-3 sm:py-1.5 sm:text-sm",
                   status === "Contacted" && "bg-primary/10 text-primary",
-                  status === "Contacted" && isClickingContacted && "scale-[0.975] ring-2 ring-primary/50"
+                  status === "Contacted" &&
+                    isClickingContacted &&
+                    "ring-primary/50 scale-[0.975] ring-2",
                 )}
               >
                 {status}
@@ -674,7 +669,7 @@ function ContactStep({ progress }: { progress: number }) {
       </div>
 
       {showContacted && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 mt-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-2 text-center text-xs text-emerald-700 dark:text-emerald-400 sm:mt-4 sm:rounded-lg sm:p-3 sm:text-sm">
+        <div className="animate-in fade-in slide-in-from-bottom-2 mt-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-2 text-center text-xs text-emerald-700 sm:mt-4 sm:rounded-lg sm:p-3 sm:text-sm dark:text-emerald-400">
           Lead marked as contacted
         </div>
       )}
