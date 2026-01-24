@@ -84,7 +84,7 @@ export function LeadDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0"
+        className="flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl"
       >
         <DialogHeader className="border-0 px-6 py-5">
           <div className="flex items-start justify-between gap-4">
@@ -160,7 +160,7 @@ export function LeadDetailDialog({
         </div>
 
         {lead ? (
-          <DialogFooter className="bg-card/90 p-2">
+          <DialogFooter className="bg-card/90 flex-col gap-2 p-4 sm:flex-row sm:p-2">
             <Select
               value={lead.status}
               onValueChange={(value) =>

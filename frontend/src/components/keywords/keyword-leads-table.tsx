@@ -67,8 +67,8 @@ export function KeywordLeadsTable({
   }, []);
 
   return (
-    <div className="border-border/60 bg-card/40 w-full overflow-hidden rounded-lg border shadow-sm backdrop-blur-sm">
-      <Table className="table-fixed">
+    <div className="border-border/60 bg-card/40 w-full overflow-x-auto rounded-lg border shadow-sm backdrop-blur-sm">
+      <Table className="min-w-[600px] table-fixed">
         <TableHeader className="bg-muted/30">
           <TableRow className="border-border/60 text-xs tracking-wide uppercase hover:bg-transparent">
             <TableHead className="text-muted-foreground w-12 px-4 font-semibold"></TableHead>

@@ -175,7 +175,7 @@ export async function KeywordOverviewContent() {
       <section className="grid gap-6 xl:grid-cols-[minmax(0,2.1fr)_minmax(0,1fr)]">
         <Card
           id="recent-activity"
-          className="border-border/60 bg-card/95 overflow-hidden rounded-3xl border shadow-sm"
+          className="border-border/60 bg-card/95 overflow-x-auto rounded-3xl border shadow-sm"
         >
           <CardHeader className="border-border/50 flex flex-col gap-3 border-b pb-6 md:flex-row md:items-center md:justify-between">
             <div>
@@ -189,7 +189,7 @@ export async function KeywordOverviewContent() {
             </Button>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
+            <Table className="min-w-[500px]">
               <TableHeader>
                 <TableRow className="border-border/60 text-xs tracking-wide uppercase hover:bg-transparent">
                   <TableHead className="text-muted-foreground py-3 pr-4 pl-6 font-semibold">

@@ -225,7 +225,6 @@ export async function OverviewContent() {
   return (
     <div className="flex flex-col gap-8 pb-12">
       <RefreshController />
-      <RefreshController />
       <section className="border-border/40 bg-card/60 relative overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur-md md:p-8">
         <div className="bg-primary/10 pointer-events-none absolute top-0 -right-10 h-64 w-64 rounded-full blur-[80px]" />
         <div className="relative z-10 flex flex-col gap-6">
@@ -271,7 +270,7 @@ export async function OverviewContent() {
       <section className="grid gap-6 xl:grid-cols-[minmax(0,2.1fr)_minmax(0,1fr)]">
         <Card
           id="recent-activity"
-          className="border-border/60 bg-card/95 overflow-hidden rounded-3xl border shadow-sm"
+          className="border-border/60 bg-card/95 overflow-x-auto rounded-3xl border shadow-sm"
         >
           <CardHeader className="border-border/50 flex flex-col gap-3 border-b pb-6 md:flex-row md:items-center md:justify-between">
             <div>
@@ -285,7 +284,7 @@ export async function OverviewContent() {
             </Button>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
+            <Table className="min-w-[600px]">
               <TableHeader>
                 <TableRow className="border-border/60 text-xs tracking-wide uppercase hover:bg-transparent">
                   <TableHead className="text-muted-foreground py-3 pr-4 pl-6 font-semibold">
@@ -316,7 +315,7 @@ export async function OverviewContent() {
                   <TableRow className="hover:bg-transparent">
                     <TableCell
                       colSpan={7}
-                      className="h-96 text-center whitespace-normal"
+                      className="h-48 text-center whitespace-normal"
                     >
                       <div className="flex h-full w-full flex-col items-center justify-center text-center">
                         <div className="bg-muted mb-3 flex h-12 w-12 items-center justify-center rounded-full">

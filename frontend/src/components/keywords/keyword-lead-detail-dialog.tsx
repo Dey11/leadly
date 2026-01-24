@@ -62,7 +62,7 @@ export function KeywordLeadDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex !max-h-[85vh] w-full !max-w-2xl flex-col overflow-hidden">
+      <DialogContent className="flex max-h-[85vh] w-full flex-col overflow-hidden sm:max-w-2xl">
         {leadQuery.isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="text-primary h-8 w-8 animate-spin" />
