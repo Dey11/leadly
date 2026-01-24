@@ -61,8 +61,8 @@ export async function KeywordScheduleContent() {
                 <span>{limits?.limits.selectableHours ?? 1}</span>
               </div>
               <p className="text-xs">
-                We will introduce upgrade flows soon. Billing and plan
-                management UI is already wired for when payments go live.
+                Need more capacity? Upgrade your plan to unlock additional
+                monitors and scrape hours.
               </p>
             </CardContent>
           </Card>
