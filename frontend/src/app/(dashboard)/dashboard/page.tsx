@@ -3,9 +3,6 @@ import { OverviewSkeleton } from "@/components/dashboard/overview/overview-skele
 import { OverviewContent } from "@/components/dashboard/overview/overview-content";
 import { KeywordOverviewContent } from "@/components/keywords/keyword-overview-content";
 import { OverviewSwitcher } from "@/components/dashboard/overview/overview-switcher";
-
-import { siteConfig } from "@/config/site";
-
 export const metadata = {
   title: "Dashboard",
 };

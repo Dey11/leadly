@@ -4,7 +4,6 @@ import type { LucideIcon } from "lucide-react";
 import { CalendarClock, Layers, Radar, Target } from "lucide-react";
 import {
   formatMinutesUntil,
-  formatUtcHourAsLocal,
   getMinutesUntilNextScrape,
   formatRelative,
 } from "@/lib/format";

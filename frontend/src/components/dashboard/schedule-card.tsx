@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatUtcHourAsLocal } from "@/lib/format";
 
 interface DashboardScheduleCardProps {
   schedule: { scheduledHours: number[] } | null;

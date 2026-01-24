@@ -8,8 +8,6 @@ import { useProductMode } from "@/components/dashboard/product-mode-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatUtcHourAsLocal } from "@/lib/format";
-
 type ScheduleFormProps = {
   scheduledHours: number[];
   maxSelectable: number;

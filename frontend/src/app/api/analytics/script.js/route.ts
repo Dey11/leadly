@@ -18,10 +18,7 @@ export async function GET() {
 
     // Replace the Umami endpoint with our proxy endpoint
     // This ensures tracking requests go to /api/send instead of /api/analytics/api/send
-    script = script.replace(
-      /(['"`])\/api\/send\1/g,
-      "'/api/send'"
-    );
+    script = script.replace(/(['"`])\/api\/send\1/g, "'/api/send'");
 
     return new NextResponse(script, {
       status: 200,

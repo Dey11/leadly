@@ -70,9 +70,9 @@ async function request<T = unknown>(
     if (response.status === 429) {
       const retryAfter =
         payload &&
-          typeof payload === "object" &&
-          "retryAfter" in payload &&
-          typeof (payload as Record<string, unknown>).retryAfter === "number"
+        typeof payload === "object" &&
+        "retryAfter" in payload &&
+        typeof (payload as Record<string, unknown>).retryAfter === "number"
           ? (payload as Record<string, number>).retryAfter
           : 60;
       toast.error("Rate limit exceeded", {

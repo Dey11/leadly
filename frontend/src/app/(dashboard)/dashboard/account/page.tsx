@@ -1,9 +1,6 @@
 import { Suspense } from "react";
 import { AccountSkeleton } from "@/components/account/account-skeleton";
 import { AccountContent } from "@/components/account/account-content";
-
-import { siteConfig } from "@/config/site";
-
 export const metadata = {
   title: "Account",
 };

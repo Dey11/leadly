@@ -1,7 +1,5 @@
 import { Suspense } from "react";
 import { KeywordLeadsContent } from "@/components/keywords/keyword-leads-content";
-import { siteConfig } from "@/config/site";
-
 export const metadata = {
   title: "Matches",
   description: "View your keyword matches and leads",
