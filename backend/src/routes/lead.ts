@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 import * as leadController from "../controllers/lead";
 
@@ -18,15 +18,16 @@ router.get(
   userRateLimit("read"),
   leadController.getLead,
 );
+
 router.patch(
   "/:id",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("write"),
   leadController.updateLead,
 );
 router.delete(
   "/:id",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("delete"),
   leadController.deleteLead,
 );

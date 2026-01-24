@@ -6,17 +6,31 @@ import {
   getKeywordLeads,
   updateKeywordLead,
 } from "../controllers/keyword-lead";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 
 const router = Router();
 
-router.use(authMiddleware);
+router.get("/", authMiddleware, userRateLimit("read"), getKeywordLeads);
+router.get(
+  "/export",
+  authMiddleware,
+  userRateLimit("read"),
+  exportKeywordLeads,
+);
+router.get("/:id", authMiddleware, userRateLimit("read"), getKeywordLead);
 
-router.get("/", userRateLimit("read"), getKeywordLeads);
-router.get("/export", userRateLimit("read"), exportKeywordLeads);
-router.get("/:id", userRateLimit("read"), getKeywordLead);
-router.patch("/:id", userRateLimit("write"), updateKeywordLead);
-router.delete("/:id", userRateLimit("delete"), deleteKeywordLead);
+router.patch(
+  "/:id",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("write"),
+  updateKeywordLead,
+);
+router.delete(
+  "/:id",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("delete"),
+  deleteKeywordLead,
+);
 
 export default router;

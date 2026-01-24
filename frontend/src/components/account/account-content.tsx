@@ -1,5 +1,6 @@
 import { AccountForm } from "@/components/account/account-form";
 import { DeleteAccountButton } from "@/components/account/delete-account-button";
+import { EmailVerificationForm } from "@/components/account/email-verification-form";
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/lib/backend-queries";
 import { formatDateTime } from "@/lib/format";
 import { BillingPanel } from "@/components/account/billing-panel";
+import { AlertTriangle } from "lucide-react";
 
 export async function AccountContent() {
   const [account, sessions, limits, usage] = await Promise.all([
@@ -46,6 +48,7 @@ export async function AccountContent() {
           <AccountForm
             defaultName={account.name}
             defaultEmail={account.email}
+            emailVerified={account.emailVerified}
           />
 
           <Card className="border-border/60 bg-background/85">
@@ -81,6 +84,27 @@ export async function AccountContent() {
         </section>
 
         <aside className="space-y-4">
+          {!account.emailVerified && (
+            <Card
+              className="border-amber-500/50 bg-amber-500/5"
+              id="verification"
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  Verify your email
+                </CardTitle>
+                <CardDescription>
+                  Verify your email to unlock all features including creating
+                  monitors and subscribing to plans.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <EmailVerificationForm email={account.email} />
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="border-border/60 bg-background/85">
             <CardHeader>
               <CardTitle>Workspace status</CardTitle>
@@ -91,6 +115,17 @@ export async function AccountContent() {
                 <span className="text-foreground font-medium">Plan</span>
                 <Badge variant="outline">{tierLabel}</Badge>
               </div>
+              {!account.emailVerified && (
+                <div className="flex items-center justify-between">
+                  <span className="text-foreground font-medium">Email</span>
+                  <Badge
+                    variant="outline"
+                    className="border-amber-500/50 text-amber-600 dark:text-amber-400"
+                  >
+                    Unverified
+                  </Badge>
+                </div>
+              )}
             </CardContent>
           </Card>
 

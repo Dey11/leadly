@@ -70,14 +70,33 @@ async function request<T = unknown>(
     if (response.status === 429) {
       const retryAfter =
         payload &&
-        typeof payload === "object" &&
-        "retryAfter" in payload &&
-        typeof (payload as Record<string, unknown>).retryAfter === "number"
+          typeof payload === "object" &&
+          "retryAfter" in payload &&
+          typeof (payload as Record<string, unknown>).retryAfter === "number"
           ? (payload as Record<string, number>).retryAfter
           : 60;
       toast.error("Rate limit exceeded", {
         description: `Please wait ${retryAfter} seconds before trying again.`,
         duration: 5000,
+      });
+    }
+
+    if (
+      response.status === 403 &&
+      payload &&
+      typeof payload === "object" &&
+      "code" in payload &&
+      (payload as Record<string, unknown>).code === "EMAIL_NOT_VERIFIED"
+    ) {
+      toast.error("Email verification required", {
+        description: "Please verify your email to perform this action.",
+        action: {
+          label: "Verify now",
+          onClick: () => {
+            window.location.href = "/dashboard/account#verification";
+          },
+        },
+        duration: 8000,
       });
     }
 

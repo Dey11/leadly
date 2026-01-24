@@ -110,7 +110,7 @@ export async function register(req: Request, res: Response) {
 
     const hashedPassword = await bcrypt.hash(payload.data.password, 10);
     const otp = crypto.randomInt(100000, 999999).toString();
-    const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    const otpExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 60 minutes
 
     // If unverified user exists, update instead of delete to prevent race condition
     if (findExistingUser && !findExistingUser.emailVerified) {
@@ -280,57 +280,17 @@ export async function login(req: Request, res: Response) {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
-    // In development, auto-verify unverified users on login
-    if (!userInDb.emailVerified) {
-      if (env.NODE_ENV === "development") {
-        // Auto-verify in development mode
-        await db.user.update({
-          where: { id: userInDb.id },
-          data: {
-            emailVerified: true,
-            emailOtp: null,
-            emailOtpExpiresAt: null,
-          },
-        });
-        logger.info(`[DEV] Auto-verified user ${userInDb.email} on login`);
-      } else {
-        const rateLimitCheck = await checkRateLimit(req, "resendOtp");
-        if (rateLimitCheck.exceeded) {
-          return res.status(429).json({
-            error: rateLimitCheck.error,
-            retryAfter: rateLimitCheck.retryAfter,
-          });
-        }
-
-        const otp = crypto.randomInt(100000, 999999).toString();
-        const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-        await db.user.update({
-          where: { id: userInDb.id },
-          data: { emailOtp: otp, emailOtpExpiresAt: otpExpiresAt },
-        });
-
-        try {
-          await sendVerificationEmail(userInDb.email, otp);
-          await incrementRateLimit(req, "resendOtp");
-        } catch (e) {
-          logger.error("Failed to resend verification email:", e);
-        }
-
-        return res.status(403).json({
-          error: "Email not verified",
-          requiresVerification: true,
-          email: userInDb.email,
-        });
-      }
-    }
-
+    // Allow both verified and unverified users to log in
+    // Unverified users will be restricted at the route level for protected operations
     const session = await createUserSession(userInDb.id);
 
     res
       .cookie("session_token", session.token, getCookieOptions())
       .status(200)
-      .json({ message: "Login successful" });
+      .json({
+        message: "Login successful",
+        emailVerified: userInDb.emailVerified,
+      });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
@@ -446,7 +406,7 @@ export async function resendVerificationEmail(req: Request, res: Response) {
     }
 
     const otp = crypto.randomInt(100000, 999999).toString();
-    const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    const otpExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 60 minutes
 
     await db.user.update({
       where: { id: user.id },

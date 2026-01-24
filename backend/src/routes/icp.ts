@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 import * as icpController from "../controllers/icp";
 import * as icpAiController from "../controllers/icp.ai";
@@ -8,13 +8,13 @@ const router = Router();
 
 router.post(
   "/ai/suggest",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("ai"),
   icpAiController.suggestIcp,
 );
 router.post(
   "/",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("write"),
   icpController.createIcp,
 );
@@ -22,13 +22,13 @@ router.get("/", authMiddleware, userRateLimit("read"), icpController.getIcps);
 router.get("/:id", authMiddleware, userRateLimit("read"), icpController.getIcp);
 router.patch(
   "/:id",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("write"),
   icpController.updateIcp,
 );
 router.delete(
   "/:id",
-  authMiddleware,
+  authMiddlewareVerifiedOnly,
   userRateLimit("delete"),
   icpController.deleteIcp,
 );
