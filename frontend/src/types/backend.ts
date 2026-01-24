@@ -85,6 +85,7 @@ export interface LeadSummary {
   url: string;
   author: string | null;
   status: LeadStatus;
+  aiProvider: string | null;
   createdAt: string;
 }
 

@@ -68,7 +68,7 @@ export function KeywordLeadsTable({
 
   return (
     <div className="border-border/60 bg-card/40 w-full overflow-hidden rounded-lg border shadow-sm backdrop-blur-sm">
-      <Table>
+      <Table className="table-fixed">
         <TableHeader className="bg-muted/30">
           <TableRow className="border-border/60 text-xs tracking-wide uppercase hover:bg-transparent">
             <TableHead className="text-muted-foreground w-12 px-4 font-semibold"></TableHead>
@@ -130,8 +130,8 @@ export function KeywordLeadsTable({
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  <TableCell className="px-4">
-                    <div className="text-foreground line-clamp-1 max-w-md font-medium">
+                  <TableCell className="px-4 overflow-hidden">
+                    <div className="text-foreground truncate font-medium">
                       {lead.content}
                     </div>
                   </TableCell>
@@ -196,7 +196,7 @@ export function KeywordLeadsTable({
                   <TableRow className="bg-muted/30 hover:bg-muted/30">
                     <TableCell colSpan={6} className="px-4 pt-0 pb-4">
                       <div className="border-border/60 ml-8 space-y-3 border-l-2 pl-6">
-                        <div className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
+                        <div className="text-foreground max-h-48 overflow-y-auto text-sm leading-relaxed whitespace-pre-wrap">
                           {lead.content}
                         </div>
                         <div className="space-y-2">

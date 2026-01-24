@@ -1,7 +1,7 @@
 import cors from "cors";
 import { env } from "./env";
 import logger from "./lib/logger";
-import express from "express";
+import express, { type RequestHandler } from "express";
 import cookieParser from "cookie-parser";
 import { authRouter } from "./routes/auth";
 import monitorRouter from "./routes/monitor";
@@ -48,7 +48,7 @@ app.post(
 );
 
 app.use(express.json());
-app.use(cookieParser());
+app.use(cookieParser() as RequestHandler);
 
 app.get("/", (req, res) => {
   res.send("Hello World");

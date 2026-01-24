@@ -78,6 +78,7 @@ async function executeCoreScrapeLogic(
         url: lead.url,
         author: lead.author,
         reasoning: lead.reasoning,
+        aiProvider: lead.aiProvider,
         status: "NEW" as LeadStatus,
       })),
       skipDuplicates: true,

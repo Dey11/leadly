@@ -62,7 +62,7 @@ export function KeywordLeadDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="flex !max-h-[85vh] w-full !max-w-2xl flex-col overflow-hidden">
         {leadQuery.isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="text-primary h-8 w-8 animate-spin" />
@@ -72,8 +72,8 @@ export function KeywordLeadDetailDialog({
             <p className="text-muted-foreground">Lead not found.</p>
           </div>
         ) : (
-          <>
-            <DialogHeader>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle className="text-lg">
                 Keyword Match Details
               </DialogTitle>
@@ -83,7 +83,7 @@ export function KeywordLeadDetailDialog({
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto py-4">
               <div className="bg-secondary/30 rounded-xl p-4">
                 {(() => {
                   const parts = lead.content.split("\n\n");
@@ -119,7 +119,7 @@ export function KeywordLeadDetailDialog({
                         {highlightText(title)}
                       </p>
                       {context && (
-                        <div className="text-muted-foreground border-l-2 border-primary/20 pl-4 text-sm whitespace-pre-wrap">
+                        <div className="text-muted-foreground max-h-64 overflow-y-auto border-l-2 border-primary/20 pl-4 text-sm whitespace-pre-wrap">
                           {highlightText(context)}
                         </div>
                       )}
@@ -175,7 +175,7 @@ export function KeywordLeadDetailDialog({
               </div>
             </div>
 
-            <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <DialogFooter className="flex-shrink-0 flex-col gap-2 border-t pt-4 sm:flex-row">
               <Button variant="outline" asChild>
                 <a href={lead.url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="mr-2 h-4 w-4" />
@@ -197,7 +197,7 @@ export function KeywordLeadDetailDialog({
                 Delete
               </Button>
             </DialogFooter>
-          </>
+          </div>
         )}
       </DialogContent>
     </Dialog>

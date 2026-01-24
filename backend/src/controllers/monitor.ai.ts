@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { generateObject, AI_PROVIDER_OPTIONS, handleAiError } from "../lib/ai";
+import { generateAIObject, handleAiError } from "../lib/ai";
 import db from "../lib/db";
 
 const requestSchema = z.object({
@@ -14,6 +14,8 @@ const subredditsSchema = z.object({
       "List of relevant subreddit names (e.g., 'r/SaaS', 'r/marketing')",
     ),
 });
+
+type SubredditsResult = z.infer<typeof subredditsSchema>;
 
 const SYSTEM_PROMPT = `You are an expert at finding online communities where specific customer personas hang out.
 
@@ -71,13 +73,12 @@ Value Proposition: ${icp.valueProposition}
 Qualifying Signals: ${icp.qualifyingSignals}
 `.trim();
 
-    const { object: result } = await generateObject({
+    const { object: result } = await generateAIObject<SubredditsResult>({
       lite: true,
       temperature: 0.3,
       schema: subredditsSchema,
       system: SYSTEM_PROMPT,
       prompt: `Suggest relevant subreddits for this ICP:\n\n${icpContext}`,
-      providerOptions: AI_PROVIDER_OPTIONS,
     });
 
     return res.json({

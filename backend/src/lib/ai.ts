@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { google } from "@ai-sdk/google";
 import { cerebras } from "@ai-sdk/cerebras";
-import { generateObject as aiGenerateObject } from "ai";
+import { generateObject, type LanguageModel } from "ai";
 import { MODEL_LITE, MODEL } from "./constants";
 import logger from "./logger";
 import { createOpenAI } from "@ai-sdk/openai";
@@ -11,7 +11,70 @@ const nebius = createOpenAI({
   apiKey: process.env.NEBIUS_API_KEY,
 });
 
-const PROVIDERS = [
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  initialDelayMs: 1000,
+  maxDelayMs: 10000,
+  backoffMultiplier: 2,
+};
+
+function isRetryableError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const message = error.message.toLowerCase();
+  const errorString = JSON.stringify(error).toLowerCase();
+
+  return (
+    message.includes("rate") ||
+    message.includes("quota") ||
+    message.includes("resource exhausted") ||
+    message.includes("too many requests") ||
+    message.includes("timeout") ||
+    errorString.includes("429") ||
+    errorString.includes("resource_exhausted")
+  );
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  providerName: string,
+): Promise<T> {
+  let lastError: Error | undefined;
+  let delay = RETRY_CONFIG.initialDelayMs;
+
+  for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (!isRetryableError(error) || attempt === RETRY_CONFIG.maxRetries) {
+        throw lastError;
+      }
+
+      logger.warn(
+        `[AI] ${providerName} attempt ${attempt + 1} failed (retryable): ${lastError.message}. Retrying in ${delay}ms...`,
+      );
+
+      await sleep(delay);
+      delay = Math.min(
+        delay * RETRY_CONFIG.backoffMultiplier,
+        RETRY_CONFIG.maxDelayMs,
+      );
+    }
+  }
+
+  throw lastError;
+}
+
+const PROVIDERS: Array<{
+  name: string;
+  model: LanguageModel;
+  lite?: LanguageModel;
+}> = [
   {
     name: "gemini",
     model: google(MODEL),
@@ -19,11 +82,11 @@ const PROVIDERS = [
   },
   {
     name: "cerebras",
-    model: cerebras("llama-3.3-70b"),
+    model: cerebras("zai-glm-4.7"),
   },
   {
     name: "nebius",
-    model: nebius.chat("meta-llama/Llama-3.3-70B-Instruct"),
+    model: nebius.chat("Qwen/Qwen3-235B-A22B"),
   },
 ];
 
@@ -53,49 +116,111 @@ export const AI_PROVIDER_OPTIONS = {
 export const modelLite = google(MODEL_LITE);
 export const modelFlash = google(MODEL);
 
-type GenerateOptions<T> = {
-  schema: z.Schema<T>;
+type BaseOptions = {
   prompt: string;
   system?: string;
   temperature?: number;
   topP?: number;
-  providerOptions?: Record<string, unknown>;
   lite?: boolean;
 };
 
-export async function generateObject<T>(opts: GenerateOptions<T>) {
+type GenerateObjectOptions<T> = BaseOptions & {
+  schema: z.ZodType<T>;
+};
+
+type GenerateArrayOptions<T> = BaseOptions & {
+  elementSchema: z.ZodType<T>;
+};
+
+/**
+ * Generate a structured object using AI with automatic provider fallback and retry logic.
+ * Returns both the generated object and the name of the provider that succeeded.
+ */
+export async function generateAIObject<T>(
+  opts: GenerateObjectOptions<T>,
+): Promise<{ object: T; providerName: string }> {
   const errors: Error[] = [];
 
   for (const provider of PROVIDERS) {
     const model = opts.lite && provider.lite ? provider.lite : provider.model;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-deprecated
-      const result = await (aiGenerateObject as any)({
-        model,
-        schema: opts.schema,
-        prompt: opts.prompt,
-        system: opts.system,
-        temperature: opts.temperature,
-        topP: opts.topP,
-        providerOptions: opts.providerOptions,
-      });
+      const result = await withRetry(
+        () =>
+          generateObject({
+            model,
+            schema: opts.schema,
+            prompt: opts.prompt,
+            system: opts.system,
+            temperature: opts.temperature,
+            topP: opts.topP,
+          }),
+        provider.name,
+      );
 
       if (errors.length > 0) {
         logger.info(
-          `[AI] ${provider.name} succeeded after ${errors.length} fallback(s)`,
+          `[AI] ${provider.name} succeeded after ${errors.length} provider fallback(s)`,
         );
       }
 
-      return result;
+      return { object: result.object as T, providerName: provider.name };
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       errors.push(error);
-      logger.warn(`[AI] ${provider.name} failed: ${error.message}`);
+      logger.warn(
+        `[AI] ${provider.name} exhausted all retries: ${error.message}`,
+      );
     }
   }
 
-  throw new AggregateError(errors, "All AI providers failed");
+  throw new AggregateError(errors, "All AI providers failed after retries");
+}
+
+/**
+ * Generate an array of structured objects using AI with automatic provider fallback and retry logic.
+ * Returns both the generated array and the name of the provider that succeeded.
+ */
+export async function generateAIArray<T>(
+  opts: GenerateArrayOptions<T>,
+): Promise<{ array: T[]; providerName: string }> {
+  const errors: Error[] = [];
+
+  for (const provider of PROVIDERS) {
+    const model = opts.lite && provider.lite ? provider.lite : provider.model;
+
+    try {
+      const result = await withRetry(
+        () =>
+          generateObject({
+            model,
+            output: "array",
+            schema: opts.elementSchema,
+            prompt: opts.prompt,
+            system: opts.system,
+            temperature: opts.temperature,
+            topP: opts.topP,
+          }),
+        provider.name,
+      );
+
+      if (errors.length > 0) {
+        logger.info(
+          `[AI] ${provider.name} succeeded after ${errors.length} provider fallback(s)`,
+        );
+      }
+
+      return { array: result.object as T[], providerName: provider.name };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      errors.push(error);
+      logger.warn(
+        `[AI] ${provider.name} exhausted all retries: ${error.message}`,
+      );
+    }
+  }
+
+  throw new AggregateError(errors, "All AI providers failed after retries");
 }
 
 export function handleAiError(

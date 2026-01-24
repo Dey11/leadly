@@ -335,12 +335,13 @@ model Lead {
   scrapeJobId String
   scrapeJob   ScrapeJob @relation(fields: [scrapeJobId], references: [id], onDelete: Cascade)
 
-  platform  Platform
-  leadType  LeadType
-  content   String   @db.Text
-  url       String   @unique
-  author    String?
-  reasoning String?  @db.Text
+  platform   Platform
+  leadType   LeadType
+  content    String   @db.Text
+  url        String   @unique
+  author     String?
+  reasoning  String?  @db.Text
+  aiProvider String?
 
   status LeadStatus @default(NEW)
 

@@ -205,6 +205,17 @@ export function LeadsTable({
                           </span>
                           <span> • </span>
                           <span>Detected via {lead.platform}</span>
+                          {lead.aiProvider && (
+                            <>
+                              <span> • </span>
+                              <span>
+                                AI:{" "}
+                                <span className="text-foreground capitalize">
+                                  {lead.aiProvider}
+                                </span>
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </TableCell>

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { generateObject, AI_PROVIDER_OPTIONS, handleAiError } from "../lib/ai";
+import { generateAIObject, handleAiError } from "../lib/ai";
 
 function sanitizeInput(input: string): string {
   return input
@@ -104,6 +104,8 @@ const icpFieldsSchema = z.object({
     .describe("Characteristics that indicate someone is NOT a fit"),
 });
 
+type IcpFields = z.infer<typeof icpFieldsSchema>;
+
 const SYSTEM_PROMPT = `You are an ICP (Ideal Customer Profile) extraction assistant.
 
 Your ONLY task is to analyze a business description and extract structured ICP fields.
@@ -152,13 +154,12 @@ export async function suggestIcp(req: Request, res: Response) {
 
     const sanitizedDescription = sanitizeInput(description);
 
-    const { object: icpFields } = await generateObject({
+    const { object: icpFields } = await generateAIObject<IcpFields>({
       lite: true,
       temperature: 0.2,
       schema: icpFieldsSchema,
       system: SYSTEM_PROMPT,
       prompt: `Extract ICP fields from this business description:\n\n${sanitizedDescription}`,
-      providerOptions: AI_PROVIDER_OPTIONS,
     });
 
     return res.json({
