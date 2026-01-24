@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ const DEMO_STEPS = [
     id: 2,
     title: "Create a Monitor",
     description: "Target specific subreddits for your ICP",
-    duration: 3000,
+    duration: 3500, // Slightly longer
     navItem: "monitors",
   },
   {
@@ -113,12 +114,12 @@ export function AnimatedDemo() {
             See how it works
           </h2>
           <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-            {currentStepData?.description}
+            Watch Leadly find and categorize your ideal leads in minutes
           </p>
         </div>
 
         {/* Browser Frame */}
-        <div className="relative mx-auto max-w-3xl">
+        <div className="relative mx-auto max-w-4xl">
           {/* Browser Window */}
           <div className="bg-card overflow-hidden rounded-xl border shadow-xl sm:rounded-2xl">
             {/* Browser Header */}
@@ -133,7 +134,7 @@ export function AnimatedDemo() {
                 {/* URL Bar */}
                 <div className="bg-background/60 flex-1 rounded-md px-3 py-1 sm:py-1.5">
                   <span className="text-muted-foreground text-xs sm:text-sm">
-                    app.leadly.io
+                    leadly.live
                   </span>
                 </div>
               </div>
@@ -142,31 +143,36 @@ export function AnimatedDemo() {
             {/* Dashboard Content */}
             <div className="flex min-h-[320px] sm:min-h-[380px] lg:min-h-[420px]">
               {/* Sidebar - Hidden on mobile */}
-              <div className="bg-muted/10 hidden w-36 shrink-0 border-r p-3 sm:block lg:w-44 lg:p-4">
-                {/* Logo */}
-                <div className="mb-4 flex items-center gap-2 lg:mb-5">
-                  <div className="bg-primary size-6 rounded-md lg:size-7" />
-                  <span className="text-foreground text-sm font-medium lg:text-base">Leadly</span>
+              <div className="bg-muted/10 hidden w-14 shrink-0 border-r py-3 sm:block lg:w-16">
+                {/* Leadly Logo */}
+                <div className="mb-3 flex justify-center">
+                  <div className="relative size-7 lg:size-8">
+                    <Image
+                      src="/assets/logo.svg"
+                      alt="Leadly"
+                      fill
+                      className="object-contain dark:hidden"
+                    />
+                    <Image
+                      src="/assets/logo-dark.svg"
+                      alt="Leadly"
+                      fill
+                      className="hidden object-contain dark:block"
+                    />
+                  </div>
                 </div>
-
                 {/* Nav Items */}
-                <nav className="space-y-0.5">
-                  {NAV_ITEMS.map((item) => (
+                <nav className="flex flex-col items-center gap-1.5">
+                  {NAV_ITEMS.map((item, index) => (
                     <div
                       key={item.id}
                       className={cn(
-                        "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-all duration-300 lg:px-3 lg:py-2 lg:text-sm",
+                        "size-7 rounded-md transition-all duration-300 lg:size-8",
                         activeNavItem === item.id
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-muted-foreground"
+                          ? "bg-primary/15"
+                          : "bg-muted/40"
                       )}
-                    >
-                      <div className={cn(
-                        "size-1.5 rounded-full",
-                        activeNavItem === item.id ? "bg-primary" : "bg-muted-foreground/30"
-                      )} />
-                      <span>{item.label}</span>
-                    </div>
+                    />
                   ))}
                 </nav>
               </div>
@@ -193,10 +199,10 @@ export function AnimatedDemo() {
                   {/* Step 1: ICP Form */}
                   <div
                     className={cn(
-                      "absolute inset-0 transition-all duration-500",
+                      "absolute inset-0 transition-all duration-700 ease-out",
                       currentStep === 0
                         ? "translate-x-0 opacity-100"
-                        : "-translate-x-8 opacity-0 pointer-events-none"
+                        : "-translate-x-4 opacity-0 pointer-events-none"
                     )}
                   >
                     <IcpFormStep progress={stepProgress} />
@@ -205,12 +211,12 @@ export function AnimatedDemo() {
                   {/* Step 2: Monitor Form */}
                   <div
                     className={cn(
-                      "absolute inset-0 transition-all duration-500",
+                      "absolute inset-0 transition-all duration-700 ease-out",
                       currentStep === 1
                         ? "translate-x-0 opacity-100"
                         : currentStep < 1
-                        ? "translate-x-8 opacity-0 pointer-events-none"
-                        : "-translate-x-8 opacity-0 pointer-events-none"
+                        ? "translate-x-4 opacity-0 pointer-events-none"
+                        : "-translate-x-4 opacity-0 pointer-events-none"
                     )}
                   >
                     <MonitorFormStep progress={stepProgress} />
@@ -219,12 +225,12 @@ export function AnimatedDemo() {
                   {/* Step 3: Schedule */}
                   <div
                     className={cn(
-                      "absolute inset-0 transition-all duration-500",
+                      "absolute inset-0 transition-all duration-700 ease-out",
                       currentStep === 2
                         ? "translate-x-0 opacity-100"
                         : currentStep < 2
-                        ? "translate-x-8 opacity-0 pointer-events-none"
-                        : "-translate-x-8 opacity-0 pointer-events-none"
+                        ? "translate-x-4 opacity-0 pointer-events-none"
+                        : "-translate-x-4 opacity-0 pointer-events-none"
                     )}
                   >
                     <ScheduleStep progress={stepProgress} />
@@ -233,12 +239,12 @@ export function AnimatedDemo() {
                   {/* Step 4: Leads Table */}
                   <div
                     className={cn(
-                      "absolute inset-0 transition-all duration-500",
+                      "absolute inset-0 transition-all duration-700 ease-out",
                       currentStep === 3
                         ? "translate-x-0 opacity-100"
                         : currentStep < 3
-                        ? "translate-x-8 opacity-0 pointer-events-none"
-                        : "-translate-x-8 opacity-0 pointer-events-none"
+                        ? "translate-x-4 opacity-0 pointer-events-none"
+                        : "-translate-x-4 opacity-0 pointer-events-none"
                     )}
                   >
                     <LeadsTableStep progress={stepProgress} />
@@ -247,12 +253,12 @@ export function AnimatedDemo() {
                   {/* Step 5: Contact Lead */}
                   <div
                     className={cn(
-                      "absolute inset-0 transition-all duration-500",
+                      "absolute inset-0 transition-all duration-700 ease-out",
                       currentStep === 4
                         ? "translate-x-0 opacity-100"
                         : currentStep < 4
-                        ? "translate-x-8 opacity-0 pointer-events-none"
-                        : "-translate-x-8 opacity-0 pointer-events-none"
+                        ? "translate-x-4 opacity-0 pointer-events-none"
+                        : "-translate-x-4 opacity-0 pointer-events-none"
                     )}
                   >
                     <ContactStep progress={stepProgress} />
@@ -260,73 +266,26 @@ export function AnimatedDemo() {
                 </div>
               </div>
             </div>
-
-            {/* Controls Bar */}
-            <div className="border-t bg-muted/20 px-3 py-2 sm:px-4 sm:py-2.5">
-              <div className="flex items-center gap-3 sm:gap-4">
-                {/* Play/Pause */}
-                <button
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className="bg-foreground text-background flex size-6 items-center justify-center rounded-full transition-transform hover:scale-105 sm:size-7"
-                  aria-label={isPlaying ? "Pause" : "Play"}
-                >
-                  {isPlaying ? (
-                    <Pause className="size-3 sm:size-3.5" />
-                  ) : (
-                    <Play className="ml-0.5 size-3 sm:size-3.5" />
-                  )}
-                </button>
-
-                {/* Progress Bar */}
-                <div className="bg-muted h-1 flex-1 overflow-hidden rounded-full sm:h-1.5">
-                  <div
-                    className="bg-primary h-full transition-all duration-100 ease-linear"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-
-                {/* Restart */}
-                <button
-                  onClick={resetDemo}
-                  className="text-muted-foreground hover:text-foreground flex size-6 items-center justify-center rounded-full transition-colors sm:size-7"
-                  aria-label="Restart"
-                >
-                  <RotateCcw className="size-3 sm:size-3.5" />
-                </button>
-
-                {/* Step Dots - Hidden on mobile */}
-                <div className="hidden gap-1 sm:flex">
-                  {DEMO_STEPS.map((step, index) => (
-                    <button
-                      key={step.id}
-                      onClick={() => {
-                        setCurrentStep(index);
-                        setStepProgress(0);
-                      }}
-                      className={cn(
-                        "size-1.5 rounded-full transition-all",
-                        index === currentStep
-                          ? "bg-primary scale-125"
-                          : index < currentStep
-                          ? "bg-primary/40"
-                          : "bg-muted-foreground/20"
-                      )}
-                      aria-label={`Go to step ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
+
+        {/* Dynamic Step Description - Below video */}
+        <p className="text-muted-foreground mt-4 text-center text-sm sm:mt-6 sm:text-base">
+          {currentStepData?.description}
+        </p>
       </div>
     </section>
   );
 }
 
+
 // Step Components
 
 function IcpFormStep({ progress }: { progress: number }) {
+  // Button states: normal -> clicked (75%) -> creating (85%)
+  const isButtonClicked = progress > 75 && progress <= 88;
+  const isCreating = progress > 88;
+  
   return (
     <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
       <div className="mb-3 flex items-center justify-between sm:mb-4">
@@ -334,7 +293,7 @@ function IcpFormStep({ progress }: { progress: number }) {
         <button
           className={cn(
             "text-primary border-primary/30 rounded-md border px-2 py-1 text-xs font-medium transition-all sm:px-3 sm:py-1.5 sm:text-sm",
-            progress > 20 && "bg-primary/10 ring-1 ring-primary/30"
+            progress > 10 && progress < 25 && "bg-primary/10 ring-1 ring-primary/30"
           )}
         >
           Use AI Help
@@ -342,21 +301,25 @@ function IcpFormStep({ progress }: { progress: number }) {
       </div>
 
       <div className="space-y-3">
-        {/* Name Field */}
+        {/* Name Field - Types from 5% to 55% */}
         <div>
           <label className="text-muted-foreground mb-1 block text-xs">
             ICP Name
           </label>
-          <div className="bg-input h-9 overflow-hidden rounded-md border px-3">
+          <div className={cn(
+            "bg-input h-9 overflow-hidden rounded-md border px-3",
+            progress > 5 && progress < 60 && "border-primary/50"
+          )}>
             <TypewriterText
               text="SaaS Founders looking for analytics tools"
               progress={progress}
-              startAt={30}
+              startAt={5}
+              endAt={55}
             />
           </div>
         </div>
 
-        {/* Summary Field */}
+        {/* Summary Field - Fills at 60% */}
         <div>
           <label className="text-muted-foreground mb-1 block text-xs">
             Summary
@@ -364,45 +327,57 @@ function IcpFormStep({ progress }: { progress: number }) {
           <div
             className={cn(
               "bg-input h-16 rounded-md border px-3 py-2",
-              progress > 60 && "border-primary/50"
+              progress > 55 && progress < 75 && "border-primary/50"
             )}
           >
             <div
               className={cn(
                 "bg-muted h-2.5 w-3/4 rounded transition-all",
-                progress > 65 && "bg-primary/30"
+                progress > 58 && "bg-primary/30"
               )}
             />
             <div
               className={cn(
                 "bg-muted mt-1.5 h-2.5 w-1/2 rounded transition-all",
-                progress > 70 && "bg-primary/30"
+                progress > 62 && "bg-primary/30"
               )}
             />
           </div>
         </div>
       </div>
 
-      {/* Create Button */}
+      {/* Create Button - Clicked at 75%, Creating at 85% */}
       <button
         className={cn(
           "bg-primary text-primary-foreground mt-3 w-full rounded-md py-1.5 text-xs font-medium transition-all sm:mt-4 sm:rounded-lg sm:py-2 sm:text-sm",
-          progress > 85 && "ring-1 ring-primary/50"
+          isButtonClicked && "scale-[0.975] ring-2 ring-primary/50 brightness-90",
+          isCreating && "scale-100"
         )}
       >
-        Create ICP
+        {isCreating ? (
+          <span className="flex items-center justify-center gap-1.5">
+            <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Creating...
+          </span>
+        ) : (
+          "Create ICP"
+        )}
       </button>
     </div>
   );
 }
 
 function MonitorFormStep({ progress }: { progress: number }) {
+  // Button states: normal -> clicked (75%) -> creating (85%)
+  const isButtonClicked = progress > 75 && progress <= 88;
+  const isCreating = progress > 88;
+
   return (
     <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
       <h4 className="text-foreground mb-3 text-sm font-medium sm:mb-4 sm:text-base">Create new monitor</h4>
 
       <div className="space-y-2 sm:space-y-3">
-        {/* ICP Select */}
+        {/* ICP Select - Selects at 10% */}
         <div>
           <label className="text-muted-foreground mb-1 block text-xs">
             Select ICP
@@ -410,34 +385,37 @@ function MonitorFormStep({ progress }: { progress: number }) {
           <div
             className={cn(
               "bg-input flex h-9 items-center justify-between rounded-md border px-3 text-sm",
-              progress > 15 && "border-primary/50"
+              progress > 5 && progress < 20 && "border-primary/50"
             )}
           >
             <span
               className={cn(
                 "text-muted-foreground transition-all",
-                progress > 25 && "text-foreground"
+                progress > 10 && "text-foreground"
               )}
             >
-              {progress > 25 ? "SaaS Founders" : "Select an ICP..."}
+              {progress > 10 ? "SaaS Founders" : "Select an ICP..."}
             </span>
             <span className="text-muted-foreground">▼</span>
           </div>
         </div>
 
-        {/* Subreddit Input */}
+        {/* Subreddit Input - Types from 20% to 40% */}
         <div>
           <label className="text-muted-foreground mb-1 block text-xs">
             Target Subreddit
           </label>
-          <div className="bg-input flex h-9 items-center rounded-md border px-3">
+          <div className={cn(
+            "bg-input flex h-9 items-center rounded-md border px-3",
+            progress > 20 && progress < 50 && "border-primary/50"
+          )}>
             <span className="text-muted-foreground mr-1">r/</span>
-            <TypewriterText text="SaaS" progress={progress} startAt={40} />
+            <TypewriterText text="SaaS" progress={progress} startAt={20} endAt={40} />
           </div>
         </div>
 
-        {/* AI Suggestions */}
-        {progress > 55 && (
+        {/* AI Suggestions - Appear at 45% */}
+        {progress > 45 && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="text-muted-foreground mb-2 text-xs">
               AI Suggested Subreddits:
@@ -449,8 +427,8 @@ function MonitorFormStep({ progress }: { progress: number }) {
                     key={sub}
                     className={cn(
                       "bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-medium transition-all",
-                      progress > 70 + i * 10 && "opacity-100 scale-100",
-                      progress <= 70 + i * 10 && "opacity-0 scale-95"
+                      progress > 48 + i * 5 && "opacity-100 scale-100",
+                      progress <= 48 + i * 5 && "opacity-0 scale-95"
                     )}
                   >
                     {sub}
@@ -462,13 +440,22 @@ function MonitorFormStep({ progress }: { progress: number }) {
         )}
       </div>
 
+      {/* Create Button - Clicked at 75%, Creating at 85% */}
       <button
         className={cn(
           "bg-primary text-primary-foreground mt-3 w-full rounded-md py-1.5 text-xs font-medium transition-all sm:mt-4 sm:rounded-lg sm:py-2 sm:text-sm",
-          progress > 90 && "ring-1 ring-primary/50"
+          isButtonClicked && "scale-[0.975] ring-2 ring-primary/50 brightness-90",
+          isCreating && "scale-100"
         )}
       >
-        Create monitor
+        {isCreating ? (
+          <span className="flex items-center justify-center gap-1.5">
+            <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Creating...
+          </span>
+        ) : (
+          "Create monitor"
+        )}
       </button>
     </div>
   );
@@ -479,7 +466,19 @@ function ScheduleStep({ progress }: { progress: number }) {
     "12 AM", "4 AM", "8 AM", "12 PM", "4 PM", "8 PM",
   ];
 
+  // Calculate which hours are selected and which is being "clicked"
   const selectedHours = progress > 30 ? [1, 3, 5] : progress > 15 ? [1, 3] : progress > 5 ? [1] : [];
+  
+  // Determine which hour is being "clicked" right now (showing click animation)
+  const clickingHour = 
+    progress > 3 && progress <= 8 ? 1 :  // About to select 4 AM
+    progress > 13 && progress <= 18 ? 3 : // About to select 12 PM
+    progress > 28 && progress <= 33 ? 5 : // About to select 8 PM
+    null;
+
+  // Button states: normal -> clicked (75%) -> saving (88%)
+  const isButtonClicked = progress > 75 && progress <= 88;
+  const isSaving = progress > 88;
 
   return (
     <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
@@ -489,19 +488,25 @@ function ScheduleStep({ progress }: { progress: number }) {
       </p>
 
       <div className="mb-3 grid grid-cols-3 gap-1.5 sm:mb-4 sm:gap-2">
-        {hours.map((hour, i) => (
-          <div
-            key={hour}
-            className={cn(
-              "rounded-md border px-2 py-1.5 text-center text-xs transition-all duration-300 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm",
-              selectedHours.includes(i)
-                ? "bg-primary/15 border-primary/50 text-primary font-medium"
-                : "bg-input text-muted-foreground"
-            )}
-          >
-            {hour}
-          </div>
-        ))}
+        {hours.map((hour, i) => {
+          const isSelected = selectedHours.includes(i);
+          const isBeingClicked = clickingHour === i;
+          
+          return (
+            <div
+              key={hour}
+              className={cn(
+                "rounded-md border px-2 py-1.5 text-center text-xs transition-all duration-200 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm",
+                isSelected
+                  ? "bg-primary/15 border-primary/50 text-primary font-medium"
+                  : "bg-input text-muted-foreground",
+                isBeingClicked && "border-primary bg-primary/10"
+              )}
+            >
+              {hour}
+            </div>
+          );
+        })}
       </div>
 
       <div className="text-muted-foreground mb-3 flex items-center justify-between text-[10px] sm:mb-4 sm:text-xs">
@@ -509,13 +514,22 @@ function ScheduleStep({ progress }: { progress: number }) {
         <span className="text-primary">PRO Plan</span>
       </div>
 
+      {/* Save Button - Clicked at 75%, Saving at 88% */}
       <button
         className={cn(
           "bg-primary text-primary-foreground w-full rounded-md py-1.5 text-xs font-medium transition-all sm:rounded-lg sm:py-2 sm:text-sm",
-          progress > 85 && "ring-1 ring-primary/50"
+          isButtonClicked && "scale-[0.975] ring-2 ring-primary/50 brightness-90",
+          isSaving && "scale-100"
         )}
       >
-        Save schedule
+        {isSaving ? (
+          <span className="flex items-center justify-center gap-1.5">
+            <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Saving...
+          </span>
+        ) : (
+          "Save schedule"
+        )}
       </button>
     </div>
   );
@@ -585,8 +599,9 @@ function LeadsTableStep({ progress }: { progress: number }) {
 }
 
 function ContactStep({ progress }: { progress: number }) {
-  const showDropdown = progress > 40 && progress < 80;
-  const showContacted = progress >= 80;
+  const showDropdown = progress > 40 && progress < 75;
+  const isClickingContacted = progress > 65 && progress < 75; // About to click Contacted
+  const showContacted = progress >= 75;
 
   return (
     <div className="bg-card rounded-lg border p-3 shadow-sm sm:p-4">
@@ -632,18 +647,23 @@ function ContactStep({ progress }: { progress: number }) {
           >
             {showContacted ? "Contacted" : "New"}
           </span>
-          <span className="text-muted-foreground text-[10px] sm:text-sm">▼</span>
+          {/* Chevron - rotates when dropdown is open */}
+          <span className={cn(
+            "text-muted-foreground text-[10px] transition-transform duration-200 sm:text-sm",
+            showDropdown && "rotate-180"
+          )}>▼</span>
         </div>
 
-        {/* Dropdown */}
+        {/* Dropdown - opens upward to avoid cutoff */}
         {showDropdown && (
-          <div className="animate-in fade-in slide-in-from-top-2 bg-popover absolute top-full left-0 right-0 z-10 mt-1 rounded-md border p-1 shadow-lg">
+          <div className="animate-in fade-in slide-in-from-bottom-2 bg-popover absolute bottom-full left-0 right-0 z-10 mb-1 rounded-md border p-1 shadow-lg">
             {["New", "Viewed", "Contacted", "Archived"].map((status) => (
               <div
                 key={status}
                 className={cn(
-                  "rounded px-2 py-1 text-xs cursor-pointer hover:bg-muted sm:px-3 sm:py-1.5 sm:text-sm",
-                  status === "Contacted" && "bg-primary/10 text-primary"
+                  "rounded px-2 py-1 text-xs cursor-pointer hover:bg-muted sm:px-3 sm:py-1.5 sm:text-sm transition-all",
+                  status === "Contacted" && "bg-primary/10 text-primary",
+                  status === "Contacted" && isClickingContacted && "scale-[0.975] ring-2 ring-primary/50"
                 )}
               >
                 {status}
@@ -667,19 +687,22 @@ function TypewriterText({
   text,
   progress,
   startAt = 0,
+  endAt = 100,
 }: {
   text: string;
   progress: number;
   startAt?: number;
+  endAt?: number;
 }) {
-  const adjustedProgress = Math.max(0, progress - startAt);
-  const maxProgress = 100 - startAt;
-  const charsToShow = Math.floor((adjustedProgress / maxProgress) * text.length);
+  const duration = endAt - startAt;
+  const adjustedProgress = Math.max(0, Math.min(progress - startAt, duration));
+  const charsToShow = Math.floor((adjustedProgress / duration) * text.length);
+  const isComplete = progress >= endAt;
 
   return (
     <span className="text-foreground flex h-full items-center text-sm">
       {text.slice(0, charsToShow)}
-      {adjustedProgress > 0 && adjustedProgress < maxProgress && (
+      {adjustedProgress > 0 && !isComplete && (
         <span className="bg-foreground ml-0.5 h-4 w-0.5 animate-pulse" />
       )}
     </span>
