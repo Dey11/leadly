@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
   try {
     const response = await fetch("https://umami.cooldash.xyz/script.js", {
       headers: {
         "User-Agent": "Next.js Analytics Proxy",
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       return new NextResponse("Failed to fetch analytics script", {

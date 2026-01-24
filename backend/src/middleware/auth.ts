@@ -14,18 +14,13 @@ function getClearCookieOptions() {
 }
 
 /**
- * Base auth middleware that allows both verified and unverified users.
- * Use this for read-only operations where unverified users should have access.
- * Sets req.userId and req.emailVerified for downstream use.
+ * Helper function to validate session and return session data or error response.
+ * Extracts common logic used by both auth middlewares.
  */
-export async function authMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
+async function validateSession(req: Request, res: Response) {
   const sessionToken = req.cookies.session_token;
   if (!sessionToken) {
-    return res.status(401).json({ error: "Unauthorized" });
+    return { error: res.status(401).json({ error: "Unauthorized" }) };
   }
 
   const session = await db.session.findUnique({
@@ -37,7 +32,7 @@ export async function authMiddleware(
     },
   });
   if (!session) {
-    return res.status(401).json({ error: "Unauthorized" });
+    return { error: res.status(401).json({ error: "Unauthorized" }) };
   }
 
   if (session.user.isDeleted) {
@@ -46,10 +41,12 @@ export async function authMiddleware(
         token: sessionToken,
       },
     });
-    return res
-      .cookie("session_token", "", getClearCookieOptions())
-      .status(401)
-      .json({ error: "User is deleted" });
+    return {
+      error: res
+        .cookie("session_token", "", getClearCookieOptions())
+        .status(401)
+        .json({ error: "User is deleted" }),
+    };
   }
 
   if (session.expiresAt < new Date()) {
@@ -58,11 +55,27 @@ export async function authMiddleware(
         token: sessionToken,
       },
     });
-    return res.status(401).json({ error: "Session expired" });
+    return { error: res.status(401).json({ error: "Session expired" }) };
   }
 
-  req.userId = session.userId;
-  req.emailVerified = session.user.emailVerified;
+  return { session };
+}
+
+/**
+ * Base auth middleware that allows both verified and unverified users.
+ * Use this for read-only operations where unverified users should have access.
+ * Sets req.userId and req.emailVerified for downstream use.
+ */
+export async function authMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const result = await validateSession(req, res);
+  if (result.error) return;
+
+  req.userId = result.session!.userId;
+  req.emailVerified = result.session!.user.emailVerified;
 
   next();
 }
@@ -77,43 +90,10 @@ export async function authMiddlewareVerifiedOnly(
   res: Response,
   next: NextFunction,
 ) {
-  const sessionToken = req.cookies.session_token;
-  if (!sessionToken) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  const result = await validateSession(req, res);
+  if (result.error) return;
 
-  const session = await db.session.findUnique({
-    where: {
-      token: sessionToken,
-    },
-    include: {
-      user: true,
-    },
-  });
-  if (!session) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  if (session.user.isDeleted) {
-    await db.session.delete({
-      where: {
-        token: sessionToken,
-      },
-    });
-    return res
-      .cookie("session_token", "", getClearCookieOptions())
-      .status(401)
-      .json({ error: "User is deleted" });
-  }
-
-  if (session.expiresAt < new Date()) {
-    await db.session.delete({
-      where: {
-        token: sessionToken,
-      },
-    });
-    return res.status(401).json({ error: "Session expired" });
-  }
+  const session = result.session!;
 
   // For verified-only middleware, block unverified users
   if (!session.user.emailVerified) {
