@@ -16,10 +16,23 @@ export function UmamiScript({
   scriptUrl = process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL ||
     "https://analytics.umami.is/script.js",
 }: UmamiScriptProps) {
-  // Trigger referrer tracking hook
+  const [hasConsent, setHasConsent] = useState(false);
+
+  useEffect(() => {
+    // Check initial consent
+    setHasConsent(hasAnalyticsConsent());
+
+    // Listen for consent updates
+    const handleUpdate = () => setHasConsent(hasAnalyticsConsent());
+    window.addEventListener("cookie-consent-updated", handleUpdate);
+    return () =>
+      window.removeEventListener("cookie-consent-updated", handleUpdate);
+  }, []);
+
+  // Trigger referrer tracking hook (always runs, but only stores in localStorage)
   useReferrerTracking();
 
-  if (!websiteId) {
+  if (!websiteId || !hasConsent) {
     return null;
   }
 
