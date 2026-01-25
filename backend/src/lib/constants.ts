@@ -107,8 +107,8 @@ export type AIProviderConfig = {
 export const AI_PROVIDERS: AIProviderConfig[] = [
   {
     name: "gemini",
-    model: "gemini-flash-latest",
-    liteModel: "gemini-2.0-flash-lite",
+    model: "gemini-3-flash",
+    liteModel: "gemini-2.5-flash-lite",
     enabled: true,
   },
   {
@@ -133,9 +133,9 @@ export const AI_PROVIDERS: AIProviderConfig[] = [
  * Order: WaveSpeed → Cerebras → Nebius → Gemini (fallback)
  */
 export const AI_PROVIDER_ORDER_ICP: string[] = [
+  "gemini",
   "cerebras",
   "nebius",
-  "gemini",
   "wavespeed",
 ] as const;
 
