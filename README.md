@@ -1,127 +1,280 @@
-# Leadly Platform Context
+# Leadly: AI-Powered Reddit Lead Generation Platform
 
-This repository contains the Leadly lead-monitoring platform. The two active apps are:
+> **Turn Reddit Conversations into Revenue.**  
+> Automated monitoring, AI qualification, and high-intent lead discovery for B2B sales teams.
 
-- `backend/` – Express 5 + Prisma service that exposes the public API, manages persistence, schedules scraping work, and handles billing webhooks.
-- `frontend/` – Next.js 16 App Router UI that consumes the backend API, renders the dashboard, manages subscriptions, and triggers mutations from the browser.
+Leadly is a sophisticated intelligence engine designed to cut through the noise of social media. Instead of manually scrolling through subreddits or relying on basic keyword alerts, Leadly uses **Google Gemini 2.5 Flash** to semantically analyze conversations, determining not just _what_ is being said, but the _intent_ behind it.
 
-The sections below summarise architecture, design decisions, API behaviour, and operational considerations for both apps.
-
----
-
-## Backend (`backend/`)
-
-### Stack & entry points
-
-- **Runtime:** Node 20+ with Express 5 (`src/index.ts`) powering `/api/v1`.
-- **Database:** Prisma ORM 7 (`prisma/schema.prisma`) backed by PostgreSQL (NeonDB).
-- **Queue & Cache:** BullMQ + Redis (`src/lib/queue.ts`, `src/lib/redis.ts`) for job queues and webhook idempotency.
-- **Worker:** Dedicated worker process (`src/workers/reddit.worker.ts`) for scraping tasks.
-- **Scheduler:** Node-cron (`src/services/scheduler.ts`) running hourly/half-hourly.
-- **AI:** Google Gemini 2.5 Flash via `@ai-sdk/google` for lead scoring and enrichment (`src/processors/ai.processor.ts`).
-- **Billing:** Dodo Payments integration via `dodopayments` SDK and `standardwebhooks`.
-- **Scraping:** Reddit API client (OAuth2) + scaffolding for Playwright-driven Nitter scraping.
-
-### Module map
-
-- `src/routes/` hold Express routers grouped by resource:
-  - `auth`, `account`, `icps`, `monitors`, `schedule`, `leads`, `scrape-jobs` (Interest Monitoring)
-  - `keyword-set`, `keyword-monitor`, `keyword-lead` (Keyword Monitoring)
-  - `billing` (Dodo Payments checkout & portal sessions)
-  - `webhooks` (Dodo event handling)
-- `src/controllers/` contain request handlers.
-- `src/services/` bundle external integrations (Reddit API wrapper, scheduler, logger).
-- `src/processors/` handle asynchronous work (Reddit scrape + AI enrichment).
-- `src/middleware/auth.ts` verifies session cookies via Prisma and decorates `req.userId`.
-- `src/lib/` exports Prisma singleton, Redis client, BullMQ queue, Dodo client, constants, and helpers.
-- `src/workers/reddit.worker.ts` consumer process that executes queued scrape jobs.
-
-### Data model essentials
-
-Entities (see `prisma/schema.prisma`):
-
-- **User & Auth**: `User`, `Session`, `Subscription` (Free/Pro/Premium).
-- **Interest Monitoring** (Subreddit-based):
-  - `Icp`: Ideal Customer Profile (persona, pains).
-  - `Monitor`: Watchlist (subreddits) belonging to an ICP.
-  - `ScrapeJob`: Execution record for a monitor.
-  - `Lead`: Individual result referencing a job.
-- **Keyword Monitoring** (Search-based):
-  - `KeywordSet`: Bundle of keywords to track.
-  - `KeywordMonitor`: Settings for the monitoring task.
-  - `KeywordLead`: Leads generated from keyword searches.
-
-### Background processing pipeline
-
-1. **Scheduler** (`cron`):
-   - **Interest Scrapes:** Users with `UserSchedule` matching the current hour.
-   - **Keyword Scrapes:** Periodically checks active keyword monitors.
-   - Enqueues jobs in BullMQ.
-2. **Worker** (`src/workers/reddit.worker.ts`):
-   - Consumes jobs.
-   - **Interest Scrapes:** Fetches posts from Reddit subreddits -> AI Analysis -> score against ICP -> Save `Lead`.
-   - **Keyword Scrapes:** Searches Reddit for keywords -> AI Analysis -> Save `KeywordLead`.
-3. **Webhooks** (Dodo Payments):
-   - Listens for `subscription.*` events.
-   - Updates status/tier and resets usage limits.
-   - Uses Redis (`dodo:webhooks:<id>`) for idempotency.
-
-### Environment variables
-
-Defined in `src/env.ts` and `.env`. Key variables:
-
-- **Core:** `DATABASE_URL` (NeonDB), `REDIS_URL`, `SESSION_SECRET`
-- **AI/Scraping:** `GOOGLE_GENERATIVE_AI_API_KEY`, `REDDIT_CLIENT_ID/SECRET`
-- **Billing:** `DODO_API_KEY`, `DODO_WEBHOOK_SECRET`
-- **Logging:** `DISCORD_LOGS_WEBHOOK_URL` (for hourly logs)
+This repository contains the complete source code for the Leadly platform, comprising a Next.js 16 frontend and an Express 5 backend.
 
 ---
 
-## Frontend (`frontend/`)
+## 📚 Table of Contents
 
-### Stack & global setup
-
-- **Framework:** Next.js 16 App Router (React 19).
-- **Styling:** Tailwind CSS v4, `tw-animate-css`, `shadcn`-compatible components.
-- **State:** TanStack Query (`@tanstack/react-query`) for server state management.
-- **Icons:** `lucide-react`.
-
-### Directory highlights
-
-- `src/app/` – App Router structure:
-  - `(auth)`: Login/Register layouts.
-  - `(dashboard)`: Authenticated app shell, includes `billing` pages.
-- `src/lib/backend-queries.ts` – Server-side Data Fetching.
-- `src/lib/client/api.ts` – Client-side Data Mutation.
-- `src/components/` – Feature components and UI primitives.
-
-### Design decisions
-
-- **Auth Gate:** `src/app/(dashboard)/layout.tsx` validates session on server entry.
-- **Billing Flow:** Redirects to Dodo Checkout -> Webhook provisions subscription.
-- **Design Mode:** `NEXT_PUBLIC_DESIGN_MODE=1` enables mock data for UI dev.
+- [Project Overview & Core Value](#-project-overview--core-value)
+- [Key Features](#-key-features)
+- [Technical Architecture](#-technical-architecture)
+- [Project Structure](#-project-structure)
+- [Data Model & Database](#-data-model--database)
+- [The Monitoring Engine](#-the-monitoring-engine)
+- [Billing & Subscriptions](#-billing--subscriptions)
+- [Deployment & Workflows](#-deployment--workflows)
+- [Admin & Operations](#-admin--operations)
+- [Development Setup](#-development-setup)
+- [Environment Variables](#-environment-variables)
 
 ---
 
-## Deployment & Content Delivery
+## 🚀 Project Overview & Core Value
 
-The application is deployed on **Coolify** (Self-hosted PaaS).
+Leadly addresses a critical problem in modern B2B sales: **finding customers where they hang out without wasting hours on manual research.**
 
-### Deployments (Coolify GitHub App)
+Reddit is a goldmine for user feedback, pain points, and product recommendations, but it is vast and unstructured. Leadly acts as a 24/7 autonomous sales development representative (SDR) that:
 
-- **Production:** Pushing to `master` triggers an automatic deployment via Coolify's GitHub App integration.
-- **Preview:** Opening a Pull Request creates a temporary preview environment using dynamic proxy routing.
-- **Zero Configuration:** No manual Docker webhooks needed.
+1.  **Monitors Communities**: Watches specific subreddits relevant to your niche (e.g., r/SaaS, r/marketing).
+2.  **Filters by Keyword**: Tracks specific terms like "competitor alternative", "how to fix", or "recommendation".
+3.  **Qualifies with AI**: Uses LLMs to read the post context. It filters out noise (memes, low-effort posts) and scores leads based on how well they match your **Ideal Customer Profile (ICP)**.
+4.  **Enriches Data**: Extracts sentiment, author intent, and creates a summary of _why_ this lead is valuable.
+
+### Why Leadly? (Promo Context)
+
+- **Precision > Volume**: Unlike traditional social listening tools that spam you with every mention, Leadly's AI scoring ensures you only see high-intent leads (e.g., matching a score of >75/100).
+- **Set & Forget**: Define your ICP once. Leadly runs on a scheduled cron job (hourly/daily) to deliver fresh leads.
+- **Dual-Engine Monitoring**:
+  - **Interest Monitoring**: "Watch these 5 subreddits for anyone complaining about X."
+  - **Keyword Monitoring**: "Find anyone on ALL of Reddit saying 'best CRM for startups'."
+
+---
+
+## ✨ Key Features
+
+### 1. Smart Monitors
+
+- **Subreddit Targeting**: Validates subreddit existence via Reddit API before adding.
+- **Keyword Sets**: Create bundles of keywords (e.g., "Buying Intent" set: `buy`, `price`, `cost`, `alternative`).
+- **Fuzzy Matching**: Optional logic to match related terms.
+
+### 2. AI Lead Scoring & Analysis
+
+- **Relevance Score**: 0-100 score indicating how well a post matches the user's ICP.
+- **Sentiment Analysis**: Detects Frustration, Curiosity, Satisfaction.
+- **Persona Matching**: Identifies if the poster is a likely buyer (e.g., "Founder", "Developer") vs. a student or hobbyist.
+
+### 3. Scheduling & Quotas
+
+- **Custom Active Hours**: Users define when they want scrapes to run (e.g., 9 AM - 5 PM).
+- **Tier-Based Limits**:
+  - **Free**: 30 scrapes/mo, 1 daily slot.
+  - **Pro**: 180 scrapes/mo, 6 daily slots.
+  - **Premium**: 720 scrapes/mo, hourly 24/7 coverage.
+
+### 4. Enterprise-Grade Billing
+
+- **Dodo Payments Integration**: Seamless checkout and subscription management.
+- **Automated Provisioning**: Webhooks handle upgrades, downgrades, and cancellations instantly.
+- **Usage Tracking**: Monthly and daily quotas enforced at the API level.
+
+---
+
+## 🏗 Technical Architecture
+
+Leadly is built as a monorepo with two primary applications:
+
+### 1. Backend (`/backend`)
+
+- **Framework**: Express 5 (Node.js 20+).
+- **Language**: TypeScript.
+- **Database**: PostgreSQL (via NeonDB) managed by **Prisma ORM 7**.
+- **Queue System**: **BullMQ** on **Redis** for asynchronous scraping jobs.
+- **Worker**: Dedicated worker process for heavy lifting (Reddit scraping + AI processing).
+- **AI**: Google Generative AI SDK (Gemini 2.5 Flash).
+
+### 2. Frontend (`/frontend`)
+
+- **Framework**: Next.js 16 (App Router).
+- **UI Library**: React 19, Tailwind CSS v4, ShadCN UI.
+- **State Management**: TanStack Query (Server State).
+- **Authentication**: Custom JWT-based auth with secure HTTP-only cookies.
+
+---
+
+## 📂 Project Structure
+
+```bash
+/
+├── backend/
+│   ├── prisma/             # Database schema and migrations
+│   ├── src/
+│   │   ├── controllers/    # Route handlers (Auth, Monitors, Leads)
+│   │   ├── lib/            # Shared utilities (Redis, Queue, Dodo, AI)
+│   │   ├── middleware/     # Auth checks, Rate limits
+│   │   ├── processors/     # Job logic (The "Brain" of scraping)
+│   │   ├── routes/         # API endpoint definitions
+│   │   ├── services/       # External APIs (Reddit, Scheduler)
+│   │   ├── workers/        # BullMQ worker entry point
+│   │   └── env.ts          # Zod-validated environment config
+│   └── index.ts            # Server entry point
+│
+├── frontend/
+│   ├── src/
+│   │   ├── app/            # Next.js App Router pages
+│   │   │   ├── (auth)/     # Login/Register pages
+│   │   │   └── (dashboard)/# Main app interface
+│   │   ├── components/     # Reusable UI (Button, Input, Sidebar)
+│   │   ├── lib/            # Client-side API wrappers & utils
+│   │   └── hooks/          # React hooks
+```
+
+---
+
+## 💾 Data Model & Database
+
+The core entities driving Leadly are defined in `prisma/schema.prisma`.
+
+### Core Entities
+
+- **`User`**: The account holder. Links to `Subscription` and `Usage`.
+- **`Icp` (Ideal Customer Profile)**: Defines "Who we are looking for" (Persona, Pains, Signals).
+- **`Monitor`**: A specific subreddit watch-job linked to an ICP.
+- **`KeywordSet` & `KeywordMonitor`**: Separate entities for global keyword tracking.
+- **`ScrapeJob`**: A record of a single execution of a monitor.
+- **`Lead`**: The final output. A relevant Reddit post with AI analysis.
+
+---
+
+## ⚙️ The Monitoring Engine
+
+The heart of Leadly is the scraping pipeline.
+
+1.  **Scheduler (`cron`)**:
+    - Runs every hour (backend service).
+    - Checks active users' schedules (`UserSchedule`).
+    - If the current hour matches the user's schedule (and they have quota), a job is added to the **BullMQ Queue**.
+
+2.  **Worker (`reddit.worker.ts`)**:
+    - Picks up the job.
+    - **Fetch**: Calls Reddit API (or Nitter fallback) to get recent posts from the target subreddit.
+    - **Filter**: Discards posts already seen or outside criteria.
+    - **Analyze**: Sends post content + ICP definition to **Gemini Flash**.
+      - _Prompt Strategy_: "You are a sales expert. Does this post matches this ICP? Rate 0-100."
+    - **Save**: If Score > Threshold (e.g. 75), saves as a `Lead` in Postgres.
+
+3.  **Optimization**:
+    - **Cursor-based Pagination**: Stores the last seen Reddit post ID (`after`) to avoid re-scanning old posts.
+    - **Rate Limiting**: Respects Reddit API limits.
+
+---
+
+## 💳 Billing & Subscriptions
+
+We use **Dodo Payments** as the merchant of record.
+
+- **Tiers** (defined in `constants.ts`):
+  - `FREE`: Entry level.
+  - `PRO`: Power user ($9/mo).
+  - `PREMIUM`: Agency level ($24/mo).
+- **Webhooks**:
+  - Endpoint: `/api/v1/webhooks/dodo`
+  - Events: `subscription.created`, `subscription.cancelled`, `failed`.
+  - **Idempotency**: Redis keys (`dodo:webhooks:<id>`) prevent duplicate processing.
+
+---
+
+## 🚀 Deployment & Workflows
+
+Leadly is designed for modern CI/CD pipelines, specifically tailored for **Coolify**.
+
+### Deployments
+
+- **Coolify GitHub App**: Zero-config deployment.
+- **Production**: Triggered by push to `master`.
+- **Preview**: Triggered by Pull Requests (creates ephemeral URLs like `pr-123.leadly.live`).
+- **Proxy**: Uses Coolify's internal proxy (Traefik) for SSL and routing.
+
+### CI Pipeline (GitHub Actions)
+
+Located in `.github/workflows/ci.yml`.
+
+1.  **Backend**: `bun run lint`, `typecheck`, `build`.
+2.  **Frontend**: `bun run build`.
+3.  **Database**: Uses a dummy connection string for `prisma generate` during build to ensure type safety without a live DB connection.
+
+---
+
+## 🛠 Admin & Operations
 
 ### Logs & Monitoring
 
-- **Hourly Logs:** Both Backend and Worker processes send log files to a Discord channel every hour (via `DISCORD_LOGS_WEBHOOK_URL`).
-- **Admin API:** `POST /api/v1/admin/logs/discord` to manually trigger log uploads.
+Leadly implements a robust logging strategy using **Winston**.
+
+- **Automatic hourly logs**:
+  - **Backend**: Sends `combined.log` and `error.log` to Discord at `xx:00` UTC.
+  - **Worker**: Sends worker logs to Discord at `xx:30` UTC.
+- **Manual Trigger**:
+  - **Endpoint**: `POST /api/v1/admin/logs/discord`
+  - **Auth**: Requires header `X-Admin-API-Key: <ADMIN_API_KEY>`
+  - **Response**: JSON confirmation of files sent.
+
+### Admin API Key
+
+Set `ADMIN_API_KEY` in your `.env` (min 32 chars).
+Generate one via: `openssl rand -hex 32`
 
 ---
 
-## Operational notes
+## 👨‍💻 Development Setup
 
-- **Webhooks:** Critical for billing.
-- **CORS:** `FRONTEND_URL` in Backend `.env` must match the browser origin.
-- **Updates:** Database migrations run automatically on startup (`prisma migrate deploy`).
+### Prerequisites
+
+- Node.js 20+ (or Bun)
+- Docker (for Redis/Postgres) or local instances
+- Google AI Studio Key (Gemini)
+- Reddit App Credentials
+
+### Quick Start
+
+1.  **Clone & Install**
+
+    ```bash
+    git clone <repo>
+    cd backend && npm install
+    cd ../frontend && npm install
+    ```
+
+2.  **Environment Config**
+    - Copy `.env.example` to `.env` in both folders.
+    - Fill in `DATABASE_URL`, `REDIS_URL`, `GOOGLE_GENERATIVE_AI_API_KEY`, etc.
+
+3.  **Database Setup**
+
+    ```bash
+    cd backend
+    npm run prisma:migrate # Applies schema to DB
+    npm run seed           # Optional: Seeds initial data
+    ```
+
+4.  **Run Locally**
+    - **Term 1 (Backend)**: `npm run dev`
+    - **Term 2 (Worker)**: `npm run worker:dev`
+    - **Term 3 (Frontend)**: `npm run dev`
+
+---
+
+## 🔐 Environment Variables
+
+Complete reference for `.env` configuration.
+
+| Variable                       | Description                           |
+| :----------------------------- | :------------------------------------ |
+| `DATABASE_URL`                 | PostgreSQL Connection String (NeonDB) |
+| `REDIS_URL`                    | Redis Connection String               |
+| `SESSION_SECRET`               | Secret for signing session cookies    |
+| `FRONTEND_URL`                 | URL of the frontend (for CORS)        |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini API Key                        |
+| `REDDIT_CLIENT_ID`             | Reddit App ID                         |
+| `REDDIT_CLIENT_SECRET`         | Reddit App Secret                     |
+| `REDDIT_USERNAME`              | Reddit Account Username               |
+| `DODO_API_KEY`                 | Dodo Payments API Key                 |
+| `DODO_WEBHOOK_SECRET`          | Dodo Webhook verification secret      |
+| `DISCORD_LOGS_WEBHOOK_URL`     | /Optional/ Webhook for system logs    |
+| `ADMIN_API_KEY`                | /Optional/ Key for admin endpoints    |
