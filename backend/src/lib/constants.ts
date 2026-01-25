@@ -81,9 +81,65 @@ export const TIER_LIMITS: Record<
   },
 } as const;
 
-export const MODEL_LITE = "gemini-2.0-flash-lite";
-export const MODEL = "gemini-flash-latest";
-export const CRON_INTERVAL = "0 * * * *"; // Lead Gen: hourly at xx:00
+// =============================================================================
+// AI PROVIDER CONFIGURATION
+// =============================================================================
+// Add/remove providers here. Each provider needs:
+// - name: Unique identifier used in providerOrder arrays
+// - model: Model identifier for the provider
+// - liteModel: (optional) Lighter/faster model variant
+// - enabled: Set to false to disable without removing
+
+export type AIProviderConfig = {
+  name: string;
+  model: string;
+  liteModel?: string;
+  enabled: boolean;
+};
+
+/**
+ * All available AI providers.
+ * To add a new provider:
+ *   1. Add config here
+ *   2. Add initialization in ai.ts (import SDK, create client)
+ *   3. Add to PROVIDERS array in ai.ts
+ */
+export const AI_PROVIDERS: AIProviderConfig[] = [
+  {
+    name: "gemini",
+    model: "gemini-flash-latest",
+    liteModel: "gemini-2.0-flash-lite",
+    enabled: true,
+  },
+  {
+    name: "wavespeed",
+    model: "google/gemini-3-flash-preview",
+    enabled: true,
+  },
+  {
+    name: "cerebras",
+    model: "zai-glm-4.7",
+    enabled: true,
+  },
+  {
+    name: "nebius",
+    model: "Qwen/Qwen3-235B-A22B-Instruct-2507",
+    enabled: true,
+  },
+] as const;
+
+/**
+ * Provider fallback order for ICP generation (fast, user-facing).
+ * Order: WaveSpeed → Cerebras → Nebius → Gemini (fallback)
+ */
+export const AI_PROVIDER_ORDER_ICP: string[] = [
+  "cerebras",
+  "nebius",
+  "gemini",
+  "wavespeed",
+] as const;
+
+export const CRON_INTERVAL = "0 * * * *"; // 0 hobe first er ta
 export const KEYWORD_CRON_INTERVAL = "30 * * * *"; // Keyword: hourly at xx:30
 
 // Retry settings for failed scrape jobs
@@ -99,7 +155,6 @@ export const WEBHOOK_EVENTS = {
   PAYMENT_FAILED: "payment.failed", // Occurs when a payment attempt fails due to errors, declined cards, or other issues.
   PAYMENT_PROCESSING: "payment.processing", // Indicates that a payment is currently being processed.
   PAYMENT_CANCELLED: "payment.cancelled", // Triggered when a payment is cancelled before completion.
-
   // Subscription events
   SUBSCRIPTION_ACTIVE: "subscription.active", // Indicates that a subscription is now active and recurring charges are scheduled.
   SUBSCRIPTION_UPDATED: "subscription.updated", // Triggered when any subscription field is updated (real-time sync without polling).

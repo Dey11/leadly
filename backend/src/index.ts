@@ -24,6 +24,7 @@ import keywordLeadRouter from "./routes/keyword-lead";
 import adminRouter from "./routes/admin";
 import { requestLogger } from "./middleware/request-logger";
 import { sendAllLogsToDiscord } from "./services/logger.service";
+import { runKeywordScheduler } from "./services/keyword-scheduler";
 
 const PORT = env.PORT;
 
@@ -84,8 +85,6 @@ const leadGenScheduler = cron.schedule(CRON_INTERVAL, runScheduler, {
   timezone: "UTC",
 });
 
-// Keyword scheduler (hourly at xx:30)
-import { runKeywordScheduler } from "./services/keyword-scheduler";
 const keywordScheduler = cron.schedule(
   KEYWORD_CRON_INTERVAL,
   runKeywordScheduler,
@@ -112,6 +111,7 @@ const server = app.listen(PORT, () => {
 
 const stopServer = () => {
   leadGenScheduler.stop();
+  keywordScheduler.stop();
   server.close(() => {
     logger.info("Server closed.");
     process.exit(0);

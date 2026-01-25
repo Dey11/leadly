@@ -1,14 +1,23 @@
 import { z } from "zod";
 import { google } from "@ai-sdk/google";
 import { cerebras } from "@ai-sdk/cerebras";
-import { generateObject, type LanguageModel } from "ai";
-import { MODEL_LITE, MODEL } from "./constants";
+import { generateText, Output, type LanguageModel } from "ai";
+import { AI_PROVIDERS, type AIProviderConfig } from "./constants";
 import logger from "./logger";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
-const nebius = createOpenAI({
+const nebius = createOpenAICompatible({
+  name: "nebius",
   baseURL: "https://api.tokenfactory.nebius.com/v1",
-  apiKey: process.env.NEBIUS_API_KEY,
+  apiKey: process.env.NEBIUS_API_KEY ?? "",
+  supportsStructuredOutputs: true,
+});
+
+const wavespeed = createOpenAICompatible({
+  name: "wavespeed",
+  baseURL: "https://llm.wavespeed.ai/v1",
+  apiKey: process.env.WAVESPEED_API_KEY ?? "",
+  supportsStructuredOutputs: true,
 });
 
 export const AI_SAFETY_SETTINGS = [
@@ -75,7 +84,16 @@ async function withRetry<T>(
 
   for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
     try {
-      return await fn();
+      const result = await fn();
+      // Log every successful generation
+      if (attempt > 0) {
+        logger.info(
+          `[AI] ${providerName} succeeded on attempt ${attempt + 1} after ${attempt} retries`,
+        );
+      } else {
+        logger.info(`[AI] ${providerName} succeeded`);
+      }
+      return result;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
@@ -98,28 +116,49 @@ async function withRetry<T>(
   throw lastError;
 }
 
+// Build PROVIDERS array from centralized config
+function createProviderModel(config: AIProviderConfig): LanguageModel {
+  switch (config.name) {
+    case "gemini":
+      return google(config.model);
+    case "cerebras":
+      return cerebras(config.model);
+    case "nebius":
+      return nebius(config.model);
+    case "wavespeed":
+      return wavespeed(config.model);
+    default:
+      throw new Error(`Unknown provider: ${config.name}`);
+  }
+}
+
+function createProviderLiteModel(
+  config: AIProviderConfig,
+): LanguageModel | undefined {
+  if (!config.liteModel) return undefined;
+  switch (config.name) {
+    case "gemini":
+      return google(config.liteModel);
+    case "cerebras":
+      return config.liteModel ? cerebras(config.liteModel) : undefined;
+    case "nebius":
+      return config.liteModel ? nebius(config.liteModel) : undefined;
+    case "wavespeed":
+      return config.liteModel ? wavespeed(config.liteModel) : undefined;
+    default:
+      return undefined;
+  }
+}
+
 const PROVIDERS: Array<{
   name: string;
   model: LanguageModel;
   lite?: LanguageModel;
-}> = [
-  {
-    name: "gemini",
-    model: google(MODEL),
-    lite: google(MODEL_LITE),
-  },
-  {
-    name: "cerebras",
-    model: cerebras("zai-glm-4.7"),
-  },
-  {
-    name: "nebius",
-    model: nebius.chat("Qwen/Qwen3-235B-A22B"),
-  },
-];
-
-export const modelLite = google(MODEL_LITE);
-export const modelFlash = google(MODEL);
+}> = AI_PROVIDERS.filter((p) => p.enabled).map((config) => ({
+  name: config.name,
+  model: createProviderModel(config),
+  lite: createProviderLiteModel(config),
+}));
 
 type BaseOptions = {
   prompt: string;
@@ -127,6 +166,7 @@ type BaseOptions = {
   temperature?: number;
   topP?: number;
   lite?: boolean;
+  providerOrder?: string[]; // e.g., ["cerebras", "nebius", "gemini"]
 };
 
 type GenerateObjectOptions<T> = BaseOptions & {
@@ -139,6 +179,7 @@ type GenerateArrayOptions<T> = BaseOptions & {
 
 /**
  * Generate a structured object using AI with automatic provider fallback and retry logic.
+ * Uses generateText with Output.object() as per AI SDK 6.0.
  * Returns both the generated object and the name of the provider that succeeded.
  */
 export async function generateAIObject<T>(
@@ -146,19 +187,32 @@ export async function generateAIObject<T>(
 ): Promise<{ object: T; providerName: string }> {
   const errors: Error[] = [];
 
-  for (const provider of PROVIDERS) {
+  const sortedProviders = [...PROVIDERS].sort((a, b) => {
+    if (!opts.providerOrder || opts.providerOrder.length === 0) return 0;
+    const aIndex = opts.providerOrder.indexOf(a.name);
+    const bIndex = opts.providerOrder.indexOf(b.name);
+    if (aIndex === -1 && bIndex === -1) return 0;
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    return aIndex - bIndex;
+  });
+
+  for (const provider of sortedProviders) {
     const model = opts.lite && provider.lite ? provider.lite : provider.model;
 
     try {
       const result = await withRetry(
         () =>
-          generateObject({
+          generateText({
             model,
-            schema: opts.schema,
+            output: Output.object({
+              schema: opts.schema,
+            }),
             prompt: opts.prompt,
             system: opts.system,
             temperature: opts.temperature,
             topP: opts.topP,
+            providerOptions: AI_PROVIDER_OPTIONS,
           }),
         provider.name,
       );
@@ -169,7 +223,7 @@ export async function generateAIObject<T>(
         );
       }
 
-      return { object: result.object as T, providerName: provider.name };
+      return { object: result.output as T, providerName: provider.name };
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       errors.push(error);
@@ -184,6 +238,7 @@ export async function generateAIObject<T>(
 
 /**
  * Generate an array of structured objects using AI with automatic provider fallback and retry logic.
+ * Uses generateText with Output.array() as per AI SDK 6.0.
  * Returns both the generated array and the name of the provider that succeeded.
  */
 export async function generateAIArray<T>(
@@ -191,20 +246,32 @@ export async function generateAIArray<T>(
 ): Promise<{ array: T[]; providerName: string }> {
   const errors: Error[] = [];
 
-  for (const provider of PROVIDERS) {
+  const sortedProviders = [...PROVIDERS].sort((a, b) => {
+    if (!opts.providerOrder || opts.providerOrder.length === 0) return 0;
+    const aIndex = opts.providerOrder.indexOf(a.name);
+    const bIndex = opts.providerOrder.indexOf(b.name);
+    if (aIndex === -1 && bIndex === -1) return 0;
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    return aIndex - bIndex;
+  });
+
+  for (const provider of sortedProviders) {
     const model = opts.lite && provider.lite ? provider.lite : provider.model;
 
     try {
       const result = await withRetry(
         () =>
-          generateObject({
+          generateText({
             model,
-            output: "array",
-            schema: opts.elementSchema,
+            output: Output.array({
+              element: opts.elementSchema,
+            }),
             prompt: opts.prompt,
             system: opts.system,
             temperature: opts.temperature,
             topP: opts.topP,
+            providerOptions: AI_PROVIDER_OPTIONS,
           }),
         provider.name,
       );
@@ -215,7 +282,7 @@ export async function generateAIArray<T>(
         );
       }
 
-      return { array: result.object as T[], providerName: provider.name };
+      return { array: result.output as T[], providerName: provider.name };
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       errors.push(error);

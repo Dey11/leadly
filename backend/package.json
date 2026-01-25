@@ -6,8 +6,8 @@
   "scripts": {
     "start": "bun dist/index.js",
     "start:worker": "bun dist/workers/reddit.worker.js",
-    "dev": "bun src/index.ts",
-    "worker": "bun src/workers/reddit.worker.ts",
+    "dev": "bun --watch src/index.ts",
+    "worker": "bun --watch src/workers/reddit.worker.ts",
     "worker:dev": "bun src/workers/reddit.worker.ts > output.log 2>&1",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -26,8 +26,9 @@
     "@ai-sdk/cerebras": "^2.0.20",
     "@ai-sdk/google": "^2.0.52",
     "@ai-sdk/openai": "^3.0.18",
+    "@ai-sdk/openai-compatible": "^2.0.18",
     "@prisma/adapter-pg": "^7.2.0",
-    "@prisma/client": "7.2.0",
+    "@prisma/client": "^7.3.0",
     "ai": "^6.0.48",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
@@ -53,7 +54,7 @@
     "@types/express": "^5.0.6",
     "@types/he": "^1.2.3",
     "@types/node": "^24.10.9",
-    "prisma": "7.2.0",
+    "prisma": "^7.3.0",
     "typescript": "^5.9.3"
   }
 }
