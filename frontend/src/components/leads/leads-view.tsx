@@ -177,7 +177,6 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
   };
 
   const handleGenerateDm = (leadId: string, author: string | null) => {
-    console.log("[leads-view] handleGenerateDm called", { leadId, author });
     setDmDialogLead({ id: leadId, author });
   };
 

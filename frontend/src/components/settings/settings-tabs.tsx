@@ -32,6 +32,7 @@ export function SettingsTabs({ activeTab }: SettingsTabsProps) {
           
           return (
             <button
+              type="button"
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={cn(

@@ -14,9 +14,7 @@ export function OnboardingWrapper({ hasCompletedOnboarding }: OnboardingWrapperP
     // Check both backend flag and local storage
     const localCompleted = window.localStorage.getItem("leadly-onboarding-completed") === "true";
     
-    if (!hasCompletedOnboarding && !localCompleted) {
-      setShowOnboarding(true);
-    }
+    setShowOnboarding(!hasCompletedOnboarding && !localCompleted);
   }, [hasCompletedOnboarding]);
 
   const handleComplete = () => {

@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Building2, Briefcase, Users, MessageSquare, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { clientApi } from "@/lib/client/api";
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
@@ -64,13 +64,15 @@ export function ProfileSettings() {
   const [initialized, setInitialized] = useState(false);
 
   // Initialize form with account data
-  if (accountQuery.data && !initialized) {
-    setCompany(accountQuery.data.company || "");
-    setOccupation(accountQuery.data.occupation || "");
-    setReferrer(accountQuery.data.referrer || "");
-    setSampleDm(accountQuery.data.sampleDm || "");
-    setInitialized(true);
-  }
+  useEffect(() => {
+    if (accountQuery.data && !initialized) {
+      setCompany(accountQuery.data.company || "");
+      setOccupation(accountQuery.data.occupation || "");
+      setReferrer(accountQuery.data.referrer || "");
+      setSampleDm(accountQuery.data.sampleDm || "");
+      setInitialized(true);
+    }
+  }, [accountQuery.data, initialized]);
 
   const updateMutation = useMutation({
     mutationFn: (data: {
