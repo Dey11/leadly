@@ -193,10 +193,10 @@ export function DashboardShell({
       <div className="flex min-h-screen flex-1 flex-col">
         <header
           id="dashboard-header"
-          className="border-border/60 bg-background/90 sticky top-0 z-30 border-b px-4 py-4 backdrop-blur md:px-6 lg:px-10"
+          className="border-border/60 bg-background/90 sticky top-0 z-30 border-b backdrop-blur"
         >
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-1 items-center gap-3">
+          <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-10">
+            <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="icon"
@@ -212,9 +212,6 @@ export function DashboardShell({
                   <Menu className="size-5" aria-hidden />
                 )}
               </Button>
-              {/* <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
-                Dashboard
-              </h1> */}
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <Tooltip>
@@ -271,13 +268,13 @@ export function DashboardShell({
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/account">
+                    <Link href="/dashboard/settings?tab=account">
                       <User className="size-4" />
                       Account settings
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/billing">
+                    <Link href="/dashboard/settings?tab=billing">
                       <CreditCard className="size-4" />
                       Billing & plans
                     </Link>

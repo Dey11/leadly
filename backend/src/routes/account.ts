@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   getAccount,
   patchAccount,
+  patchProfile,
   deleteAccount,
   getAccountSessions,
   getUsageSummary,
@@ -29,6 +30,13 @@ accountRouter.get(
 );
 
 accountRouter.patch("/", authMiddleware, userRateLimit("write"), patchAccount);
+
+accountRouter.patch(
+  "/profile",
+  authMiddleware,
+  userRateLimit("write"),
+  patchProfile,
+);
 
 accountRouter.patch(
   "/walkthrough",

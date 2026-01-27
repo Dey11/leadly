@@ -203,11 +203,23 @@ export const clientApi = {
     request(`${apiBaseUrl}/monitors/${monitorId}`, { method: "DELETE" }),
   updateSchedule: (body: { scheduledHours: number[] }) =>
     request(`${apiBaseUrl}/schedule`, { method: "PATCH", body }),
+  getAccount: () =>
+    request<{ message: string; payload: { data: import("@/types/backend").AccountSummary } }>(
+      `${apiBaseUrl}/account`
+    ),
   updateAccount: (body: { name: string }) =>
     request(`${apiBaseUrl}/account`, { method: "PATCH", body }),
   deleteAccount: () => request(`${apiBaseUrl}/account`, { method: "DELETE" }),
   updateWalkthroughStatus: () =>
     request(`${apiBaseUrl}/account/walkthrough`, { method: "PATCH" }),
+  updateProfile: (body: {
+    company?: string;
+    occupation?: string;
+    referrer?: string;
+    sampleDm?: string;
+    hasCompletedOnboarding?: boolean;
+  }) =>
+    request(`${apiBaseUrl}/account/profile`, { method: "PATCH", body }),
   suggestIcp: async (body: { description: string }) => {
     const response = await request<{
       message: string;
@@ -316,6 +328,13 @@ export const clientApi = {
     }),
   deleteLead: (leadId: string) =>
     request(`${apiBaseUrl}/leads/${leadId}`, { method: "DELETE" }),
+  generateDm: async (leadId: string) => {
+    const response = await request<{
+      message: string;
+      payload: { dm: string; author: string | null };
+    }>(`${apiBaseUrl}/leads/${leadId}/generate-dm`, { method: "POST" });
+    return response.payload;
+  },
 
   // Bug Reports
   createBugReport: (body: {

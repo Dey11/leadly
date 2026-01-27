@@ -6,6 +6,7 @@ import { getAccountSummary, getScheduleLimits } from "@/lib/backend-queries";
 import type { AccountSummary } from "@/types/backend";
 import { Walkthrough } from "@/components/dashboard/walkthrough";
 import { KeywordWalkthrough } from "@/components/dashboard/keyword-walkthrough";
+import { OnboardingWrapper } from "@/components/dashboard/onboarding-wrapper";
 
 const leadGenNavItems: DashboardNavItem[] = [
   { href: "/dashboard", label: "Overview", icon: "overview" },
@@ -13,8 +14,7 @@ const leadGenNavItems: DashboardNavItem[] = [
   { href: "/dashboard/icps", label: "ICPs", icon: "icps" },
   { href: "/dashboard/monitors", label: "Monitors", icon: "monitors" },
   { href: "/dashboard/schedule", label: "Schedule", icon: "schedule" },
-  { href: "/dashboard/billing", label: "Billing", icon: "billing" },
-  { href: "/dashboard/account", label: "Account", icon: "account" },
+  { href: "/dashboard/settings", label: "Settings", icon: "settings" },
 ];
 
 const keywordNavItems: DashboardNavItem[] = [
@@ -31,8 +31,7 @@ const keywordNavItems: DashboardNavItem[] = [
     icon: "keywordMonitors",
   },
   { href: "/dashboard/schedule", label: "Schedule", icon: "schedule" },
-  { href: "/dashboard/billing", label: "Billing", icon: "billing" },
-  { href: "/dashboard/account", label: "Account", icon: "account" },
+  { href: "/dashboard/settings", label: "Settings", icon: "settings" },
 ];
 
 export default async function DashboardLayout({
@@ -62,6 +61,11 @@ export default async function DashboardLayout({
         image: null,
         createdAt: new Date().toISOString(),
         hasSeenWalkthrough: false,
+        hasCompletedOnboarding: false,
+        company: null,
+        occupation: null,
+        referrer: null,
+        sampleDm: null,
       };
     } else {
       redirect("/login");
@@ -99,6 +103,7 @@ export default async function DashboardLayout({
       <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
         <div className="from-primary/5 via-background to-background absolute top-0 left-1/2 h-[600px] w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] blur-[120px]" />
       </div>
+      <OnboardingWrapper hasCompletedOnboarding={account.hasCompletedOnboarding} />
       <Walkthrough hasSeenWalkthrough={account.hasSeenWalkthrough} />
       <DashboardShell
         leadGenNavItems={leadGenNavItems}

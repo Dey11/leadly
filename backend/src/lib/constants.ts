@@ -139,6 +139,16 @@ export const AI_PROVIDER_ORDER_ICP: string[] = [
   "wavespeed",
 ] as const;
 
+/**
+ * Provider fallback order for DM generation (fast, user-facing).
+ */
+export const AI_PROVIDER_ORDER_DM: string[] = [
+  "wavespeed",
+  "cerebras",
+  "nebius",
+  "gemini",
+] as const;
+
 export const CRON_INTERVAL = "0 * * * *"; // 0 hobe first er ta
 export const KEYWORD_CRON_INTERVAL = "30 * * * *"; // Keyword: hourly at xx:30
 

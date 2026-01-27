@@ -15,6 +15,7 @@ import { LeadsTable } from "@/components/leads/leads-table";
 import { LeadsFilterBar } from "@/components/leads/leads-filter-bar";
 import { LeadDetailDialog } from "@/components/leads/lead-detail-dialog";
 import { ExportCsvDialog } from "@/components/leads/export-csv-dialog";
+import { DmBuilderDialog } from "@/components/leads/dm-builder-dialog";
 import { DATA_REFRESH_INTERVAL } from "@/constants/config";
 import type { LeadsViewProps, FilterState } from "@/types/components/leads";
 
@@ -40,6 +41,10 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
     label: string;
   } | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [dmDialogLead, setDmDialogLead] = useState<{
+    id: string;
+    author: string | null;
+  } | null>(null);
 
   // Track previous total for new leads detection
   const prevTotalRef = useRef<number | null>(null);
@@ -171,6 +176,11 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
     setErrorMessage(null);
   };
 
+  const handleGenerateDm = (leadId: string, author: string | null) => {
+    console.log("[leads-view] handleGenerateDm called", { leadId, author });
+    setDmDialogLead({ id: leadId, author });
+  };
+
   const leads = leadsQuery.data?.data ?? [];
   const pagination = leadsQuery.data?.pagination;
 
@@ -238,6 +248,7 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
             }}
             onStatusChange={handleStatusChange}
             onDelete={handleDeleteLead}
+            onGenerateDm={handleGenerateDm}
             updatingLeadId={updatingLeadId}
             deletingLeadId={deletingLeadId}
           />
@@ -323,6 +334,13 @@ export function LeadsView({ monitors, tier }: LeadsViewProps) {
           status: filters.status,
           leadType: filters.leadType,
         }}
+      />
+
+      <DmBuilderDialog
+        leadId={dmDialogLead?.id ?? null}
+        author={dmDialogLead?.author ?? null}
+        open={!!dmDialogLead}
+        onOpenChange={(open) => !open && setDmDialogLead(null)}
       />
     </div>
   );
