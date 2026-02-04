@@ -69,7 +69,7 @@ export function SiteFooter() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-border/60 dark:bg-card/80 dark:hover:bg-card h-11 w-full bg-white/80 px-8 text-sm font-semibold hover:bg-white sm:h-12 sm:w-auto sm:px-10 sm:text-base"
+                  className="border-border/60 dark:bg-card/80 dark:hover:bg-card h-11 w-full bg-white/80 px-8 text-sm font-semibold hover:bg-white hover:text-black sm:h-12 sm:w-auto sm:px-10 sm:text-base dark:hover:text-white"
                   asChild
                 >
                   <Link href="#how-it-works">Explore Features</Link>
@@ -157,14 +157,6 @@ export function SiteFooter() {
                   </h4>
                   <ul className="text-muted-foreground space-y-2 text-xs sm:text-sm">
                     <li>
-                      <Link
-                        href="/about"
-                        className="hover:text-foreground transition-colors"
-                      >
-                        About
-                      </Link>
-                    </li>
-                    <li>
                       <a
                         href={`mailto:${SUPPORT_EMAIL}`}
                         className="hover:text-foreground transition-colors"
@@ -206,6 +198,14 @@ export function SiteFooter() {
                     Resources
                   </h4>
                   <ul className="text-muted-foreground space-y-2 text-xs sm:text-sm">
+                    <li>
+                      <Link
+                        href="/blog"
+                        className="hover:text-foreground transition-colors"
+                      >
+                        Blog
+                      </Link>
+                    </li>
                     <li>
                       <Link
                         href="/cookies"

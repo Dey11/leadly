@@ -2,6 +2,7 @@
 
 - [ ] gotta store more data regarding the customer, in the db, from the dodo portal
 - [ ] weird mail icon in registration fix
+- [ ] check if overrides in package.json of frontend is needed
 
 ## Future scope
 

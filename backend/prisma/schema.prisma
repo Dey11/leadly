@@ -101,9 +101,9 @@ model User {
   restricted   Boolean  @default(false)
   isDeleted    Boolean  @default(false)
 
-  subscription      Subscription?
-  schedule          UserSchedule?
-  keywordSchedule   KeywordSchedule?
+  subscription    Subscription?
+  schedule        UserSchedule?
+  keywordSchedule KeywordSchedule?
 
   monitors        Monitor[]
   keywordMonitors KeywordMonitor[]
@@ -238,9 +238,9 @@ model KeywordSchedule {
 }
 
 model KeywordSet {
-  id       String @id @default(cuid())
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   name     String
   keywords String[]
@@ -355,7 +355,6 @@ model Lead {
   @@map("leads")
 }
 
-
 model KeywordMonitor {
   id     String @id @default(cuid())
   userId String
@@ -377,11 +376,11 @@ model KeywordMonitor {
 
   scrapeJobs KeywordScrapeJob[]
 
+  failedJobs FailedKeywordScrapeJob[]
+
   @@index([userId])
   @@index([keywordSetId])
   @@map("keyword_monitors")
-
-  failedJobs FailedKeywordScrapeJob[]
 }
 
 model FailedKeywordScrapeJob {
@@ -429,7 +428,7 @@ model KeywordScrapeJob {
 }
 
 model KeywordLead {
-  id          String          @id @default(cuid())
+  id          String           @id @default(cuid())
   scrapeJobId String
   scrapeJob   KeywordScrapeJob @relation(fields: [scrapeJobId], references: [id], onDelete: Cascade)
 
@@ -520,4 +519,37 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String   @db.Text
+  content     String   @db.Text
+  coverImage  String?
+  authorName  String?
+  authorRole  String?
+  authorImage String?
+  tags        String[]
+
+  // SEO Metadata
+  metaTitle       String?
+  metaDescription String?
+  canonicalUrl    String?
+
+  publishedAt DateTime?
+  status      String    @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+
+  // For tracking AI generation
+  generationPrompt String? @db.Text
+  isAiGenerated    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("blog_posts")
 }

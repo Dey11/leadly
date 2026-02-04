@@ -52,17 +52,21 @@ const faqs = [
   },
 ];
 
-export function FAQ() {
+interface FAQProps {
+  items?: { question: string; answer: string }[];
+}
+
+export function FAQ({ items }: FAQProps) {
+  // Use passed items or fallback to default faqs (first 5 for brevity or all)
+  const displayFaqs = items || faqs;
+
   return (
     <section className="relative px-4 py-16 sm:py-20 md:py-24 lg:py-28">
-      <div className="container mx-auto">
+      <div className="mx-auto max-w-4xl">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto mb-10 max-w-3xl text-center sm:mb-14"
+          // ... (keep header motion)
+          className="mb-10 text-center sm:mb-12"
         >
           <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
             Frequently asked questions
@@ -74,18 +78,14 @@ export function FAQ() {
 
         {/* FAQ accordion */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="mx-auto max-w-3xl"
+        // ...
         >
           <Accordion
             type="single"
             collapsible
             className="space-y-2 sm:space-y-3"
           >
-            {faqs.map((faq, i) => (
+            {displayFaqs.map((faq, i) => (
               <AccordionItem
                 key={i}
                 value={`item-${i}`}
