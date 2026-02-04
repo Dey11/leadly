@@ -25,7 +25,19 @@ const steps = [
   },
 ];
 
-export function Solution() {
+interface SolutionProps {
+  heading?: string;
+  subheading?: string;
+  items?: { icon?: any; title: string; description: string }[];
+}
+
+export function Solution({
+  heading = "How Leadly works",
+  subheading = "We turn millions of Reddit conversations into a structured pipeline of warm leads.",
+  items,
+}: SolutionProps) {
+  const displaySteps = items || steps;
+
   return (
     <section
       id="how-it-works"
@@ -42,37 +54,39 @@ export function Solution() {
               className="text-center lg:text-left"
             >
               <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
-                How Leadly works
+                {heading}
               </h2>
               <p className="text-muted-foreground mx-auto max-w-lg text-base leading-relaxed sm:text-lg md:text-lg lg:mx-0 lg:text-xl">
-                We turn millions of Reddit conversations into a structured
-                pipeline of warm leads.
+                {subheading}
               </p>
             </motion.div>
 
             <div className="space-y-5 sm:space-y-6">
-              {steps.map((step, i) => (
-                <motion.div
-                  key={step.title}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.15 }}
-                  className="flex gap-3 sm:gap-4"
-                >
-                  <div className="bg-primary/8 text-primary mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg sm:mt-1 sm:h-11 sm:w-11 sm:rounded-xl">
-                    <step.icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-foreground text-sm font-semibold sm:text-base lg:text-lg">
-                      {step.title}
-                    </h3>
-                    <p className="text-muted-foreground mt-1 text-xs leading-relaxed sm:mt-1.5 sm:text-sm">
-                      {step.description}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
+              {displaySteps.map((step, i) => {
+                const Icon = step.icon || CheckCircle2; // Fallback
+                return (
+                  <motion.div
+                    key={step.title}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: i * 0.15 }}
+                    className="flex gap-3 sm:gap-4"
+                  >
+                    <div className="bg-primary/8 text-primary mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg sm:mt-1 sm:h-11 sm:w-11 sm:rounded-xl">
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-foreground text-sm font-semibold sm:text-base lg:text-lg">
+                        {step.title}
+                      </h3>
+                      <p className="text-muted-foreground mt-1 text-xs leading-relaxed sm:mt-1.5 sm:text-sm">
+                        {step.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
 

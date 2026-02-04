@@ -43,6 +43,11 @@ const envSchema = z.object({
   // Resend
   RESEND_API_KEY: z.string().min(1, "RESEND_API_KEY is required"),
 
+  // Google Generative AI
+  GOOGLE_GENERATIVE_AI_API_KEY: z
+    .string()
+    .min(1, "GOOGLE_GENERATIVE_AI_API_KEY is required"),
+
   // Discord
   DISCORD_WEBHOOK_URL: z.string().url().optional(),
   DISCORD_PAYMENT_WEBHOOK_URL: z.string().url().optional(),

@@ -28,16 +28,28 @@ const useCases = [
   },
 ];
 
-export function UseCases() {
+interface UseCasesProps {
+  items?: { title: string; description: string; pain?: string }[];
+}
+
+export function UseCases({ items }: UseCasesProps) {
+  // Use passed items with random icons or fallback
+  const icons = [Rocket, Building2, Briefcase];
+
+  const displayCases = items
+    ? items.map((item, i) => ({
+        ...item,
+        icon: icons[i % icons.length],
+        pain: item.pain || "See how Leadly helps you scale.",
+      }))
+    : useCases;
+
   return (
     <section id="use-cases" className="px-4 py-16 sm:py-20 md:py-24 lg:py-28">
-      <div className="container mx-auto">
+      <div className="mx-auto max-w-5xl">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto mb-10 max-w-3xl text-center sm:mb-14"
+          // ... (keep header)
+          className="mb-10 text-center sm:mb-12"
         >
           <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
             Built for every GTM motion
@@ -48,13 +60,11 @@ export function UseCases() {
           </p>
         </motion.div>
 
-        <div className="mx-auto grid max-w-5xl gap-4 sm:gap-6 md:grid-cols-3">
-          {useCases.map((useCase, i) => (
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
+          {displayCases.map((useCase, i) => (
             <motion.div
               key={useCase.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              // ... (keep motion props)
               transition={{ duration: 0.5, delay: i * 0.1 }}
               whileHover={{
                 y: -4,

@@ -4,6 +4,7 @@ import { env } from "../env";
 import { processRedditScrape } from "../processors/reddit.processor";
 import logger from "../lib/logger";
 import { sendAllLogsToDiscord } from "../services/logger.service";
+import { startBlogWorker } from "./blog.worker";
 
 const worker = new Worker(
   "scrapeJobs",
@@ -52,4 +53,5 @@ process.on("SIGTERM", async () => {
 });
 
 logger.info("Worker started");
+startBlogWorker();
 logger.info("Worker log scheduler started (hourly at xx:30).");

@@ -25,6 +25,7 @@ import adminRouter from "./routes/admin";
 import { requestLogger } from "./middleware/request-logger";
 import { sendAllLogsToDiscord } from "./services/logger.service";
 import { runKeywordScheduler } from "./services/keyword-scheduler";
+import { blogRouter } from "./routes/blog";
 
 const PORT = env.PORT;
 
@@ -60,6 +61,7 @@ const apiRouter = express.Router();
 app.use("/api/v1", apiRouter);
 
 // Lead Gen routes
+apiRouter.use("/blog", blogRouter);
 apiRouter.use("/auth", authRouter);
 apiRouter.use("/monitors", monitorRouter);
 apiRouter.use("/icps", icpRouter);

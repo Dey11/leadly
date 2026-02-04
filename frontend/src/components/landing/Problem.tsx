@@ -27,7 +27,19 @@ const problems = [
   },
 ];
 
-export function Problem() {
+interface ProblemProps {
+  heading?: string;
+  subheading?: string;
+  items?: { icon?: any; title: string; description: string }[];
+}
+
+export function Problem({
+  heading = "Why traditional lead gen is broken",
+  subheading = "High-intent buyers are asking for recommendations on Reddit every hour. The problem? These conversations are buried.",
+  items,
+}: ProblemProps) {
+  const displayItems = items || problems;
+
   return (
     <section className="relative px-4 py-16 sm:py-20 md:py-24 lg:py-28">
       <div className="container mx-auto">
@@ -40,11 +52,10 @@ export function Problem() {
           className="mx-auto mb-8 max-w-3xl text-center sm:mb-10 lg:mb-12"
         >
           <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-6 sm:text-4xl md:text-5xl">
-            Why traditional lead gen is broken
+            {heading}
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-            High-intent buyers are asking for recommendations on Reddit every
-            hour. The problem? These conversations are buried.
+            {subheading}
           </p>
         </motion.div>
 
@@ -57,6 +68,7 @@ export function Problem() {
           className="border-border/50 relative mx-auto max-w-6xl overflow-hidden rounded-2xl border bg-gradient-to-br from-[#f5e9e2] via-[#e3b5a4]/30 to-[#773344]/15 sm:rounded-3xl dark:from-[#18181b] dark:via-[#2d1f24] dark:to-[#3d1a22]"
         >
           {/* Radial gradient overlay for wine glow effect */}
+          {/* ... existing gradients ... */}
           {/* Light mode gradient overlays */}
           <div
             className="absolute inset-0 opacity-60 dark:opacity-0"
@@ -98,28 +110,31 @@ export function Problem() {
           <div className="relative z-10 grid items-center gap-8 p-6 sm:p-8 md:grid-cols-2 md:gap-12 lg:p-12">
             {/* Left: Pain points */}
             <div className="space-y-5 sm:space-y-6">
-              {problems.map((item, i) => (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
-                  className="flex gap-4"
-                >
-                  <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg sm:h-12 sm:w-12 sm:rounded-xl dark:bg-white/10 dark:text-[#e3b5a4]">
-                    <item.icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-foreground mb-1 text-base font-semibold sm:text-lg dark:text-white">
-                      {item.title}
-                    </h3>
-                    <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm dark:text-white/60">
-                      {item.description}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
+              {displayItems.map((item, i) => {
+                const Icon = item.icon || MessageSquareOff; // Fallback icon
+                return (
+                  <motion.div
+                    key={item.title || i}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
+                    className="flex gap-4"
+                  >
+                    <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg sm:h-12 sm:w-12 sm:rounded-xl dark:bg-white/10 dark:text-[#e3b5a4]">
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-foreground mb-1 text-base font-semibold sm:text-lg dark:text-white">
+                        {item.title}
+                      </h3>
+                      <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm dark:text-white/60">
+                        {item.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
 
               {/* CTA Button */}
               <motion.div

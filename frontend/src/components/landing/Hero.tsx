@@ -48,7 +48,19 @@ const stats = [
   { value: "98%", label: "Accuracy" },
 ];
 
-export function Hero() {
+interface HeroProps {
+  title?: React.ReactNode;
+  description?: string;
+  ctaText?: string;
+  ctaLink?: string;
+}
+
+export function Hero({
+  title,
+  description,
+  ctaText = "Get Started",
+  ctaLink = "/register",
+}: HeroProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -105,16 +117,20 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-foreground font-display mb-4 text-3xl leading-[1.15] font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl lg:text-6xl"
             >
-              Find Leads on Reddit <br className="hidden sm:block" />
-              <AnimatedWord
-                words={[
-                  "Automatically",
-                  "Effortlessly",
-                  "Instantly",
-                  "Intelligently",
-                ]}
-                className="min-w-[140px] sm:min-w-[200px]"
-              />
+              {title || (
+                <>
+                  Find Leads on Reddit <br className="hidden sm:block" />
+                  <AnimatedWord
+                    words={[
+                      "Automatically",
+                      "Effortlessly",
+                      "Instantly",
+                      "Intelligently",
+                    ]}
+                    className="min-w-[140px] sm:min-w-[200px]"
+                  />
+                </>
+              )}
             </motion.h1>
 
             {/* Subheadline - more concise */}
@@ -124,8 +140,8 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-muted-foreground mx-auto mb-6 max-w-xl text-sm leading-relaxed sm:mb-8 sm:text-base md:text-lg"
             >
-              Track subreddits and monitor keywords while our AI surfaces people
-              actively asking for products like yours — 24/7.
+              {description ||
+                "Track subreddits and monitor keywords while our AI surfaces people actively asking for products like yours — 24/7."}
             </motion.p>
 
             {/* CTA button */}
@@ -141,7 +157,7 @@ export function Hero() {
                 className="border-foreground/10 bg-background hover:border-foreground/20 dark:hover:bg-sidebar-accent h-11 rounded-full px-8 text-sm font-medium shadow-sm transition-all hover:scale-105 hover:shadow-md sm:h-12 sm:px-10 sm:text-base"
                 asChild
               >
-                <Link href="/register">Get Started</Link>
+                <Link href={ctaLink}>{ctaText}</Link>
               </Button>
             </motion.div>
           </div>
