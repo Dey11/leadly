@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import logger from "../lib/logger";
 import db from "../lib/db";
-import { patchAccountSchema } from "../types/account";
+import { patchAccountSchema, patchProfileSchema } from "../types/account";
 import { previewUsage } from "../lib/usage";
 import { SubscriptionTier } from "@prisma/client";
 
@@ -28,6 +28,12 @@ export async function getAccount(req: Request, res: Response) {
         createdAt: findExistingUser?.createdAt,
         hasSeenWalkthrough:
           (findExistingUser as any).hasSeenWalkthrough ?? false,
+        hasCompletedOnboarding:
+          findExistingUser?.hasCompletedOnboarding ?? false,
+        company: findExistingUser?.company ?? null,
+        occupation: findExistingUser?.occupation ?? null,
+        referrer: findExistingUser?.referrer ?? null,
+        sampleDm: findExistingUser?.sampleDm ?? null,
       },
     };
 
@@ -224,6 +230,65 @@ export async function updateWalkthroughStatus(req: Request, res: Response) {
       payload: {},
     });
   } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export async function patchProfile(req: Request, res: Response) {
+  try {
+    const userId = req.userId;
+    const findExistingUser = await db.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!findExistingUser) {
+      return res.status(400).json({ error: "User does not exist" });
+    }
+
+    const payload = patchProfileSchema.safeParse(req.body);
+    if (!payload.success) {
+      return res.status(400).json({
+        error: "Invalid request body",
+      });
+    }
+
+    const updatedUser = await db.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        ...(payload.data.company !== undefined && {
+          company: payload.data.company,
+        }),
+        ...(payload.data.occupation !== undefined && {
+          occupation: payload.data.occupation,
+        }),
+        ...(payload.data.referrer !== undefined && {
+          referrer: payload.data.referrer,
+        }),
+        ...(payload.data.sampleDm !== undefined && {
+          sampleDm: payload.data.sampleDm,
+        }),
+        ...(payload.data.hasCompletedOnboarding !== undefined && {
+          hasCompletedOnboarding: payload.data.hasCompletedOnboarding,
+        }),
+      },
+    });
+
+    res.status(200).json({
+      message: "Profile updated successfully.",
+      payload: {
+        company: updatedUser.company,
+        occupation: updatedUser.occupation,
+        referrer: updatedUser.referrer,
+        sampleDm: updatedUser.sampleDm,
+        hasCompletedOnboarding: updatedUser.hasCompletedOnboarding,
+      },
+    });
+  } catch (error) {
+    logger.error("Failed to update profile:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }

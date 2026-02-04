@@ -37,12 +37,7 @@ export async function AccountContent() {
     : "Free";
 
   return (
-    <div className="flex flex-col gap-8">
-      <DashboardPageHeader
-        title="Account settings"
-        description="Update your profile, manage sessions, and view billing status & usage."
-      />
-
+    <div className="flex flex-col gap-6">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <section className="space-y-4">
           <AccountForm

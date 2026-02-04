@@ -59,6 +59,11 @@ Reddit is a goldmine for user feedback, pain points, and product recommendations
 - **Relevance Score**: 0-100 score indicating how well a post matches the user's ICP.
 - **Sentiment Analysis**: Detects Frustration, Curiosity, Satisfaction.
 - **Persona Matching**: Identifies if the poster is a likely buyer (e.g., "Founder", "Developer") vs. a student or hobbyist.
+- **AI Cold DM Builder**: Generates personalized, human-like DMs based on the lead's post and your unique writing style.
+  - **Context Aware**: Uses your company details and role.
+  - **Style Mimicry**: Learns from your previous DMs to match your tone.
+  - **Smart Links**: Automatically inserts your portfolio/proof-of-work links exactly where needed.
+  - **One-Click Send**: Pre-fills the Reddit compose window with your AI-generated message.
 
 ### 3. Scheduling & Quotas
 
@@ -74,6 +79,12 @@ Reddit is a goldmine for user feedback, pain points, and product recommendations
 - **Automated Provisioning**: Webhooks handle upgrades, downgrades, and cancellations instantly.
 - **Usage Tracking**: Monthly and daily quotas enforced at the API level.
 
+### 5. User Onboarding & Personalization
+
+- **Smart Onboarding**: Multi-step modal flow to capture user context, role, and writing style.
+- **Unified Settings**: Centralized profile, billing, and account management at `/dashboard/settings`.
+- **Persistent Profile**: Stores company details and "Sample DM" to ensure AI consistency across sessions.
+
 ---
 
 ## 🏗 Technical Architecture
@@ -87,7 +98,10 @@ Leadly is built as a monorepo with two primary applications:
 - **Database**: PostgreSQL (via NeonDB) managed by **Prisma ORM 7**.
 - **Queue System**: **BullMQ** on **Redis** for asynchronous scraping jobs.
 - **Worker**: Dedicated worker process for heavy lifting (Reddit scraping + AI processing).
-- **AI**: Google Generative AI SDK (Gemini 2.5 Flash).
+- **Worker**: Dedicated worker process for heavy lifting (Reddit scraping + AI processing).
+- **AI Stack**:
+  - **Gemini 2.5 Flash** (Reasoning, Scoring, Sentiment)
+  - **WaveSpeed (Llama 3)**, **Cerebras**, **Nebius** (Human-like Text Generation)
 
 ### 2. Frontend (`/frontend`)
 
@@ -138,7 +152,8 @@ The core entities driving Leadly are defined in `prisma/schema.prisma`.
 - **`Monitor`**: A specific subreddit watch-job linked to an ICP.
 - **`KeywordSet` & `KeywordMonitor`**: Separate entities for global keyword tracking.
 - **`ScrapeJob`**: A record of a single execution of a monitor.
-- **`Lead`**: The final output. A relevant Reddit post with AI analysis.
+- **`ScrapeJob`**: A record of a single execution of a monitor.
+- **`Lead`**: The final output. A relevant Reddit post with AI analysis and stored `generatedDm`.
 
 ---
 

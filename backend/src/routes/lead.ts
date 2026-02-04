@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 import * as leadController from "../controllers/lead";
+import * as leadAiController from "../controllers/lead.ai";
 
 const router = Router();
 
@@ -17,6 +18,13 @@ router.get(
   authMiddleware,
   userRateLimit("read"),
   leadController.getLead,
+);
+
+router.post(
+  "/:id/generate-dm",
+  authMiddlewareVerifiedOnly,
+  userRateLimit("write"),
+  leadAiController.generateDm,
 );
 
 router.patch(

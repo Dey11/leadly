@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+
 }
 
 enum Platform {
@@ -122,6 +123,13 @@ model User {
   sessions            Session[]
   accounts            Account[]
   hasSeenWalkthrough  Boolean   @default(false)
+
+  // Profile/Onboarding fields for better user experience
+  hasCompletedOnboarding Boolean  @default(false)
+  company                String?
+  occupation             String?
+  referrer               String?
+  sampleDm               String?  @db.Text
 
   @@map("users")
 }
@@ -342,6 +350,7 @@ model Lead {
   author     String?
   reasoning  String?  @db.Text
   aiProvider String?
+  generatedDm String? @db.Text
 
   status LeadStatus @default(NEW)
 

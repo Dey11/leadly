@@ -12,6 +12,7 @@ import {
   UserRound,
   Tags,
   Search,
+  Settings,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -34,6 +35,7 @@ const iconComponents = {
   keywordSets: Tags,
   keywordMonitors: Radar,
   keywordLeads: Search,
+  settings: Settings,
 } as const;
 
 export type IconKey = keyof typeof iconComponents;
@@ -73,9 +75,19 @@ export function DashboardNav({
       )}
     >
       {items.map((item) => {
-        const isActive =
-          pathname === item.href ||
-          (item.href !== "/dashboard" && pathname.startsWith(item.href));
+        // For exact matches or startsWith check, but exclude if another nav item is a more specific match
+        const isExactMatch = pathname === item.href;
+        const isNestedMatch = 
+          item.href !== "/dashboard" && 
+          pathname.startsWith(item.href + "/");
+        // Check if there's a more specific item that matches (to avoid both Account and Settings being active)
+        const hasMoreSpecificMatch = items.some(
+          (other) =>
+            other.href !== item.href &&
+            other.href.startsWith(item.href) &&
+            (pathname === other.href || pathname.startsWith(other.href + "/"))
+        );
+        const isActive = isExactMatch || (isNestedMatch && !hasMoreSpecificMatch);
         const Icon = iconComponents[item.icon];
 
         return (

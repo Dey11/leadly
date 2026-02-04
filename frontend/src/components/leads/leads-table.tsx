@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Trash2,
   Eye,
+  Send,
 } from "lucide-react";
 import {
   Select,
@@ -33,6 +34,7 @@ interface LeadsTableProps {
   onViewDetail: (leadId: string) => void;
   onStatusChange: (leadId: string, status: LeadStatus) => void;
   onDelete: (lead: { id: string; label: string }) => void;
+  onGenerateDm: (leadId: string, author: string | null) => void;
   updatingLeadId?: string | null;
   deletingLeadId?: string | null;
 }
@@ -55,6 +57,7 @@ export function LeadsTable({
   onViewDetail,
   onStatusChange,
   onDelete,
+  onGenerateDm,
   updatingLeadId,
 }: LeadsTableProps) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -161,6 +164,17 @@ export function LeadsTable({
                         onClick={() => onViewDetail(lead.id)}
                       >
                         <Eye className="text-muted-foreground hover:text-foreground h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => {
+                          console.log("[leads-table] Send clicked for", lead.id);
+                          onGenerateDm(lead.id, lead.author);
+                        }}
+                      >
+                        <Send className="text-muted-foreground hover:text-foreground h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"

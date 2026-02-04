@@ -17,6 +17,11 @@ export interface AccountSummary {
   image: string | null;
   createdAt: string;
   hasSeenWalkthrough: boolean;
+  hasCompletedOnboarding: boolean;
+  company: string | null;
+  occupation: string | null;
+  referrer: string | null;
+  sampleDm: string | null;
 }
 
 export interface AccountResponse {
