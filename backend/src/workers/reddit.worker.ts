@@ -17,6 +17,7 @@ const worker = new Worker(
       url: env.REDIS_URL,
       maxRetriesPerRequest: null,
     },
+    concurrency: 10,
   },
 );
 

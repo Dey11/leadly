@@ -11,6 +11,7 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import Image from "next/image";
 import { ShareButtonClient } from "@/components/blog/ShareButtonClient";
 import { TableOfContents } from "@/components/blog/TableOfContents";
+import { backendUrl } from "@/lib/env";
 
 export const dynamicParams = true;
 export const revalidate = 3600;
@@ -34,9 +35,8 @@ function slugify(text: string): string {
 
 export async function generateStaticParams() {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
     const res = await fetch(
-      `${apiUrl}/api/v1/blog/posts?status=PUBLISHED&limit=1000`,
+      `${backendUrl}/api/v1/blog/posts?status=PUBLISHED&limit=1000`,
       { next: { revalidate: 3600 } },
     );
     if (!res.ok) return [];
@@ -51,8 +51,7 @@ export async function generateStaticParams() {
 
 async function getBlogPost(slug: string) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-    const res = await fetch(`${apiUrl}/api/v1/blog/posts/${slug}`, {
+    const res = await fetch(`${backendUrl}/api/v1/blog/posts/${slug}`, {
       next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
@@ -144,7 +143,7 @@ export default async function BlogPostPage({
             </Link>
 
             <header className="mb-10">
-              <div className="mb-6 flex gap-2">
+              <div className="mb-6 flex flex-wrap gap-1.5 sm:gap-2">
                 {post.tags
                   .filter(
                     (t: string) => t !== "AI_TECH_STACK" && !t.includes("_"),
@@ -152,7 +151,7 @@ export default async function BlogPostPage({
                   .map((tag: string) => (
                     <span
                       key={tag}
-                      className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-xs font-medium"
+                      className="bg-primary/10 text-primary whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-medium sm:px-2.5 sm:py-1 sm:text-xs"
                     >
                       {tag}
                     </span>

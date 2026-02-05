@@ -1,14 +1,11 @@
-import { Metadata } from "next";
-import Link from "next/link";
-// import { db } from "@/lib/db"; // Removed direct DB access
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, User } from "lucide-react";
-import { format } from "date-fns";
-// import { BlogPost } from "@prisma/client"; // Removed direct DB import
 import { LandingNav } from "@/components/landing/LandingNav";
 import { SiteFooter } from "@/components/landing/SiteFooter";
-import Image from "next/image";
 import { backendUrl } from "@/lib/env";
+import { format } from "date-fns";
+import { ArrowRight, Calendar } from "lucide-react";
+import { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 
 interface BlogPost {
   id: string;
@@ -126,7 +123,7 @@ export default async function BlogIndexPage() {
                   className="group bg-card border-border/50 hover:border-primary/50 relative flex flex-col overflow-hidden rounded-2xl border transition-all duration-300 hover:shadow-lg"
                 >
                   {/* Image */}
-                  <div className="bg-muted aspect-[16/9] overflow-hidden">
+                  <div className="bg-muted aspect-video overflow-hidden">
                     {post.coverImage && (
                       <img
                         src={post.coverImage}

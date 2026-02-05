@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
+import { backendUrl } from "@/lib/env";
 
 import solutionsData from "@/data/solutions.json";
 
@@ -57,10 +58,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic Blog Posts
   let blogRoutes: MetadataRoute.Sitemap = [];
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-    // Fetch all posts for sitemap (limit 1000 or paginate if needed)
     const res = await fetch(
-      `${apiUrl}/api/v1/blog/posts?status=PUBLISHED&limit=100`,
+      `${backendUrl}/api/v1/blog/posts?status=PUBLISHED&limit=100`,
       {
         next: { revalidate: 3600 },
       },

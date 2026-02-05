@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { backendUrl } from "@/lib/env";
 
 // Route segment config
 export const runtime = "edge";
@@ -29,16 +30,12 @@ export default async function Image({ params }: { params: { slug: string } }) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  // Attempt to fetch real title if possible.
-  // Note: env vars in edge might behave differently depending on setup, but typically NEXT_PUBLIC_ is safe.
+  // Attempt to fetch real title for OG image.
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl) {
-      const res = await fetch(`${apiUrl}/api/v1/blog/posts/${slug}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.title) title = data.title;
-      }
+    const res = await fetch(`${backendUrl}/api/v1/blog/posts/${slug}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.title) title = data.title;
     }
   } catch (e) {
     // Fallback to slug title
