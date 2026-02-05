@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import Image from "next/image";
+import { backendUrl } from "@/lib/env";
 
 interface BlogPost {
   id: string;
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
 
 async function getBlogPosts() {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const apiUrl = backendUrl;
     // Force cache to be 'no-store' for dynamic, or 'force-cache' for SSG if built
     // For SSG during build, backend must be up.
     // If backend isn't up during build, this will fail unless we mock or skip.
