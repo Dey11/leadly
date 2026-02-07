@@ -229,7 +229,7 @@ export function SiteFooter() {
               {/* Copyright */}
               <div className="border-border/30 text-muted-foreground mt-8 border-t pt-6 text-center text-xs">
                 <p>
-                  Copyright © {new Date().getFullYear()} Leadly Inc. All rights
+                  Copyright © {new Date().getFullYear()} Leadly. All rights
                   reserved.
                 </p>
               </div>

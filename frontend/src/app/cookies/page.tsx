@@ -87,13 +87,16 @@ export default function CookiesPage() {
                   <td className="py-2">Maintains your authenticated session</td>
                   <td className="py-2">7 days</td>
                 </tr>
-                <tr className="border-border/50 border-b">
+                {/*
+                todo: implement CSRF protection and add csrf_token cookie to this list
+                */}
+                {/* <tr className="border-border/50 border-b">
                   <td className="py-2 font-mono text-xs">csrf_token</td>
                   <td className="py-2">
                     Security - prevents cross-site request forgery
                   </td>
                   <td className="py-2">Session</td>
-                </tr>
+                </tr> */}
                 <tr>
                   <td className="py-2 font-mono text-xs">
                     leadly_cookie_consent
@@ -276,7 +279,7 @@ export default function CookiesPage() {
             <li>
               <strong>DodoPayments:</strong> Payment processing. See their{" "}
               <a
-                href="https://dodopayments.com/privacy"
+                href="https://dodopayments.com/privacy-policy"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:text-primary/80"
