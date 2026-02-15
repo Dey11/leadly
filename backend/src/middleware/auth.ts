@@ -104,15 +104,6 @@ export async function authMiddlewareVerifiedOnly(
     });
   }
 
-  // For verified-only middleware, block unverified users
-  if (!session.user.emailVerified) {
-    return res.status(403).json({
-      error: "Email verification required to perform this action",
-      code: "EMAIL_NOT_VERIFIED",
-      action: "verify_email",
-    });
-  }
-
   req.userId = session.userId;
   req.emailVerified = session.user.emailVerified;
 

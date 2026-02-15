@@ -23,25 +23,16 @@ import { checkRateLimit, incrementRateLimit } from "../lib/rate-limit";
 const isDevelopment = false; // turn this on when testing non registration
 
 function generateSecureSessionToken(): string {
-  const randomBytes = crypto.randomBytes(32).toString("hex");
-  const timestamp = Date.now().toString();
-  const data = `${randomBytes}:${timestamp}`;
-
-  if (!env.SESSION_SECRET) {
-    throw new Error("SESSION_SECRET environment variable is required");
-  }
-
-  const hmac = crypto.createHmac("sha256", env.SESSION_SECRET);
-  hmac.update(data);
-  const signature = hmac.digest("hex");
-
-  return `${data}:${signature}`;
+  return crypto.randomBytes(32).toString("hex");
 }
 
-async function createUserSession(userId: string) {
+const MAX_SESSIONS = 5;
+
+export async function createUserSession(userId: string) {
   const token = generateSecureSessionToken();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
 
+  // Clean up expired sessions
   await db.session.deleteMany({
     where: {
       userId,
@@ -50,6 +41,19 @@ async function createUserSession(userId: string) {
       },
     },
   });
+
+  // Cap active sessions — keep only the newest (MAX_SESSIONS - 1) so the new one makes MAX_SESSIONS
+  const activeSessions = await db.session.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+  if (activeSessions.length >= MAX_SESSIONS - 1) {
+    const idsToKeep = activeSessions.slice(0, MAX_SESSIONS - 1).map((s) => s.id);
+    await db.session.deleteMany({
+      where: { userId, id: { notIn: idsToKeep } },
+    });
+  }
 
   return await db.session.create({
     data: {
@@ -61,7 +65,7 @@ async function createUserSession(userId: string) {
   });
 }
 
-function getCookieOptions(maxAge: number = 1000 * 60 * 60 * 24 * 7) {
+export function getCookieOptions(maxAge: number = 1000 * 60 * 60 * 24 * 7) {
   const isProduction = process.env.NODE_ENV === "production";
   return {
     httpOnly: true,
@@ -110,7 +114,7 @@ export async function register(req: Request, res: Response) {
 
     const hashedPassword = await bcrypt.hash(payload.data.password, 10);
     const otp = crypto.randomInt(100000, 999999).toString();
-    const otpExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 60 minutes
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // If unverified user exists, update instead of delete to prevent race condition
     if (findExistingUser && !findExistingUser.emailVerified) {
@@ -271,6 +275,11 @@ export async function login(req: Request, res: Response) {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
+    // OAuth-only users have empty passwordHash — bcrypt.compare would throw
+    if (!userInDb.passwordHash) {
+      return res.status(400).json({ error: "Invalid email or password" });
+    }
+
     const isPasswordValid = await bcrypt.compare(
       payload.data.password,
       userInDb.passwordHash,
@@ -406,7 +415,7 @@ export async function resendVerificationEmail(req: Request, res: Response) {
     }
 
     const otp = crypto.randomInt(100000, 999999).toString();
-    const otpExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 60 minutes
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     await db.user.update({
       where: { id: user.id },
@@ -444,7 +453,7 @@ export async function forgotPassword(req: Request, res: Response) {
       where: { email },
     });
 
-    if (!user || user.isDeleted) {
+    if (!user || user.isDeleted || !user.passwordHash) {
       return res
         .status(200)
         .json({ message: "If an account exists, a reset link has been sent" });
@@ -459,12 +468,13 @@ export async function forgotPassword(req: Request, res: Response) {
     }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
     const resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await db.user.update({
       where: { id: user.id },
       data: {
-        resetToken,
+        resetToken: resetTokenHash,
         resetTokenExpiresAt,
       },
     });
@@ -492,16 +502,17 @@ export async function resetPassword(req: Request, res: Response) {
       return res.status(400).json({ error: formatZodError(payload.error) });
     }
 
+    const tokenHash = crypto.createHash("sha256").update(payload.data.token).digest("hex");
     const user = await db.user.findUnique({
-      where: { resetToken: payload.data.token },
+      where: { resetToken: tokenHash },
     });
 
     if (!user) {
       return res.status(400).json({ error: "Invalid or expired reset token" });
     }
 
-    if (user.isDeleted) {
-      return res.status(400).json({ error: "User is deleted" });
+    if (user.isDeleted || !user.passwordHash) {
+      return res.status(400).json({ error: "Invalid or expired reset token" });
     }
 
     if (!user.resetTokenExpiresAt || new Date() > user.resetTokenExpiresAt) {
