@@ -135,8 +135,12 @@ export async function googleOAuthCallback(req: Request, res: Response) {
     }
 
     // Clear the state cookie
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("oauth_state", "", {
       httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      domain: isProduction ? ".leadly.live" : undefined,
       maxAge: 0,
       path: "/",
     });
