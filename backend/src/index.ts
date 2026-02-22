@@ -4,6 +4,7 @@ import logger from "./lib/logger";
 import express, { type RequestHandler } from "express";
 import cookieParser from "cookie-parser";
 import { authRouter } from "./routes/auth";
+import { googleOAuthRouter } from "./routes/google-oauth";
 import monitorRouter from "./routes/monitor";
 import icpRouter from "./routes/icp";
 import scheduleRouter from "./routes/schedule";
@@ -63,6 +64,7 @@ app.use("/api/v1", apiRouter);
 // Lead Gen routes
 apiRouter.use("/blog", blogRouter);
 apiRouter.use("/auth", authRouter);
+apiRouter.use("/auth", googleOAuthRouter);
 apiRouter.use("/monitors", monitorRouter);
 apiRouter.use("/icps", icpRouter);
 apiRouter.use("/schedule", scheduleRouter);

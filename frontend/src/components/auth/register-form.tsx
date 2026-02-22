@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { GoogleOAuthButton } from "@/components/auth/google-oauth-button";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -59,6 +60,7 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-6">
+      <GoogleOAuthButton />
       <FieldGroup>
         <Field data-invalid={!!formError && !name}>
           <FieldLabel htmlFor="name">Full name</FieldLabel>

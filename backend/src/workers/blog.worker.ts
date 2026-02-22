@@ -1,6 +1,4 @@
-import { Worker } from "bullmq";
 import cron from "node-cron";
-import { env } from "../env";
 import logger from "../lib/logger";
 import { generateDailyBlog } from "../seo/blog.processor";
 

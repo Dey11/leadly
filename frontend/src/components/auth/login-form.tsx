@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { GoogleOAuthButton } from "@/components/auth/google-oauth-button";
 
 function sanitizeReturnUrl(value?: string) {
   if (!value) {
@@ -55,6 +56,7 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
     searchParams.get("next") ?? undefined,
   );
   const resolvedReturnUrl = returnUrl ?? fallbackReturnUrl;
+  const oauthError = searchParams.get("error");
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -102,6 +104,32 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-6">
+      <GoogleOAuthButton />
+
+      {oauthError && (
+        <Alert variant="destructive">
+          <AlertTitle>Sign in failed</AlertTitle>
+          <AlertDescription>
+            {
+              {
+                oauth_denied: "Google sign-in was cancelled.",
+                oauth_state_mismatch:
+                  "Security check failed. Please try again.",
+                oauth_no_code: "No authorization code received from Google.",
+                oauth_failed: "Google sign-in failed. Please try again.",
+                oauth_no_email:
+                  "Could not retrieve your email from Google.",
+                oauth_account_deleted:
+                  "This account has been deleted.",
+                oauth_email_exists:
+                  "An account with this email already exists. Please sign in with your password first.",
+                oauth_initiation_failed:
+                  "Could not connect to Google. Please try again later.",
+              }[oauthError] ?? "Something went wrong. Please try again."
+            }
+          </AlertDescription>
+        </Alert>
+      )}
       <FieldGroup>
         <Field data-invalid={!!formError && !email}>
           <FieldLabel htmlFor="email">Email</FieldLabel>

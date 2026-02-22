@@ -55,6 +55,13 @@ const envSchema = z.object({
 
   // Admin
   ADMIN_API_KEY: z.string().min(32).optional(),
+
+  // Google OAuth
+  GOOGLE_CLIENT_ID: z.string().min(1, "GOOGLE_CLIENT_ID is required"),
+  GOOGLE_CLIENT_SECRET: z.string().min(1, "GOOGLE_CLIENT_SECRET is required"),
+  GOOGLE_REDIRECT_URI: z
+    .string()
+    .url("GOOGLE_REDIRECT_URI must be a valid URL"),
 });
 
 export const env = envSchema.parse(process.env);
