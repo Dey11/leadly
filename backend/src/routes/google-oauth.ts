@@ -11,4 +11,8 @@ export const googleOAuthRouter = Router();
 googleOAuthRouter.get("/google", rateLimit("login"), googleOAuthInitiate);
 
 // GET /api/v1/auth/google/callback — Handles the OAuth callback
-googleOAuthRouter.get("/google/callback", rateLimit("login"), googleOAuthCallback);
+googleOAuthRouter.get(
+  "/google/callback",
+  rateLimit("login"),
+  googleOAuthCallback,
+);

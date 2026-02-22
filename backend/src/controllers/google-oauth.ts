@@ -49,7 +49,9 @@ async function createSessionInTransaction(
     select: { id: true },
   });
   if (activeSessions.length >= MAX_SESSIONS - 1) {
-    const idsToKeep = activeSessions.slice(0, MAX_SESSIONS - 1).map((s) => s.id);
+    const idsToKeep = activeSessions
+      .slice(0, MAX_SESSIONS - 1)
+      .map((s) => s.id);
     await tx.session.deleteMany({
       where: { userId, id: { notIn: idsToKeep } },
     });
@@ -101,9 +103,7 @@ export async function googleOAuthInitiate(req: Request, res: Response) {
     res.redirect(authorizationUrl);
   } catch (error) {
     logger.error("Google OAuth initiation failed:", error);
-    res.redirect(
-      `${env.FRONTEND_URL}/login?error=oauth_initiation_failed`,
-    );
+    res.redirect(`${env.FRONTEND_URL}/login?error=oauth_initiation_failed`);
   }
 }
 
@@ -120,9 +120,7 @@ export async function googleOAuthCallback(req: Request, res: Response) {
     // Handle error response from Google
     if (oauthError) {
       logger.warn("Google OAuth error response:", oauthError);
-      return res.redirect(
-        `${env.FRONTEND_URL}/login?error=oauth_denied`,
-      );
+      return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_denied`);
     }
 
     // CRITICAL: Validate state parameter to prevent CSRF attacks
@@ -146,9 +144,7 @@ export async function googleOAuthCallback(req: Request, res: Response) {
     });
 
     if (!code || typeof code !== "string") {
-      return res.redirect(
-        `${env.FRONTEND_URL}/login?error=oauth_no_code`,
-      );
+      return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_no_code`);
     }
 
     // Exchange authorization code for tokens
@@ -156,9 +152,7 @@ export async function googleOAuthCallback(req: Request, res: Response) {
 
     if (!tokens.id_token) {
       logger.error("No id_token received from Google");
-      return res.redirect(
-        `${env.FRONTEND_URL}/login?error=oauth_failed`,
-      );
+      return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
     }
 
     // Verify the ID token using Google's public keys
@@ -170,9 +164,7 @@ export async function googleOAuthCallback(req: Request, res: Response) {
     const payload = ticket.getPayload();
     if (!payload) {
       logger.error("Empty payload from Google ID token");
-      return res.redirect(
-        `${env.FRONTEND_URL}/login?error=oauth_failed`,
-      );
+      return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
     }
 
     // The 'sub' claim is the stable unique user identifier — use this, NOT email
@@ -185,9 +177,7 @@ export async function googleOAuthCallback(req: Request, res: Response) {
 
     if (!email) {
       logger.error("No email in Google ID token payload");
-      return res.redirect(
-        `${env.FRONTEND_URL}/login?error=oauth_no_email`,
-      );
+      return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_no_email`);
     }
 
     // ── Account Linking Logic ──
@@ -223,10 +213,7 @@ export async function googleOAuthCallback(req: Request, res: Response) {
         },
       });
 
-      const session = await createSessionInTransaction(
-        db as any,
-        user.id,
-      );
+      const session = await createSessionInTransaction(db as any, user.id);
       return res
         .cookie("session_token", session.token, getCookieOptions())
         .redirect(`${env.FRONTEND_URL}/dashboard`);
@@ -328,9 +315,7 @@ export async function googleOAuthCallback(req: Request, res: Response) {
           userId: newUser.id,
           status: SubscriptionStatus.ACTIVE,
           tier: SubscriptionTier.FREE,
-          currentPeriodEnd: new Date(
-            Date.now() + 365 * 24 * 60 * 60 * 1000,
-          ),
+          currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         },
       });
 
@@ -351,8 +336,6 @@ export async function googleOAuthCallback(req: Request, res: Response) {
       .redirect(`${env.FRONTEND_URL}/dashboard`);
   } catch (error) {
     logger.error("Google OAuth callback failed:", error);
-    return res.redirect(
-      `${env.FRONTEND_URL}/login?error=oauth_failed`,
-    );
+    return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
   }
 }

@@ -49,7 +49,9 @@ export async function createUserSession(userId: string) {
     select: { id: true },
   });
   if (activeSessions.length >= MAX_SESSIONS - 1) {
-    const idsToKeep = activeSessions.slice(0, MAX_SESSIONS - 1).map((s) => s.id);
+    const idsToKeep = activeSessions
+      .slice(0, MAX_SESSIONS - 1)
+      .map((s) => s.id);
     await db.session.deleteMany({
       where: { userId, id: { notIn: idsToKeep } },
     });
@@ -468,7 +470,10 @@ export async function forgotPassword(req: Request, res: Response) {
     }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+    const resetTokenHash = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
     const resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await db.user.update({
@@ -502,7 +507,10 @@ export async function resetPassword(req: Request, res: Response) {
       return res.status(400).json({ error: formatZodError(payload.error) });
     }
 
-    const tokenHash = crypto.createHash("sha256").update(payload.data.token).digest("hex");
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(payload.data.token)
+      .digest("hex");
     const user = await db.user.findUnique({
       where: { resetToken: tokenHash },
     });
