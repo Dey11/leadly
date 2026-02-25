@@ -40,14 +40,19 @@ export function DmBuilderDialog({
     },
     onError: (error) => {
       toast.error("Failed to generate DM", {
-        description: error instanceof Error ? error.message : "Please try again",
+        description:
+          error instanceof Error ? error.message : "Please try again",
       });
     },
   });
 
   // Trigger mutation when dialog opens with a new leadId
   useEffect(() => {
-    console.log("[DmBuilderDialog] useEffect", { open, leadId, triggered: triggeredRef.current });
+    console.log("[DmBuilderDialog] useEffect", {
+      open,
+      leadId,
+      triggered: triggeredRef.current,
+    });
     if (open && leadId && triggeredRef.current !== leadId) {
       console.log("[DmBuilderDialog] Triggering mutation for", leadId);
       triggeredRef.current = leadId;
@@ -133,9 +138,7 @@ export function DmBuilderDialog({
             </div>
           ) : generateMutation.isError ? (
             <div className="flex h-40 flex-col items-center justify-center gap-3">
-              <p className="text-destructive text-sm">
-                Failed to generate DM
-              </p>
+              <p className="text-destructive text-sm">Failed to generate DM</p>
               <Button
                 variant="outline"
                 size="sm"
@@ -163,7 +166,7 @@ export function DmBuilderDialog({
             <Button
               variant="outline"
               size="sm"
-              className="flex-1 sm:flex-none transition-all duration-200"
+              className="flex-1 transition-all duration-200 sm:flex-none"
               onClick={handleCopy}
             >
               {isCopied ? (

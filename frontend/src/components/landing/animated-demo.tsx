@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
-import { Play, Pause, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Demo steps configuration

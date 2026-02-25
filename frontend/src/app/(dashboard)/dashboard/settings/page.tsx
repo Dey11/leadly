@@ -9,15 +9,17 @@ interface SettingsPageProps {
   searchParams: Promise<{ tab?: string }>;
 }
 
-export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+export default async function SettingsPage({
+  searchParams,
+}: SettingsPageProps) {
   const params = await searchParams;
-  
+
   return (
     <Suspense
       fallback={
         <div className="animate-pulse space-y-4">
-          <div className="h-12 w-full rounded-xl bg-muted" />
-          <div className="h-64 w-full rounded-xl bg-muted" />
+          <div className="bg-muted h-12 w-full rounded-xl" />
+          <div className="bg-muted h-64 w-full rounded-xl" />
         </div>
       }
     >

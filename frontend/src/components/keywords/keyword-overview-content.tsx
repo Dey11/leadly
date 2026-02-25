@@ -285,11 +285,15 @@ export async function KeywordOverviewContent() {
                   <FileText className="text-muted-foreground/50 h-6 w-6" />
                 </div>
                 <p className="text-foreground font-medium">No matches yet</p>
-                <p className="text-sm mt-1">Matches will appear here once your monitors find posts.</p>
+                <p className="mt-1 text-sm">
+                  Matches will appear here once your monitors find posts.
+                </p>
               </div>
             ) : (
               recentMatches.map((match) => {
-                const contentPreview = match.content.split("\n")[0].slice(0, 120);
+                const contentPreview = match.content
+                  .split("\n")[0]
+                  .slice(0, 120);
                 return (
                   <a
                     key={match.id}
@@ -299,8 +303,12 @@ export async function KeywordOverviewContent() {
                     className="border-border/60 bg-background/80 hover:bg-primary/5 hover:border-primary/30 group flex flex-col gap-2 rounded-2xl border p-4 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-foreground line-clamp-2 text-sm font-medium leading-snug">
-                        {contentPreview}{contentPreview.length < match.content.split("\n")[0].length ? "..." : ""}
+                      <p className="text-foreground line-clamp-2 text-sm leading-snug font-medium">
+                        {contentPreview}
+                        {contentPreview.length <
+                        match.content.split("\n")[0].length
+                          ? "..."
+                          : ""}
                       </p>
                       <ExternalLink className="text-muted-foreground group-hover:text-primary h-4 w-4 shrink-0 transition-colors" />
                     </div>
@@ -311,11 +319,15 @@ export async function KeywordOverviewContent() {
                         </Badge>
                       ))}
                       {match.matchedKeywords.length > 3 && (
-                        <span className="text-muted-foreground text-xs">+{match.matchedKeywords.length - 3} more</span>
+                        <span className="text-muted-foreground text-xs">
+                          +{match.matchedKeywords.length - 3} more
+                        </span>
                       )}
                     </div>
                     <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                      <span className="text-primary font-medium">r/{match.target}</span>
+                      <span className="text-primary font-medium">
+                        r/{match.target}
+                      </span>
                       <span>•</span>
                       <span>{formatRelative(match.createdAt)}</span>
                     </div>

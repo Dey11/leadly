@@ -28,7 +28,11 @@ export async function IcpsContent() {
         title="ICP library"
         description="Document detailed buyer definitions so Leadly can recognise the conversations that matter and qualify intent with confidence. ICPs (Ideal Customer Profiles) are buyer definitions that are used to identify the conversations that matter and qualify intent with confidence."
         action={
-          <Button asChild className="shadow-primary/20 shadow-lg">
+          <Button
+            asChild
+            className="shadow-primary/20 shadow-lg"
+            id="create-icp-form"
+          >
             <Link href="/dashboard/icps/create">
               <Plus className="mr-2 h-4 w-4" /> Create New ICP
             </Link>

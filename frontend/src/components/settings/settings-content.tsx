@@ -11,8 +11,12 @@ interface SettingsContentProps {
   tab?: string;
 }
 
-export async function SettingsContent({ tab = "account" }: SettingsContentProps) {
-  const activeTab = ["account", "billing", "profile"].includes(tab) ? tab : "account";
+export async function SettingsContent({
+  tab = "account",
+}: SettingsContentProps) {
+  const activeTab = ["account", "billing", "profile"].includes(tab)
+    ? tab
+    : "account";
 
   return (
     <div className="flex flex-col gap-2">
@@ -21,7 +25,9 @@ export async function SettingsContent({ tab = "account" }: SettingsContentProps)
         description="Manage your account, billing, and profile preferences."
       />
 
-      <SettingsTabs activeTab={activeTab as "account" | "billing" | "profile"} />
+      <SettingsTabs
+        activeTab={activeTab as "account" | "billing" | "profile"}
+      />
 
       <div className="min-h-[400px]">
         {activeTab === "account" && (

@@ -77,17 +77,17 @@ export function DashboardNav({
       {items.map((item) => {
         // For exact matches or startsWith check, but exclude if another nav item is a more specific match
         const isExactMatch = pathname === item.href;
-        const isNestedMatch = 
-          item.href !== "/dashboard" && 
-          pathname.startsWith(item.href + "/");
+        const isNestedMatch =
+          item.href !== "/dashboard" && pathname.startsWith(item.href + "/");
         // Check if there's a more specific item that matches (to avoid both Account and Settings being active)
         const hasMoreSpecificMatch = items.some(
           (other) =>
             other.href !== item.href &&
             other.href.startsWith(item.href) &&
-            (pathname === other.href || pathname.startsWith(other.href + "/"))
+            (pathname === other.href || pathname.startsWith(other.href + "/")),
         );
-        const isActive = isExactMatch || (isNestedMatch && !hasMoreSpecificMatch);
+        const isActive =
+          isExactMatch || (isNestedMatch && !hasMoreSpecificMatch);
         const Icon = iconComponents[item.icon];
 
         return (

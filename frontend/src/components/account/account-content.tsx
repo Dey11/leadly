@@ -1,7 +1,6 @@
 import { AccountForm } from "@/components/account/account-form";
 import { DeleteAccountButton } from "@/components/account/delete-account-button";
 import { EmailVerificationForm } from "@/components/account/email-verification-form";
-import { DashboardPageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
