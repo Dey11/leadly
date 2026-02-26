@@ -66,7 +66,7 @@ function MobileLeadCard({
   return (
     <div className="border-border/60 bg-card/60 rounded-lg border p-3">
       {/* Header row: Status dropdown + Actions */}
-      <div className="flex items-center justify-between gap-2 mb-2">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <Select
           value={lead.status}
           onValueChange={(value) => onStatusChange(value as LeadStatus)}
@@ -109,25 +109,28 @@ function MobileLeadCard({
       </div>
 
       {/* Content preview - tap to expand */}
-      <div
-        className="cursor-pointer"
-        onClick={onToggle}
-      >
-        <p className={`text-foreground text-sm font-medium leading-snug ${isExpanded ? "whitespace-pre-wrap" : "line-clamp-2"}`}>
+      <div className="cursor-pointer" onClick={onToggle}>
+        <p
+          className={`text-foreground text-sm leading-snug font-medium ${isExpanded ? "whitespace-pre-wrap" : "line-clamp-2"}`}
+        >
           {lead.content}
         </p>
       </div>
 
       {/* Footer row: Keywords + Time */}
-      <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-border/40">
-        <div className="flex flex-wrap gap-1 flex-1 min-w-0">
+      <div className="border-border/40 mt-2 flex items-center justify-between gap-2 border-t pt-2">
+        <div className="flex min-w-0 flex-1 flex-wrap gap-1">
           {lead.matchedKeywords.slice(0, 2).map((kw, i) => (
-            <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0">
+            <Badge
+              key={i}
+              variant="outline"
+              className="px-1.5 py-0 text-[10px]"
+            >
               {kw}
             </Badge>
           ))}
           {lead.matchedKeywords.length > 2 && (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+            <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
               +{lead.matchedKeywords.length - 2}
             </Badge>
           )}
@@ -139,7 +142,7 @@ function MobileLeadCard({
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="mt-3 pt-3 border-t border-border/40 space-y-2">
+        <div className="border-border/40 mt-3 space-y-2 border-t pt-3">
           <div className="space-y-1">
             <p className="text-muted-foreground text-[10px] font-semibold uppercase">
               All Keywords
@@ -188,7 +191,7 @@ export function KeywordLeadsTable({
   return (
     <>
       {/* Mobile card layout - shown below md breakpoint */}
-      <div className="md:hidden space-y-2">
+      <div className="space-y-2 md:hidden">
         {leads.map((lead) => (
           <MobileLeadCard
             key={lead.id}
@@ -204,7 +207,7 @@ export function KeywordLeadsTable({
       </div>
 
       {/* Desktop table layout - hidden below md breakpoint */}
-      <div className="border-border/60 bg-card/40 hidden md:block w-full overflow-x-auto rounded-lg border shadow-sm backdrop-blur-sm">
+      <div className="border-border/60 bg-card/40 hidden w-full overflow-x-auto rounded-lg border shadow-sm backdrop-blur-sm md:block">
         <Table className="min-w-[600px] table-fixed">
           <TableHeader className="bg-muted/30">
             <TableRow className="border-border/60 text-xs tracking-wide uppercase hover:bg-transparent">

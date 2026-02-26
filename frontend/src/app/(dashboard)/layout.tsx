@@ -103,8 +103,13 @@ export default async function DashboardLayout({
       <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
         <div className="from-primary/5 via-background to-background absolute top-0 left-1/2 h-[600px] w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] blur-[120px]" />
       </div>
-      <OnboardingWrapper hasCompletedOnboarding={account.hasCompletedOnboarding} />
-      <Walkthrough hasSeenWalkthrough={account.hasSeenWalkthrough} />
+      <OnboardingWrapper
+        hasCompletedOnboarding={account.hasCompletedOnboarding}
+      />
+      <Walkthrough
+        hasSeenWalkthrough={account.hasSeenWalkthrough}
+        hasCompletedOnboarding={account.hasCompletedOnboarding}
+      />
       <DashboardShell
         leadGenNavItems={leadGenNavItems}
         keywordNavItems={keywordNavItems}

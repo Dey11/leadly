@@ -1,12 +1,17 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Building2, Briefcase, Users, MessageSquare, Save, Loader2 } from "lucide-react";
+import {
+  Building2,
+  Briefcase,
+  MessageSquare,
+  Save,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
 import { clientApi } from "@/lib/client/api";
-import { DashboardPageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -87,7 +92,8 @@ export function ProfileSettings() {
     },
     onError: (error) => {
       toast.error("Failed to save settings", {
-        description: error instanceof Error ? error.message : "Please try again",
+        description:
+          error instanceof Error ? error.message : "Please try again",
       });
     },
   });
@@ -110,7 +116,7 @@ export function ProfileSettings() {
   if (accountQuery.isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -177,7 +183,8 @@ export function ProfileSettings() {
               Sample DM
             </CardTitle>
             <CardDescription>
-              Paste a sample cold DM. We'll match this tone when generating messages.
+              Paste a sample cold DM. We'll match this tone when generating
+              messages.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -195,7 +202,7 @@ export function ProfileSettings() {
         </Card>
       </div>
 
-      <div className="border-t bg-background/95 sticky bottom-0 -mx-4 -mb-8 mt-6 flex items-center justify-end p-4 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+      <div className="bg-background/95 sticky bottom-0 -mx-4 mt-6 -mb-8 flex items-center justify-end border-t p-4 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
         <Button
           onClick={handleSave}
           disabled={updateMutation.isPending || !hasChanges}

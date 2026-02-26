@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { driver, type Driver } from "driver.js";
 import "driver.js/dist/driver.css";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useProductMode } from "@/components/dashboard/product-mode-toggle";
 
 interface StepConfig {
@@ -142,6 +142,13 @@ export function KeywordWalkthrough() {
   const driverObj = useRef<Driver | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const pathnameRef = useRef(pathname);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isCleaningUpRef = useRef(false);
+
+  // Keep ref in sync so callbacks always read the latest pathname
+  pathnameRef.current = pathname;
 
   useEffect(() => {
     if (productMode !== "keyword") {
@@ -216,6 +223,18 @@ export function KeywordWalkthrough() {
       return;
     }
 
+    // Track whether this effect invocation is still active (not cleaned up)
+    let isActive = true;
+
+    // Helper: mark walkthrough as complete in localStorage
+    const markComplete = () => {
+      window.localStorage.setItem(
+        "leadly-keyword-walkthrough-completed",
+        "true",
+      );
+      window.sessionStorage.removeItem(storageKey);
+    };
+
     driverObj.current = driver({
       showProgress: true,
       animate: true,
@@ -239,10 +258,11 @@ export function KeywordWalkthrough() {
         }
 
         const nextStepConfig = KEYWORD_STEPS[nextIndex];
+        const currentPathname = pathnameRef.current;
 
         window.scrollTo(0, 0);
 
-        if (nextStepConfig.route !== pathname) {
+        if (nextStepConfig.route !== currentPathname) {
           window.sessionStorage.setItem(storageKey, nextIndex.toString());
           driverObj.current?.destroy();
           router.push(nextStepConfig.route);
@@ -258,10 +278,11 @@ export function KeywordWalkthrough() {
         if (prevIndex < 0) return;
 
         const prevStepConfig = KEYWORD_STEPS[prevIndex];
+        const currentPathname = pathnameRef.current;
 
         window.scrollTo(0, 0);
 
-        if (prevStepConfig.route !== pathname) {
+        if (prevStepConfig.route !== currentPathname) {
           window.sessionStorage.setItem(storageKey, prevIndex.toString());
           driverObj.current?.destroy();
           router.push(prevStepConfig.route);
@@ -271,28 +292,35 @@ export function KeywordWalkthrough() {
         }
       },
       onDestroyed: () => {
-        const currentIndex = parseInt(
-          window.sessionStorage.getItem(storageKey) || "0",
-          10,
-        );
+        // If this destroy was triggered by effect cleanup, skip all logic
+        if (isCleaningUpRef.current) return;
 
-        if (
-          currentIndex >= KEYWORD_STEPS.length - 1 &&
-          pathname === KEYWORD_STEPS[KEYWORD_STEPS.length - 1]?.route
-        ) {
-          window.localStorage.setItem(
-            "leadly-keyword-walkthrough-completed",
-            "true",
-          );
-          window.sessionStorage.removeItem(storageKey);
+        // Check if sessionStorage was already cleared by onCloseClick
+        const raw = window.sessionStorage.getItem(storageKey);
+        if (raw === null) {
+          // Already handled by onCloseClick - nothing to do
+          return;
         }
+
+        const currentIndex = parseInt(raw, 10);
+        const currentPathname = pathnameRef.current;
+        const isNavigating =
+          currentIndex < KEYWORD_STEPS.length &&
+          KEYWORD_STEPS[currentIndex]?.route !== currentPathname;
+
+        // If we're navigating to the next page, don't mark complete
+        // (the tour will resume on the new page)
+        if (isNavigating) {
+          return;
+        }
+
+        // Otherwise the user dismissed via overlay click or the tour ended.
+        // Mark as complete so it doesn't keep resurrecting.
+        markComplete();
       },
       onCloseClick: () => {
-        window.localStorage.setItem(
-          "leadly-keyword-walkthrough-completed",
-          "true",
-        );
-        window.sessionStorage.removeItem(storageKey);
+        // Explicit close/skip via the X button
+        markComplete();
         driverObj.current?.destroy();
       },
     });
@@ -301,15 +329,30 @@ export function KeywordWalkthrough() {
     if (currentStepConfig && currentStepConfig.route === pathname) {
       window.scrollTo(0, 0);
 
-      setTimeout(() => {
-        if (driverObj.current) {
+      timeoutRef.current = setTimeout(() => {
+        if (isActive && driverObj.current) {
           driverObj.current.drive(storedStepIndex);
         }
       }, 800);
     }
 
-    return () => {};
-  }, [productMode, pathname, router]);
+    return () => {
+      isActive = false;
+      // Clear pending timeout to prevent double-init (e.g. React Strict Mode)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      // Destroy driver if still active on unmount.
+      // Flag prevents onDestroyed from incorrectly marking complete.
+      if (driverObj.current) {
+        isCleaningUpRef.current = true;
+        driverObj.current.destroy();
+        isCleaningUpRef.current = false;
+        driverObj.current = null;
+      }
+    };
+  }, [productMode, pathname, router, searchParams]);
 
   return null;
 }

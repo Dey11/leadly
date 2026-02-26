@@ -204,9 +204,10 @@ export const clientApi = {
   updateSchedule: (body: { scheduledHours: number[] }) =>
     request(`${apiBaseUrl}/schedule`, { method: "PATCH", body }),
   getAccount: () =>
-    request<{ message: string; payload: { data: import("@/types/backend").AccountSummary } }>(
-      `${apiBaseUrl}/account`
-    ),
+    request<{
+      message: string;
+      payload: { data: import("@/types/backend").AccountSummary };
+    }>(`${apiBaseUrl}/account`),
   updateAccount: (body: { name: string }) =>
     request(`${apiBaseUrl}/account`, { method: "PATCH", body }),
   deleteAccount: () => request(`${apiBaseUrl}/account`, { method: "DELETE" }),
@@ -218,8 +219,7 @@ export const clientApi = {
     referrer?: string;
     sampleDm?: string;
     hasCompletedOnboarding?: boolean;
-  }) =>
-    request(`${apiBaseUrl}/account/profile`, { method: "PATCH", body }),
+  }) => request(`${apiBaseUrl}/account/profile`, { method: "PATCH", body }),
   suggestIcp: async (body: { description: string }) => {
     const response = await request<{
       message: string;

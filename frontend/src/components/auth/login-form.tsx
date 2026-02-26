@@ -110,23 +110,18 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
         <Alert variant="destructive">
           <AlertTitle>Sign in failed</AlertTitle>
           <AlertDescription>
-            {
-              {
-                oauth_denied: "Google sign-in was cancelled.",
-                oauth_state_mismatch:
-                  "Security check failed. Please try again.",
-                oauth_no_code: "No authorization code received from Google.",
-                oauth_failed: "Google sign-in failed. Please try again.",
-                oauth_no_email:
-                  "Could not retrieve your email from Google.",
-                oauth_account_deleted:
-                  "This account has been deleted.",
-                oauth_email_exists:
-                  "An account with this email already exists. Please sign in with your password first.",
-                oauth_initiation_failed:
-                  "Could not connect to Google. Please try again later.",
-              }[oauthError] ?? "Something went wrong. Please try again."
-            }
+            {{
+              oauth_denied: "Google sign-in was cancelled.",
+              oauth_state_mismatch: "Security check failed. Please try again.",
+              oauth_no_code: "No authorization code received from Google.",
+              oauth_failed: "Google sign-in failed. Please try again.",
+              oauth_no_email: "Could not retrieve your email from Google.",
+              oauth_account_deleted: "This account has been deleted.",
+              oauth_email_exists:
+                "An account with this email already exists. Please sign in with your password first.",
+              oauth_initiation_failed:
+                "Could not connect to Google. Please try again later.",
+            }[oauthError] ?? "Something went wrong. Please try again."}
           </AlertDescription>
         </Alert>
       )}

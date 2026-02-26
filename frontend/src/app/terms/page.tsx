@@ -313,7 +313,8 @@ export default function TermsPage() {
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             Any dispute arising from these Terms shall be governed by and
-            construed in accordance with the laws of India, without regard to conflict of law principles.
+            construed in accordance with the laws of India, without regard to
+            conflict of law principles.
           </p>
           <p className="text-muted-foreground mt-4 leading-relaxed">
             Before filing any legal claim, you agree to attempt to resolve the

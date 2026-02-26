@@ -20,15 +20,6 @@ import { AnimatedDemo } from "@/components/landing/animated-demo";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 
-import {
-  MessageSquareOff,
-  SearchX,
-  TrendingDown,
-  CheckCircle2,
-  Filter,
-  ScanLine,
-} from "lucide-react";
-
 interface Props {
   params: Promise<{ slug: string }>;
 }

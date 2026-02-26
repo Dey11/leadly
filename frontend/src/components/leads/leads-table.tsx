@@ -170,7 +170,10 @@ export function LeadsTable({
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => {
-                          console.log("[leads-table] Send clicked for", lead.id);
+                          console.log(
+                            "[leads-table] Send clicked for",
+                            lead.id,
+                          );
                           onGenerateDm(lead.id, lead.author);
                         }}
                       >

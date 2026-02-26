@@ -3,12 +3,13 @@
 import { useEffect, useRef } from "react";
 import { driver, type Driver } from "driver.js";
 import "driver.js/dist/driver.css";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { clientApi } from "@/lib/client/api";
 import { useProductMode } from "@/components/dashboard/product-mode-toggle";
 
 interface WalkthroughProps {
   hasSeenWalkthrough: boolean;
+  hasCompletedOnboarding: boolean;
 }
 
 interface StepConfig {
@@ -147,11 +148,21 @@ const STEPS: StepConfig[] = [
   },
 ];
 
-export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
+export function Walkthrough({
+  hasSeenWalkthrough,
+  hasCompletedOnboarding,
+}: WalkthroughProps) {
   const [productMode] = useProductMode();
   const driverObj = useRef<Driver | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const pathnameRef = useRef(pathname);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isCleaningUpRef = useRef(false);
+
+  // Keep ref in sync so callbacks always read the latest pathname
+  pathnameRef.current = pathname;
 
   useEffect(() => {
     // Styling injection for app-like look
@@ -205,6 +216,14 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
       return;
     }
 
+    // Don't start walkthrough until onboarding is complete
+    const onboardingDone =
+      hasCompletedOnboarding ||
+      window.localStorage.getItem("leadly-onboarding-completed") === "true";
+    if (!onboardingDone) {
+      return;
+    }
+
     // Check backend prop AND local storage to prevent optimistic restart loop
     // BUT allow restart if query param is present
     const urlParams = new URLSearchParams(window.location.search);
@@ -233,6 +252,16 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
       return;
     }
 
+    // Track whether this effect invocation is still active (not cleaned up)
+    let isActive = true;
+
+    // Helper: mark walkthrough as complete in backend + localStorage
+    const markComplete = () => {
+      clientApi.updateWalkthroughStatus().catch(console.error);
+      window.localStorage.setItem("leadly-walkthrough-completed", "true");
+      window.sessionStorage.removeItem(storageKey);
+    };
+
     // Initialize driver
     driverObj.current = driver({
       showProgress: true,
@@ -259,13 +288,14 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
         }
 
         const nextStepConfig = STEPS[nextIndex];
+        const currentPathname = pathnameRef.current;
 
         // Always scroll to top before processing next step to ensure clean positioning
         window.scrollTo(0, 0);
 
         // Check if route change is needed
-        if (nextStepConfig.route !== pathname) {
-          // Need to change route
+        if (nextStepConfig.route !== currentPathname) {
+          // Need to change route - store step, destroy driver, navigate
           window.sessionStorage.setItem(storageKey, nextIndex.toString());
           driverObj.current?.destroy(); // Tear down UI on this page
           router.push(nextStepConfig.route);
@@ -282,11 +312,12 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
         if (prevIndex < 0) return;
 
         const prevStepConfig = STEPS[prevIndex];
+        const currentPathname = pathnameRef.current;
 
         // Always scroll to top
         window.scrollTo(0, 0);
 
-        if (prevStepConfig.route !== pathname) {
+        if (prevStepConfig.route !== currentPathname) {
           window.sessionStorage.setItem(storageKey, prevIndex.toString());
           driverObj.current?.destroy();
           router.push(prevStepConfig.route);
@@ -296,29 +327,35 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
         }
       },
       onDestroyed: () => {
-        // Check if we are really done (i.e. user clicked "Finish" or "Skip" or "Close")
-        const currentIndex = parseInt(
-          window.sessionStorage.getItem(storageKey) || "0",
-          10,
-        );
+        // If this destroy was triggered by effect cleanup, skip all logic
+        if (isCleaningUpRef.current) return;
 
-        // Only mark as complete if we're on the last step AND we're on the final route
-        // This prevents marking as complete when navigating TO the final step
-        if (
-          currentIndex >= STEPS.length - 1 &&
-          pathname === STEPS[STEPS.length - 1]?.route
-        ) {
-          clientApi.updateWalkthroughStatus().catch(console.error);
-          window.localStorage.setItem("leadly-walkthrough-completed", "true");
-          window.sessionStorage.removeItem(storageKey);
+        // Check if sessionStorage was already cleared by onCloseClick
+        const raw = window.sessionStorage.getItem(storageKey);
+        if (raw === null) {
+          // Already handled by onCloseClick - nothing to do
+          return;
         }
-        // Otherwise, we're just navigating and the tour will resume on the next page
+
+        const currentIndex = parseInt(raw, 10);
+        const currentPathname = pathnameRef.current;
+        const isNavigating =
+          currentIndex < STEPS.length &&
+          STEPS[currentIndex]?.route !== currentPathname;
+
+        // If we're navigating to the next page, don't mark complete
+        // (the tour will resume on the new page)
+        if (isNavigating) {
+          return;
+        }
+
+        // Otherwise the user dismissed via overlay click or the tour ended.
+        // Mark as complete so it doesn't keep resurrecting.
+        markComplete();
       },
       onCloseClick: () => {
-        // Explicit close/skip
-        clientApi.updateWalkthroughStatus().catch(console.error);
-        window.localStorage.setItem("leadly-walkthrough-completed", "true");
-        window.sessionStorage.removeItem(storageKey);
+        // Explicit close/skip via the X button
+        markComplete();
         driverObj.current?.destroy();
       },
     });
@@ -332,18 +369,38 @@ export function Walkthrough({ hasSeenWalkthrough }: WalkthroughProps) {
 
       // Give small delay for hydration/rendering.
       // increased to 800ms to be safe with page transitions.
-      setTimeout(() => {
-        // Verify driver instance still exists (component didn't unmount in the meantime)
-        if (driverObj.current) {
+      timeoutRef.current = setTimeout(() => {
+        // Verify driver instance still exists and this effect is still active
+        if (isActive && driverObj.current) {
           driverObj.current.drive(storedStepIndex);
         }
       }, 800);
     }
 
     return () => {
-      // Cleanup not typically needed as driver cleanup is handled via destroy
+      isActive = false;
+      // Clear pending timeout to prevent double-init (e.g. React Strict Mode)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      // Destroy driver if still active on unmount.
+      // Flag prevents onDestroyed from incorrectly marking complete.
+      if (driverObj.current) {
+        isCleaningUpRef.current = true;
+        driverObj.current.destroy();
+        isCleaningUpRef.current = false;
+        driverObj.current = null;
+      }
     };
-  }, [hasSeenWalkthrough, productMode, pathname, router]);
+  }, [
+    hasSeenWalkthrough,
+    hasCompletedOnboarding,
+    productMode,
+    pathname,
+    router,
+    searchParams,
+  ]);
 
   return null;
 }

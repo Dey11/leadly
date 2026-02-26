@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -60,6 +60,7 @@ export function DashboardShell({
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const [productMode, setProductMode] = useProductMode();
 
   const navItems =
@@ -80,11 +81,11 @@ export function DashboardShell({
     if (productMode === "keyword") {
       window.localStorage.removeItem("leadly-keyword-walkthrough-completed");
       window.sessionStorage.removeItem("leadly-keyword-walkthrough-step");
-      window.location.href = "/dashboard?keyword-walkthrough=restart";
+      router.push("/dashboard?keyword-walkthrough=restart");
     } else {
       window.localStorage.removeItem("leadly-walkthrough-completed");
       window.sessionStorage.removeItem("leadly-walkthrough-step");
-      window.location.href = "/dashboard?walkthrough=restart";
+      router.push("/dashboard?walkthrough=restart");
     }
   };
 

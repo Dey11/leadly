@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Building2, Briefcase, Users, MessageSquare, ArrowRight, ArrowLeft, X, Check } from "lucide-react";
+import {
+  Building2,
+  Briefcase,
+  Users,
+  MessageSquare,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { clientApi } from "@/lib/client/api";
@@ -74,7 +82,8 @@ const STEPS = [
   },
   {
     title: "Share a sample cold DM",
-    description: "Paste a DM you've sent before. We'll match this tone when generating messages.",
+    description:
+      "Paste a DM you've sent before. We'll match this tone when generating messages.",
     icon: MessageSquare,
   },
 ];
@@ -90,15 +99,17 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: Partial<ProfileData> & { hasCompletedOnboarding: boolean }) =>
-      clientApi.updateProfile(data),
+    mutationFn: (
+      data: Partial<ProfileData> & { hasCompletedOnboarding: boolean },
+    ) => clientApi.updateProfile(data),
     onSuccess: () => {
       setOpen(false);
       onComplete();
     },
     onError: (error) => {
       toast.error("Failed to save profile", {
-        description: error instanceof Error ? error.message : "Please try again",
+        description:
+          error instanceof Error ? error.message : "Please try again",
       });
     },
   });
@@ -140,19 +151,22 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(newOpen) => {
-      if (!newOpen) {
-        handleSkip();
-      }
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen) => {
+        if (!newOpen) {
+          handleSkip();
+        }
+      }}
+    >
       <DialogContent
         showCloseButton={false}
         className="sm:max-w-md"
         onKeyDown={handleKeyDown}
       >
         <DialogHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <CurrentIcon className="h-6 w-6 text-primary" />
+          <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+            <CurrentIcon className="text-primary h-6 w-6" />
           </div>
           <DialogTitle className="text-xl">{STEPS[step].title}</DialogTitle>
           <DialogDescription className="text-sm">
@@ -233,7 +247,7 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                   setProfileData({ ...profileData, sampleDm: e.target.value })
                 }
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 We'll use this as a reference for generating personalized DMs.
               </p>
             </div>
