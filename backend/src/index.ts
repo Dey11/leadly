@@ -146,11 +146,10 @@ const stopServer = async () => {
   leadGenScheduler.stop();
   keywordScheduler.stop();
 
-  // Close external connections
-  await closeRedis().catch(() => {});
-  await db.$disconnect().catch(() => {});
-
-  server.close(() => {
+  // Stop accepting new connections first, then close dependencies
+  server.close(async () => {
+    await closeRedis().catch(() => {});
+    await db.$disconnect().catch(() => {});
     logger.info("Server closed.");
     process.exit(0);
   });

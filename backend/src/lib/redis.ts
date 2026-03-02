@@ -12,8 +12,8 @@ export function getRedis(): Redis {
     keepAlive: 30000,
     enableReadyCheck: true,
     retryStrategy(times) {
-      // Exponential backoff: 50ms, 100ms, 200ms... capped at 5s
-      return Math.min(times * 50, 5000);
+      // Exponential backoff: 50ms, 100ms, 200ms, 400ms... capped at 5s
+      return Math.min(50 * 2 ** (times - 1), 5000);
     },
   });
   return _redis;
