@@ -5,6 +5,8 @@ import { processRedditScrape } from "../processors/reddit.processor";
 import logger from "../lib/logger";
 import { sendAllLogsToDiscord } from "../services/logger.service";
 import { startBlogWorker } from "./blog.worker";
+import db from "../lib/db";
+import { closeRedis } from "../lib/redis";
 
 const worker = new Worker(
   "scrapeJobs",
@@ -44,12 +46,16 @@ cron.schedule(
 process.on("SIGINT", async () => {
   logger.info("SIGINT received, closing worker...");
   await worker.close();
+  await closeRedis().catch(() => {});
+  await db.$disconnect().catch(() => {});
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
   logger.info("SIGTERM received, closing worker...");
   await worker.close();
+  await closeRedis().catch(() => {});
+  await db.$disconnect().catch(() => {});
   process.exit(0);
 });
 
