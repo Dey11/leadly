@@ -27,6 +27,8 @@ import { requestLogger } from "./middleware/request-logger";
 import { sendAllLogsToDiscord } from "./services/logger.service";
 import { runKeywordScheduler } from "./services/keyword-scheduler";
 import { blogRouter } from "./routes/blog";
+import db from "./lib/db";
+import { getRedis, closeRedis } from "./lib/redis";
 
 const PORT = env.PORT;
 
@@ -55,6 +57,33 @@ app.use(cookieParser() as RequestHandler);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
+});
+
+app.get("/health", async (req, res) => {
+  const checks: { db: string; redis: string } = {
+    db: "disconnected",
+    redis: "disconnected",
+  };
+
+  try {
+    await db.$queryRawUnsafe("SELECT 1");
+    checks.db = "connected";
+  } catch {
+    checks.db = "disconnected";
+  }
+
+  try {
+    const redis = getRedis();
+    await redis.ping();
+    checks.redis = "connected";
+  } catch {
+    checks.redis = "disconnected";
+  }
+
+  const healthy = checks.db === "connected" && checks.redis === "connected";
+  res
+    .status(healthy ? 200 : 503)
+    .json({ status: healthy ? "ok" : "degraded", ...checks });
 });
 
 const apiRouter = express.Router();
@@ -113,13 +142,23 @@ const server = app.listen(PORT, () => {
   logger.info("Keyword Scheduler started (hourly at xx:30).");
 });
 
-const stopServer = () => {
+const stopServer = async () => {
   leadGenScheduler.stop();
   keywordScheduler.stop();
-  server.close(() => {
+
+  // Stop accepting new connections first, then close dependencies
+  server.close(async () => {
+    await closeRedis().catch(() => {});
+    await db.$disconnect().catch(() => {});
     logger.info("Server closed.");
     process.exit(0);
   });
+
+  // Force exit if graceful shutdown takes too long
+  setTimeout(() => {
+    logger.warn("Forced exit after timeout.");
+    process.exit(1);
+  }, 10000);
 };
 
 process.on("SIGINT", () => {
