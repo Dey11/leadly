@@ -49,7 +49,7 @@ const faqs = [
     question: "Can I try before I pay?",
     answer:
       "Yes. The free plan is there so you can validate that your target subreddits and keyword ideas produce useful conversations before you commit to a paid plan.",
-    },
+  },
 ];
 
 interface FAQProps {

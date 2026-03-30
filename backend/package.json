@@ -15,7 +15,7 @@
     "prisma:push": "prisma db push",
     "typecheck": "tsc",
     "lint": "bunx prettier --check .",
-    "lint:fix": "bunx prettier --write . && bunx ts-remove-unused-imports ./src",
+    "lint:fix": "bunx prettier --write .",
     "seed": "bun src/scripts/seed.ts",
     "blog:generate": "bun src/scripts/manual-generate-blog.ts",
     "blog:backlog": "bun src/scripts/generate-blog-backlog.ts 8",

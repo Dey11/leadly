@@ -2,10 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import solutionsData from "@/data/solutions.json";
 import { siteConfig } from "@/config/site";
-import {
-  buildBreadcrumbSchema,
-  buildFaqSchema,
-} from "@/lib/structured-data";
+import { buildBreadcrumbSchema, buildFaqSchema } from "@/lib/structured-data";
 
 // Landing Components
 import { Hero } from "@/components/landing/Hero";

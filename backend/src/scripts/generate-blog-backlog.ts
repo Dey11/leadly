@@ -2,7 +2,10 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: ".env" });
 
 import db from "../lib/db";
-import { inspectBlogBacklog, seedScheduledBlogBacklog } from "../seo/blog.processor";
+import {
+  inspectBlogBacklog,
+  seedScheduledBlogBacklog,
+} from "../seo/blog.processor";
 
 async function main() {
   const count = Number(process.argv[2] ?? "6");

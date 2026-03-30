@@ -51,7 +51,8 @@ export const BLOG_BRIEFS: BlogBrief[] = [
   },
   {
     slug: "syften-vs-f5bot-vs-leadly-for-reddit-monitoring",
-    title: "Syften vs F5Bot vs Leadly for Reddit Monitoring and Lead Generation",
+    title:
+      "Syften vs F5Bot vs Leadly for Reddit Monitoring and Lead Generation",
     primaryKeyword: "syften vs f5bot vs leadly",
     audience: "Founders and agencies comparing monitoring products",
     angle:
@@ -131,7 +132,8 @@ export const BLOG_BRIEFS: BlogBrief[] = [
   },
   {
     slug: "what-counts-as-high-intent-on-reddit",
-    title: "What Counts as High Intent on Reddit? A Practical Framework for SaaS Teams",
+    title:
+      "What Counts as High Intent on Reddit? A Practical Framework for SaaS Teams",
     primaryKeyword: "high intent reddit",
     audience: "SaaS founders and GTM teams",
     angle:

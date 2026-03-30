@@ -83,7 +83,7 @@ const advantages = [
     title: "Founder-speed setup",
     description:
       "Pick the communities and categories you care about, then start monitoring with a workflow that makes sense for lean teams.",
-    },
+  },
 ];
 
 export function Competitors() {

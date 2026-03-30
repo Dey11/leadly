@@ -69,7 +69,7 @@ export function CommercialPageTemplate({
               ))}
             </div>
 
-            <div className="rounded-[2rem] border border-dashed p-6 sm:p-8">
+            <div className="rounded-4xl border border-dashed p-6 sm:p-8">
               <p className="text-xs font-semibold tracking-[0.24em] uppercase">
                 Verdict
               </p>
@@ -88,7 +88,7 @@ export function CommercialPageTemplate({
           </div>
 
           <div className="space-y-6 lg:pt-16">
-            <div className="rounded-[2rem] border border-border/60 bg-card/60 p-6 shadow-sm backdrop-blur-sm sm:p-8">
+            <div className="border-border/60 bg-card/60 rounded-4xl border p-6 shadow-sm backdrop-blur-sm sm:p-8">
               <div className="grid gap-4">
                 <div className="grid grid-cols-[1.1fr_1fr_1fr] gap-3 border-b pb-3 text-[11px] font-semibold tracking-[0.2em] uppercase">
                   <span>Comparison</span>
@@ -112,13 +112,16 @@ export function CommercialPageTemplate({
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-border/60 bg-card/60 p-6 shadow-sm backdrop-blur-sm sm:p-8">
+            <div className="border-border/60 bg-card/60 rounded-4xl border p-6 shadow-sm backdrop-blur-sm sm:p-8">
               <h2 className="font-display text-2xl font-semibold tracking-tight">
                 Frequently asked questions
               </h2>
               <div className="mt-6 space-y-5">
                 {page.faqs.map((faq) => (
-                  <div key={faq.question} className="border-b pb-4 last:border-none">
+                  <div
+                    key={faq.question}
+                    className="border-b pb-4 last:border-none"
+                  >
                     <h3 className="text-sm font-semibold sm:text-base">
                       {faq.question}
                     </h3>
@@ -130,7 +133,7 @@ export function CommercialPageTemplate({
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-primary/20 bg-primary/5 p-6 sm:p-8">
+            <div className="border-primary/20 bg-primary/5 rounded-4xl border p-6 sm:p-8">
               <p className="text-xs font-semibold tracking-[0.2em] uppercase">
                 {pageTypeLabel}
               </p>

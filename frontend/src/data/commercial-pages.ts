@@ -277,12 +277,14 @@ export const alternativePages: CommercialPage[] = [
     ],
     faqs: [
       {
-        question: "What is the biggest mistake founders make with Reddit lead gen?",
+        question:
+          "What is the biggest mistake founders make with Reddit lead gen?",
         answer:
           "They optimize for mention volume instead of buying-signal quality. That creates review fatigue and turns Reddit into another noisy feed instead of a revenue channel.",
       },
       {
-        question: "Should I optimize for keyword tracking or lead scoring first?",
+        question:
+          "Should I optimize for keyword tracking or lead scoring first?",
         answer:
           "If the goal is revenue, lead scoring and intent interpretation usually matter more first. Keyword tracking is useful, but it should support the pipeline workflow rather than replace it.",
       },

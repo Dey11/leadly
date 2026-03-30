@@ -14,8 +14,7 @@ const SITE_URL = "https://leadly.live";
 const BLOG_MODEL = "gemini-3-flash-preview";
 
 function isModelCapacityError(error: unknown) {
-  const message =
-    error instanceof Error ? error.message : String(error);
+  const message = error instanceof Error ? error.message : String(error);
 
   return (
     message.includes("Quota exceeded") ||
@@ -27,12 +26,13 @@ function isModelCapacityError(error: unknown) {
 }
 
 function pickImages(slug: string) {
-  const hash = Array.from(slug).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const hash = Array.from(slug).reduce(
+    (acc, char) => acc + char.charCodeAt(0),
+    0,
+  );
   const coverImage = BLOG_STOCK_IMAGES[hash % BLOG_STOCK_IMAGES.length];
-  const image1 =
-    BLOG_STOCK_IMAGES[(hash + 2) % BLOG_STOCK_IMAGES.length];
-  const image2 =
-    BLOG_STOCK_IMAGES[(hash + 4) % BLOG_STOCK_IMAGES.length];
+  const image1 = BLOG_STOCK_IMAGES[(hash + 2) % BLOG_STOCK_IMAGES.length];
+  const image2 = BLOG_STOCK_IMAGES[(hash + 4) % BLOG_STOCK_IMAGES.length];
 
   return { coverImage, image1, image2 };
 }
@@ -83,14 +83,19 @@ Rules:
   return object;
 }
 
-async function buildBlogContent(brief: BlogBrief, plan: Awaited<ReturnType<typeof buildBlogPlan>>) {
+async function buildBlogContent(
+  brief: BlogBrief,
+  plan: Awaited<ReturnType<typeof buildBlogPlan>>,
+) {
   const { image1, image2 } = pickImages(brief.slug);
 
   const references = brief.sources
     .map((source) => `- ${source.label}: ${source.url}`)
     .join("\n");
 
-  const links = brief.internalLinks.map((path) => `${SITE_URL}${path}`).join("\n");
+  const links = brief.internalLinks
+    .map((path) => `${SITE_URL}${path}`)
+    .join("\n");
 
   const { text } = await generateText({
     model: google(BLOG_MODEL),
