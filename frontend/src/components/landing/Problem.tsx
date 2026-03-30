@@ -9,21 +9,21 @@ import Image from "next/image";
 const problems = [
   {
     icon: MessageSquareOff,
-    title: "Cold emails are ignored",
+    title: "Outbound gets ignored",
     description:
-      "Open rates are plummeting. Prospects are tired of generic outreach hitting their inbox.",
+      "Founders and agencies still spend hours on channels where intent is hidden and timing is poor.",
   },
   {
     icon: SearchX,
-    title: "Ads are expensive & low intent",
+    title: "Monitoring tools create noise",
     description:
-      "You pay for clicks from people who aren't ready to buy, burning through your budget.",
+      "Keyword alerts surface too many weak mentions, so teams review a lot and act on very little.",
   },
   {
     icon: TrendingDown,
-    title: "You're missing active buyers",
+    title: "Real buyers stay buried",
     description:
-      "People ask for recommendations daily on Reddit, but manual searching takes hours.",
+      "People ask for recommendations, alternatives, and help on Reddit every day, but those conversations are easy to miss if you are not watching the right places.",
   },
 ];
 
@@ -34,8 +34,8 @@ interface ProblemProps {
 }
 
 export function Problem({
-  heading = "Why traditional lead gen is broken",
-  subheading = "High-intent buyers are asking for recommendations on Reddit every hour. The problem? These conversations are buried.",
+  heading = "Why Reddit demand is easy to miss",
+  subheading = "The best threads are public, time-sensitive, and high intent. Most teams just do not have a clean way to catch them before someone else does.",
   items,
 }: ProblemProps) {
   const displayItems = items || problems;
@@ -149,8 +149,8 @@ export function Problem({
                   size="lg"
                   className="group bg-primary hover:bg-primary/90 rounded-full px-6 py-3 font-semibold transition-all duration-200 dark:bg-[#e3b5a4] dark:text-[#2d1f24] dark:hover:bg-[#d4a494]"
                 >
-                  <Link href="/signup" className="flex items-center gap-2">
-                    Get Started
+                  <Link href="/register" className="flex items-center gap-2">
+                    Start free
                     <svg
                       className="h-4 w-4 transition-transform group-hover:translate-x-1"
                       fill="none"

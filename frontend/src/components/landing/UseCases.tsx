@@ -9,22 +9,22 @@ const useCases = [
     icon: Rocket,
     title: "SaaS Founders",
     description:
-      "Find users actively looking for alternatives to your competitors.",
+      "Catch threads where buyers ask for alternatives, stack rankings, and implementation help.",
     pain: "Stop wasting time on channels that don't convert.",
   },
   {
     icon: Building2,
     title: "Agencies",
     description:
-      "Fill your pipeline with businesses stating they need your services.",
-    pain: "Move beyond referrals and cold lists.",
+      "Find companies publicly asking for SEO, dev, growth, or marketing help.",
+    pain: "Move beyond referrals, cold lists, and generic alerts.",
   },
   {
     icon: Briefcase,
-    title: "Consultants",
+    title: "GTM Teams",
     description:
-      "Identify companies struggling with the exact problems you solve.",
-    pain: "Engage when the pain is highest.",
+      "Monitor competitor alternatives and urgent pain points before prospects ever fill a form.",
+    pain: "Reply while urgency is visible.",
   },
 ];
 
@@ -52,11 +52,11 @@ export function UseCases({ items }: UseCasesProps) {
           className="mb-10 text-center sm:mb-12"
         >
           <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
-            Built for every GTM motion
+            Built for founder-led and agency-led growth
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-            Whether you're a founder, agency, or consultant — Leadly helps you
-            find your next customers faster.
+            Leadly is strongest when you need a tighter queue of high-intent
+            Reddit conversations, not another flood of mentions to review.
           </p>
         </motion.div>
 

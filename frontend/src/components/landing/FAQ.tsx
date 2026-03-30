@@ -11,9 +11,9 @@ import { SUPPORT_EMAIL } from "@/constants/config";
 
 const faqs = [
   {
-    question: "How is this different from setting up Google Alerts?",
+    question: "How is this different from basic Reddit or Google alerts?",
     answer:
-      "Google Alerts work for indexed web pages but miss most Reddit content due to how Reddit handles indexing. Plus, they're keyword-based — you'll get every mention, relevant or not. Leadly uses AI to understand intent, so you only see posts from people actually looking to buy.",
+      "Basic alerts tell you a keyword appeared. Leadly is built to help SaaS founders and agencies find conversations that look commercially useful, like recommendation requests, alternative searches, and urgent problem statements.",
   },
   {
     question: "Do I need a Reddit account to use Leadly?",
@@ -21,9 +21,14 @@ const faqs = [
       "No! Leadly works independently. We monitor public Reddit discussions on your behalf. You don't need to connect any accounts or give us any Reddit credentials.",
   },
   {
+    question: "Who is Leadly best for?",
+    answer:
+      "Leadly is best for SaaS founders, SEO agencies, marketing consultants, dev shops, and GTM teams that want to turn Reddit demand into pipeline. It is less useful if you only want passive mention tracking.",
+  },
+  {
     question: "What's the difference between subreddit and keyword monitoring?",
     answer:
-      "Subreddit monitoring scans specific communities (like r/SaaS or r/startups) for all relevant discussions. Keyword monitoring tracks specific terms across all of Reddit, catching conversations wherever they happen. Most users combine both for comprehensive coverage.",
+      "Subreddit monitoring helps you stay close to the communities where your buyers ask questions. Keyword monitoring is useful when you want to catch alternatives, category phrases, or pain terms across a wider surface area. For most SaaS and agency workflows, subreddit monitoring should lead and keyword monitoring should support it.",
   },
   {
     question: "Is this compliant with Reddit's Terms of Service?",
@@ -31,9 +36,9 @@ const faqs = [
       "Yes. We only access publicly available information through proper channels. We don't violate rate limits, scrape private content, or do anything that would breach Reddit's ToS. We're built for the long term.",
   },
   {
-    question: "How quickly do I see leads after setup?",
+    question: "How quickly can I expect useful leads after setup?",
     answer:
-      "It depends on your monitoring schedule and subreddit activity. Free users get a daily scan, while Pro and Premium users can monitor more frequently (up to hourly). Most users see their first relevant leads within 24 hours.",
+      "That depends on your schedule and target communities, but most useful setups produce their first relevant threads within the first day. The fastest results usually come from monitoring recommendation, alternative, and implementation-help conversations in focused subreddits.",
   },
   {
     question: "What counts as a 'scrape' in my monthly limit?",
@@ -43,13 +48,8 @@ const faqs = [
   {
     question: "Can I try before I pay?",
     answer:
-      "Absolutely! Our Free tier lets you monitor 3 subreddits with 1 daily scrape (30/month) for lead generation, plus 1 keyword set with 6 keywords. No credit card required. Upgrade only if you see value — Pro gives you 10 subreddits + 3 keyword sets, and Premium unlocks 20 subreddits + 10 keyword sets.",
-  },
-  {
-    question: "Do you support platforms other than Reddit?",
-    answer:
-      "We're focused on Reddit for now since that's where the highest-intent B2B conversations happen. We're exploring other platforms like Twitter/X and HackerNews based on user demand.",
-  },
+      "Yes. The free plan is there so you can validate that your target subreddits and keyword ideas produce useful conversations before you commit to a paid plan.",
+    },
 ];
 
 interface FAQProps {
@@ -72,7 +72,8 @@ export function FAQ({ items }: FAQProps) {
             Frequently asked questions
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-            Everything you need to know about Leadly
+            Straight answers for founders and agencies evaluating Reddit as a
+            lead source.
           </p>
         </motion.div>
 

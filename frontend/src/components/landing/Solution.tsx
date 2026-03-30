@@ -7,21 +7,21 @@ import { WorkflowVisual } from "@/components/landing/WorkflowVisual";
 const steps = [
   {
     icon: Filter,
-    title: "1. Define your ideal customer",
+    title: "1. Focus the search surface",
     description:
-      "Tell Leadly which subreddits to watch and keywords to track. Set up takes minutes.",
+      "Pick the subreddits, categories, and keyword patterns that reflect where your buyers already ask for help.",
   },
   {
     icon: ScanLine,
-    title: "2. We monitor conversations 24/7",
+    title: "2. Catch the right conversations",
     description:
-      "Our system scans for new posts and comments, filtering out noise and spam automatically.",
+      "Leadly watches Reddit continuously so your team does not need to search manually to catch active recommendation and alternative threads.",
   },
   {
     icon: CheckCircle2,
-    title: "3. You get qualified leads",
+    title: "3. Act on the best threads first",
     description:
-      "Receive alerts for high-intent discussions. AI scores relevance so you only see what matters.",
+      "Use context and relevance cues to decide what deserves a reply now, what to watch, and what to ignore.",
   },
 ];
 
@@ -32,8 +32,8 @@ interface SolutionProps {
 }
 
 export function Solution({
-  heading = "How Leadly works",
-  subheading = "We turn millions of Reddit conversations into a structured pipeline of warm leads.",
+  heading = "How Leadly turns Reddit into a working acquisition channel",
+  subheading = "Instead of treating Reddit like a giant alert feed, Leadly helps small teams move from discovery to action with a tighter operating loop.",
   items,
 }: SolutionProps) {
   const displaySteps = items || steps;

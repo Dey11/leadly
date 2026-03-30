@@ -21,9 +21,9 @@ interface BlogPost {
 }
 
 export const metadata: Metadata = {
-  title: "Leadly Blog - B2B Lead Generation Strategies",
+  title: "Leadly Blog - Reddit Lead Generation for SaaS and Agencies",
   description:
-    "Insights, strategies, and guides on how to generate high-quality B2B leads using Reddit and AI.",
+    "Guides, comparisons, and tactical playbooks for SaaS founders and agencies using Reddit for lead generation.",
 };
 
 async function getBlogPosts() {
@@ -101,8 +101,8 @@ export default async function BlogIndexPage() {
               The Leadly Blog
             </h1>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg md:text-xl">
-              Practical strategies for B2B lead generation, social selling, and
-              finding your next customer on Reddit.
+              Commercial guides, comparisons, and demand-capture playbooks for
+              SaaS founders and agencies using Reddit.
             </p>
           </div>
         </section>

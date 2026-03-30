@@ -1,165 +1,233 @@
-// Topics focused on "Best X" and "How to" for 2026
-export const BLOG_TOPICS = [
-  "Why Community-Led Growth is the New B2B Standard",
+export type BlogBrief = {
+  slug: string;
+  title: string;
+  primaryKeyword: string;
+  audience: string;
+  angle: string;
+  outline: string[];
+  internalLinks: string[];
+  sources: Array<{ label: string; url: string }>;
+};
 
-  // Reddit Marketing Specific
-  "How to Market on Reddit Without Being Banned",
-  "Understanding Subreddit Culture for B2B Sales",
-  "Top 10 Subreddits for Finding SaaS Customers",
-  "The Art of the Helpful Comment: Selling Without Selling",
-  "Monitoring Brand Mentions on Reddit vs Twitter",
-  "How to Spot Buying Signals in Reddit Threads",
-  "Case Study: Growing a SaaS from 0 to $10k MRR using Reddit",
-  "Reddit vs LinkedIn: Where Should You Focus?",
-  "Building Authority in Niche Communities",
-  "The Dos and Don'ts of Self-Promotion on Social Media",
-
-  // For Agencies & Freelancers
-  "How Agencies find Web Design Clients in 2026",
-  "Scaling Your Freelance Business with Inbound Leads",
-  "Stop Upwork: Finding Direct Clients on Social Media",
-  "Pricing Your Services: Value-Based Selling",
-  "Client Retention Strategies for Digital Agencies",
-  "Automating Client Acquisition for Solopreneurs",
-  "How to Pitch Your Services in Comment Sections",
-  "Building a Personal Brand as a B2B Service Provider",
-  "Drafting Proposals That Close Deals Faster",
-  "Networking for Introverts: The Online Approach",
-
-  // SaaS Growth
-  "First 100 Users: A Playbook for SaaS Founders",
-  "Validating Your Startup Idea on Reddit",
-  "Customer Feedback Loops: Using Social Listening",
-  "Reducing Churn with Proactive Community Engagement",
-  "Bootstrapping vs VC: Growing Efficiently",
-  "Marketing for Technical Founders",
-  "Product-Led Growth vs Sales-Led Growth",
-  "How to Launch on Product Hunt and Reddit via 'Show HN'",
-  "Building a Waitlist: Strategies That Work",
-  "Pre-Selling Your SaaS Before Writing Code",
-
-  // General Business / Productivity
-  "AI Tools That Every Founder Needs in 2026",
-  "Managing a Remote Sales Team",
-  "The ROI of Social Listening Tools",
-  "Why 'Speed to Lead' Matters More Than Ever",
-  "Optimizing Your Landing Page for Conversion",
-  "Storytelling in B2B Marketing",
-  "Data-Driven Decision Making for Small Teams",
-  "Outsourcing Lead Research: Pros and Cons",
-  "Time Management Hacks for Solo Founders",
-  "Mental Health for Entrepreneurs: Avoiding Burnout",
-
-  // Specific Niches
-  "Lead Generation for Real Estate Agents on Reddit",
-  "How Lawyers Can Find Clients Online Ethically",
-  "Marketing Services for Plumbers and Contractors",
-  "Finding E-commerce Brands to Partner With",
-  "Selling High-Ticket Coaching Packages",
-  "Recruitment Strategies: Finding Talent on Reddit",
-  "Financial Advisors: Building Trust Online",
-  "SaaS for Healthcare: Finding Your Niche",
-  "Marketing to Developers: The Hardest Audience?",
-  "Selling to Enterprise: Playing the Long Game",
-
-  // Advanced Tactics
-  "Programmatic SEO vs Content Marketing",
-  "Using Intent Data to Prioritize Outreach",
-  "The Role of Chatbots in Modern Lead Gen",
-  "Omnichanel Prospecting: Combining Email and Social",
-  "Account-Based Marketing (ABM) on a Budget",
-  "Viral Marketing: Can B2B Go Viral?",
-  "Repurposing Content: Turn One Post into Ten",
-  "SEO for Startups: Quick Wins vs Long Term Strategy",
-  "Navigating Gatekeepers in B2B Sales",
-  "The Power of Micro-Influencers in B2B",
-
-  // Trends
-  "Zero-Click Searches and the Future of SEO",
-  "Video Marketing for B2B: Is it Worth it?",
-  "The Rise of Dark Social in B2B",
-  "Privacy First Marketing: Surviving a Cookie-less World",
-  "Why Trust is the New Currency in Sales",
-  "Conversational Marketing Trends",
-  "Hyper-Personalization at Scale",
-  "The Gig Economy and B2B Services",
-  "Sustainability in Business: Does it Impact Sales?",
-  "Web3 and B2B: Is there a There There?",
-
-  // Educational
-  "What is Social Listening?",
-  "Beginner's Guide to Automated Lead Generation",
-  "CRM Best Practices for Small Business",
-  "Email Deliverability 101",
-  "Understanding CAC and LTV",
-  "Sales Funnels Simplified",
-  "Copywriting Tips for Non-Writers",
-  "Designing High-Converting Sales Decks",
-  "Negotiation Tactics for Founders",
-  "How to Handle Sales Objections",
-
-  // "How-To" style
-  "How to set up Google Alerts for Competitors",
-  "How to use LinkedIn Sales Navigator Effectively",
-  "How to scrape leads without code",
-  "How to calculate your Total Addressable Market",
-  "How to build a referral program",
-  "How to interview customers for insights",
-  "How to track marketing attribution",
-  "How to create a content calendar",
-  "How to hire your first sales rep",
-  "How to scale from Founder-led Sales",
-
-  // Extra Fillers
-  "5 Metrics Every Founder Should Track",
-  "3 Mistakes to Avoid in Cold Outreach",
-  "Why Your Cold Emails are Going to Spam",
-  "The Best Time to Post on Reddit",
-  "Tools to Automate Your Busy Work",
-  "Why Consistency is Key in Content Marketing",
-  "Building a Community around your Product",
-  "The Indiemaker's Guide to Marketing",
-  "Surviving the 'Trough of Sorrow' in Startups",
-  "Celebrating Small Wins in Business",
-];
-
-export const STOCK_IMAGES = [
-  // Tech / Laptop / Code
+export const BLOG_STOCK_IMAGES = [
   "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=2072",
   "https://images.unsplash.com/photo-1504384308090-c54be3855485?auto=format&fit=crop&q=80&w=2370",
   "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=2070",
   "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2426",
-  "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80&w=2072",
-
-  // Meeting / People
+  "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2370",
   "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=2370",
   "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=2070",
-  "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80&w=2664",
-  "https://images.unsplash.com/photo-1559523182-a284c3fb7cff?auto=format&fit=crop&q=80&w=2274",
-  "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&q=80&w=2070",
-
-  // Abstract / Modern / Office
   "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2301",
-  "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=2070",
-  "https://images.unsplash.com/photo-1664575602276-acd073f104c1?auto=format&fit=crop&q=80&w=2070",
-  "https://images.unsplash.com/photo-1434626881859-194d67b2b86f?auto=format&fit=crop&q=80&w=2074",
-  "https://images.unsplash.com/photo-1507537297725-24a1c029d3ca?auto=format&fit=crop&q=80&w=2369",
+];
 
-  // Growth / Data
-  "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2370",
-  "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2015",
-  "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&q=80&w=2076",
-
-  // Coffee / Work
-  "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=2070",
-  "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=2070",
-
-  // Additional Office / Team
-  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=2370",
-  "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=2370",
-  "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=2369",
-
-  // Creative / Design
-  "https://images.unsplash.com/photo-1502945015378-0e284ca1a5be?auto=format&fit=crop&q=80&w=2370",
-  "https://images.unsplash.com/photo-1455849318743-b2233052fcff?auto=format&fit=crop&q=80&w=2369",
+export const BLOG_BRIEFS: BlogBrief[] = [
+  {
+    slug: "best-reddit-lead-generation-tools-for-saas-founders",
+    title: "Best Reddit Lead Generation Tools for SaaS Founders in 2026",
+    primaryKeyword: "reddit lead generation tools for saas founders",
+    audience: "SaaS founders and lean GTM teams",
+    angle:
+      "Commercial comparison post covering Leadly, Syften, F5Bot, and GummySearch with founder-first framing.",
+    outline: [
+      "What makes a Reddit lead generation tool useful",
+      "How founder-led teams should evaluate signal quality",
+      "Tool-by-tool comparison table",
+      "When each tool makes sense",
+      "Why Leadly fits pipeline-focused teams",
+    ],
+    internalLinks: [
+      "/compare/leadly-vs-syften",
+      "/compare/leadly-vs-f5bot",
+      "/compare/leadly-vs-gummysearch",
+      "/alternatives/reddit-lead-generation-tools",
+      "/solutions/turn-reddit-discussions-into-your-saas-growth-engine",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Syften", url: "https://syften.com/reddit" },
+      { label: "F5Bot", url: "https://f5bot.com/" },
+      { label: "GummySearch", url: "https://gummysearch.com/" },
+    ],
+  },
+  {
+    slug: "syften-vs-f5bot-vs-leadly-for-reddit-monitoring",
+    title: "Syften vs F5Bot vs Leadly for Reddit Monitoring and Lead Generation",
+    primaryKeyword: "syften vs f5bot vs leadly",
+    audience: "Founders and agencies comparing monitoring products",
+    angle:
+      "Decision-stage comparison for buyers choosing between alert-first and intent-first workflows.",
+    outline: [
+      "Quick answer for who should pick which tool",
+      "The difference between monitoring and lead generation",
+      "Comparison table for workflow, fit, and pricing model",
+      "Which product wins for agencies and SaaS founders",
+      "Implementation guidance for getting value quickly",
+    ],
+    internalLinks: [
+      "/compare/leadly-vs-syften",
+      "/compare/leadly-vs-f5bot",
+      "/alternatives/reddit-monitoring-tools-for-agencies",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Syften", url: "https://syften.com/reddit" },
+      { label: "F5Bot", url: "https://f5bot.com/" },
+    ],
+  },
+  {
+    slug: "how-saas-founders-find-customers-on-reddit-without-getting-banned",
+    title: "How SaaS Founders Find Customers on Reddit Without Getting Banned",
+    primaryKeyword: "how to find customers on reddit for saas",
+    audience: "SaaS founders",
+    angle:
+      "Educational post that teaches demand capture on Reddit without spammy tactics.",
+    outline: [
+      "Answer-first summary of what works",
+      "What founders get wrong on Reddit",
+      "Which thread types signal real buying intent",
+      "How to respond without sounding promotional",
+      "How to build a lightweight monitoring system",
+    ],
+    internalLinks: [
+      "/solutions/turn-reddit-discussions-into-your-saas-growth-engine",
+      "/alternatives/reddit-lead-generation-tools",
+    ],
+    sources: [
+      {
+        label: "Reddit Content Policy",
+        url: "https://www.redditinc.com/policies/content-policy",
+      },
+      {
+        label: "Reddit Moderator Code of Conduct",
+        url: "https://www.redditinc.com/policies/moderator-code-of-conduct",
+      },
+      { label: "Leadly", url: "https://leadly.live/" },
+    ],
+  },
+  {
+    slug: "how-agencies-turn-reddit-requests-into-inbound-leads",
+    title: "How Agencies Turn Reddit Requests into Inbound Leads",
+    primaryKeyword: "reddit lead generation for agencies",
+    audience: "SEO agencies, marketing consultants, and dev shops",
+    angle:
+      "Use-case post showing how agencies can turn recommendation and rescue-project threads into pipeline.",
+    outline: [
+      "What agency demand looks like on Reddit",
+      "The three agency thread types worth monitoring",
+      "How to qualify fit fast",
+      "How to reply with useful expertise",
+      "Operational workflow for a small agency team",
+    ],
+    internalLinks: [
+      "/solutions/scale-your-seo-agency-with-high-intent-reddit-leads",
+      "/solutions/scale-your-dev-shop-with-high-intent-reddit-leads",
+      "/alternatives/reddit-monitoring-tools-for-agencies",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Syften", url: "https://syften.com/reddit" },
+      { label: "F5Bot", url: "https://f5bot.com/" },
+    ],
+  },
+  {
+    slug: "what-counts-as-high-intent-on-reddit",
+    title: "What Counts as High Intent on Reddit? A Practical Framework for SaaS Teams",
+    primaryKeyword: "high intent reddit",
+    audience: "SaaS founders and GTM teams",
+    angle:
+      "Framework post defining high-intent Reddit signals and how to separate urgency from curiosity.",
+    outline: [
+      "Direct answer: what high intent actually looks like",
+      "The difference between curiosity and purchase intent",
+      "Language patterns that matter",
+      "How to score urgency and fit",
+      "How to turn the framework into a monitoring workflow",
+    ],
+    internalLinks: [
+      "/solutions/turn-reddit-conversations-into-your-gtm-engine",
+      "/alternatives/reddit-lead-generation-tools",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      {
+        label: "Princeton GEO paper",
+        url: "https://arxiv.org/abs/2311.09735",
+      },
+    ],
+  },
+  {
+    slug: "reddit-keyword-monitoring-vs-intent-based-lead-generation",
+    title: "Reddit Keyword Monitoring vs Intent-Based Lead Generation",
+    primaryKeyword: "reddit keyword monitoring vs lead generation",
+    audience: "Teams comparing alerting and qualification workflows",
+    angle:
+      "Bottom-funnel explainer on why alert volume and pipeline quality are not the same thing.",
+    outline: [
+      "Quick answer for which approach wins when",
+      "Where keyword monitoring helps",
+      "Where intent-led workflows win",
+      "How agencies and founders should choose",
+      "When to combine both approaches",
+    ],
+    internalLinks: [
+      "/alternatives/reddit-monitoring-tools-for-agencies",
+      "/alternatives/reddit-lead-generation-tools",
+      "/compare/leadly-vs-f5bot",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "F5Bot", url: "https://f5bot.com/" },
+      { label: "Syften", url: "https://syften.com/reddit" },
+    ],
+  },
+  {
+    slug: "best-subreddits-for-saas-customer-research-and-demand-capture",
+    title: "Best Subreddits for SaaS Customer Research and Demand Capture",
+    primaryKeyword: "best subreddits for saas customer research",
+    audience: "SaaS founders and indie hackers",
+    angle:
+      "Middle-funnel post showing where founders should look first and what to watch for inside each community.",
+    outline: [
+      "What makes a subreddit useful for demand capture",
+      "The subreddits worth starting with",
+      "What signals to watch in each community",
+      "How to avoid wasting time",
+      "How to connect research to pipeline",
+    ],
+    internalLinks: [
+      "/solutions/turn-reddit-discussions-into-your-saas-growth-engine",
+      "/solutions/automate-your-customer-acquisition-on-reddit",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Reddit", url: "https://www.reddit.com/" },
+    ],
+  },
+  {
+    slug: "how-to-monitor-competitor-alternatives-on-reddit",
+    title: "How to Monitor Competitor Alternatives on Reddit",
+    primaryKeyword: "monitor competitor alternatives on reddit",
+    audience: "GTM teams, founders, and agencies",
+    angle:
+      "Practical workflow for capturing buyer-switch intent and replacement demand on Reddit.",
+    outline: [
+      "Why alternatives threads matter",
+      "Which phrases and subreddits to monitor",
+      "How to qualify replacement intent",
+      "What to do after you catch a thread",
+      "How to avoid spammy replies",
+    ],
+    internalLinks: [
+      "/solutions/turn-reddit-conversations-into-your-gtm-engine",
+      "/compare/leadly-vs-gummysearch",
+      "/compare/leadly-vs-syften",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      {
+        label: "Reddit Content Policy",
+        url: "https://www.redditinc.com/policies/content-policy",
+      },
+    ],
+  },
 ];

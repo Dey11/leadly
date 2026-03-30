@@ -28,7 +28,7 @@ export function PricingRedesigned() {
             Simple, predictable pricing
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-            Lock in these prices forever as a beta user.
+            Start free and lock in current pricing while Leadly is still early.
           </p>
         </motion.div>
 

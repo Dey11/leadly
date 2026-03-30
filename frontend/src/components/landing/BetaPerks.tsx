@@ -66,17 +66,17 @@ export function BetaPerks() {
             viewport={{ once: true }}
             className="border-primary/20 from-primary/10 to-accent/10 text-primary mb-4 inline-flex items-center gap-2 rounded-full border bg-gradient-to-r px-3 py-1.5 text-xs font-medium sm:mb-6 sm:px-4 sm:py-2 sm:text-sm"
           >
-            Limited Beta Access
+            Early Access Benefits
           </motion.div>
           <h2 className="font-display text-foreground mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
-            Early adopters get{" "}
+            Early teams get{" "}
             <span className="from-primary to-accent inline-block bg-gradient-to-r bg-clip-text text-transparent dark:from-[#e3b5a4] dark:to-[#ff6b7d]">
               exclusive perks
             </span>
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-            We're building Leadly with our first users. Join now and enjoy
-            benefits that won't be available after launch.
+            Start now and keep the onboarding, pricing, and support advantages
+            reserved for the first wave of teams using Leadly seriously.
           </p>
         </motion.div>
 
@@ -177,9 +177,9 @@ export function BetaPerks() {
               asChild
             >
               <Link href="/register">
-                <span className="md:hidden">Join the beta →</span>
+                <span className="md:hidden">Start free →</span>
                 <span className="hidden md:inline">
-                  Join the beta and lock in pricing forever →
+                  Start free and lock in current pricing →
                 </span>
               </Link>
             </Button>

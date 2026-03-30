@@ -25,15 +25,17 @@ export function DualMonitoring() {
         >
           <div className="border-primary/20 bg-primary/5 text-primary mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium sm:mb-8">
             <Sparkles className="h-4 w-4" />
-            Two Ways to Monitor
+            Two ways to capture demand
           </div>
           <h2 className="font-display text-foreground mb-6 text-4xl font-bold tracking-tight sm:mb-8 sm:text-5xl md:text-6xl">
-            Communities{" "}
-            <span className="text-muted-foreground font-light">+</span> Keywords
+            Communities first,{" "}
+            <span className="text-muted-foreground font-light">
+              keywords second
+            </span>
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl text-lg leading-relaxed sm:text-xl">
-            Combine both approaches for comprehensive lead coverage across
-            Reddit.
+            Start with the subreddits where your buyers ask for help, then add
+            keywords to widen coverage without turning your workflow into noise.
           </p>
         </motion.div>
 
@@ -65,9 +67,8 @@ export function DualMonitoring() {
 
                 {/* Description */}
                 <p className="text-muted-foreground mb-8 flex-grow text-base leading-relaxed sm:text-lg">
-                  Track entire communities where your customers hang out. Get
-                  notified for every relevant conversation happening in
-                  real-time.
+                  Stay close to the subreddits where your buyers compare tools,
+                  ask for recommendations, and describe urgent pain.
                 </p>
 
                 {/* Example subreddits */}
@@ -116,8 +117,9 @@ export function DualMonitoring() {
 
                 {/* Description */}
                 <p className="text-muted-foreground mb-8 flex-grow text-base leading-relaxed sm:text-lg">
-                  Track specific terms across all of Reddit. Never miss when
-                  someone mentions your product or asks for alternatives.
+                  Add keyword coverage when you want to catch alternatives,
+                  category phrases, and competitor mentions outside your core
+                  communities.
                 </p>
 
                 {/* Example keywords */}
@@ -159,7 +161,7 @@ export function DualMonitoring() {
             </div>
             <span className="text-foreground text-base font-semibold">
               Use both for{" "}
-              <span className="text-primary">maximum coverage</span>
+              <span className="text-primary">better signal quality</span>
             </span>
           </div>
         </motion.div>

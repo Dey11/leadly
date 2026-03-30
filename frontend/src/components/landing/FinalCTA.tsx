@@ -22,8 +22,8 @@ export function FinalCTA() {
             Stop missing high-intent leads on Reddit.
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed text-balance sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-            Join our beta and be among the first to find customers where they're
-            actively asking for solutions like yours.
+            Start free and catch buyer intent while people are actively asking
+            for alternatives, recommendations, and help on Reddit.
           </p>
 
           <motion.div
@@ -59,7 +59,7 @@ export function FinalCTA() {
             <span className="hidden sm:inline">·</span>
             <span className="flex items-center gap-1.5">
               <span className="text-green-600">✓</span>
-              Beta pricing locked forever
+              Current pricing locked in
             </span>
             <span className="hidden sm:inline">·</span>
             <span className="flex items-center gap-1.5">
