@@ -12,27 +12,27 @@ import {
 
 const features = [
   {
-    badge: "Smart Monitoring Configuration",
-    title: "Precision Monitoring, Zero Noise",
+    badge: "Signal capture",
+    title: "Catch recommendation threads before they disappear",
     description:
-      "Don't waste time scrolling. Configure specific keywords and subreddits, and let Leadly filter out the noise. We only alert you when conversations match your exact Ideal Customer Profile (ICP).",
+      "Leadly watches the subreddits where founders and buyers ask for tools, agencies, and alternatives. You spend time on visible demand, not cold outreach lists.",
     icon: Settings2,
     highlights: [
-      { icon: Target, text: "Track subreddits & keywords" },
-      { icon: Zap, text: "Negative keyword filtering" },
-      { icon: TrendingUp, text: "Real-time alerts" },
+      { icon: Target, text: "Track subreddits and intent phrases" },
+      { icon: Zap, text: "Catch alternatives and recommendation asks" },
+      { icon: TrendingUp, text: "Move while urgency is visible" },
     ],
   },
   {
-    badge: "AI Analysis",
-    title: "AI That Understands Context",
+    badge: "Qualification",
+    title: "See what is worth replying to first",
     description:
-      "Engagement matters. Our AI analyzes the sentiment and context of every post, giving you a buying intent score and suggesting the perfect angle for your reply.",
+      "Instead of dumping every mention into your inbox, Leadly helps you identify the threads with urgency, fit, and commercial intent so your next reply has a better chance of turning into pipeline.",
     icon: Brain,
     highlights: [
-      { icon: TrendingUp, text: "Sentiment analysis" },
-      { icon: Target, text: "Relevance filtering" },
-      { icon: FileText, text: "Contextual summaries" },
+      { icon: TrendingUp, text: "Buying-signal context" },
+      { icon: Target, text: "ICP-aware relevance cues" },
+      { icon: FileText, text: "Clean summaries for action" },
     ],
   },
 ];
@@ -49,10 +49,11 @@ export function Features() {
           className="mx-auto mb-10 max-w-3xl text-center sm:mb-14 lg:mb-16"
         >
           <h2 className="text-foreground font-display mb-4 text-3xl font-bold tracking-tight sm:mb-5 sm:text-4xl md:text-5xl">
-            Everything you need to capture intent
+            Built for Reddit-led pipeline, not noisy monitoring
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-            From monitoring to outreach, we've automated the busywork.
+            Find demand, qualify it quickly, and act while the conversation is
+            still warm.
           </p>
         </motion.div>
 

@@ -12,6 +12,11 @@ import Image from "next/image";
 import { ShareButtonClient } from "@/components/blog/ShareButtonClient";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { backendUrl } from "@/lib/env";
+import {
+  buildArticleSchema,
+  buildBreadcrumbSchema,
+} from "@/lib/structured-data";
+import { siteConfig } from "@/config/site";
 
 export const dynamicParams = true;
 export const revalidate = 3600;
@@ -73,16 +78,22 @@ export async function generateMetadata({
   return {
     title: post.metaTitle || post.title,
     description: post.metaDescription || post.excerpt,
+    alternates: {
+      canonical: `${siteConfig.url}/blog/${post.slug}`,
+    },
     openGraph: {
       title: post.metaTitle || post.title,
       description: post.metaDescription || post.excerpt || "",
       type: "article",
+      url: `${siteConfig.url}/blog/${post.slug}`,
       publishedTime: post.publishedAt,
+      images: [post.coverImage || siteConfig.ogImage],
     },
     twitter: {
       card: "summary_large_image",
       title: post.metaTitle || post.title,
       description: post.metaDescription || post.excerpt || "",
+      images: [post.coverImage || siteConfig.ogImage],
     },
   };
 }
@@ -99,8 +110,29 @@ export default async function BlogPostPage({
 
   if (!post) notFound();
 
+  const schemas = [
+    buildBreadcrumbSchema(siteConfig.url, [
+      { name: "Home", path: "/" },
+      { name: "Blog", path: "/blog" },
+      { name: post.title, path: `/blog/${post.slug}` },
+    ]),
+    buildArticleSchema({
+      baseUrl: siteConfig.url,
+      slug: post.slug,
+      title: post.metaTitle || post.title,
+      description: post.metaDescription || post.excerpt || "",
+      publishedAt: post.publishedAt,
+      updatedAt: post.updatedAt,
+      image: post.coverImage || siteConfig.ogImage,
+    }),
+  ];
+
   return (
     <div className="bg-background text-foreground min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }}
+      />
       {/* Navbar Wrapper */}
       <div className="fixed top-3 right-0 left-0 z-50 flex justify-center px-4 sm:top-7 sm:px-6 md:top-10 md:px-10 lg:px-12">
         <header className="bg-background/90 border-border/40 relative flex w-full max-w-5xl items-center justify-between rounded-full border py-2 pr-2 pl-4 shadow-lg backdrop-blur-xl sm:py-3 sm:pr-3 sm:pl-5 md:pr-4 md:pl-6">
@@ -228,14 +260,14 @@ export default async function BlogPostPage({
               {/* CTA */}
               <div className="from-primary/5 to-primary/10 border-primary/20 rounded-2xl border bg-gradient-to-br p-6">
                 <h3 className="text-foreground mb-2 text-lg font-bold">
-                  Scale your Agency
+                  Turn Reddit demand into pipeline
                 </h3>
                 <p className="text-muted-foreground mb-4 text-sm">
-                  Automate lead generation and close more deals with Leadly's AI
-                  agents.
+                  Use Leadly to catch alternative, recommendation, and urgency
+                  threads before they cool down.
                 </p>
                 <Link href="/register">
-                  <Button className="w-full">Start Free Trial</Button>
+                  <Button className="w-full">Start free</Button>
                 </Link>
               </div>
             </div>

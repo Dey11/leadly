@@ -3,6 +3,7 @@ import { siteConfig } from "@/config/site";
 import { backendUrl } from "@/lib/env";
 
 import solutionsData from "@/data/solutions.json";
+import { comparePages, alternativePages } from "@/data/commercial-pages";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.url;
@@ -14,18 +15,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 1,
-    },
-    {
-      url: `${baseUrl}/login`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/register`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.9,
     },
     {
       url: `${baseUrl}/blog`,
@@ -55,6 +44,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  const comparisonRoutes: MetadataRoute.Sitemap = comparePages.map((page) => ({
+    url: `${baseUrl}/compare/${page.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.75,
+  }));
+
+  const alternativeRoutes: MetadataRoute.Sitemap = alternativePages.map(
+    (page) => ({
+      url: `${baseUrl}/alternatives/${page.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.75,
+    }),
+  );
+
   // Dynamic Blog Posts
   let blogRoutes: MetadataRoute.Sitemap = [];
   try {
@@ -80,5 +85,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Failed to fetch blog posts for sitemap:", error);
   }
 
-  return [...staticRoutes, ...solutionRoutes, ...blogRoutes];
+  return [
+    ...staticRoutes,
+    ...solutionRoutes,
+    ...comparisonRoutes,
+    ...alternativeRoutes,
+    ...blogRoutes,
+  ];
 }

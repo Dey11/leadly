@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Brain, Target, Zap, Check, X, Clock } from "lucide-react";
+import { Brain, Target, Zap, Check, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const comparisonData = [
   {
@@ -49,16 +51,16 @@ const comparisonData = [
   },
   {
     feature: "Email Notifications",
-    leadly: "Coming soon",
-    others: "Available",
-    leadlyHas: "soon",
+    leadly: "In-app lead queue and dashboards",
+    others: "Alerts only",
+    leadlyHas: true,
     othersHas: true,
   },
   {
     feature: "Outreach Generator",
-    leadly: "Coming soon",
-    others: "Not reliable",
-    leadlyHas: "soon",
+    leadly: "Reply planning built around context",
+    others: "Usually manual",
+    leadlyHas: true,
     othersHas: true,
   },
 ];
@@ -66,22 +68,22 @@ const comparisonData = [
 const advantages = [
   {
     icon: Brain,
-    title: "AI That Actually Understands",
+    title: "Built around intent, not just mentions",
     description:
-      "Other tools ping you for every keyword mention. Leadly pings you when someone is actually ready to buy.",
+      "Leadly is designed to help SaaS founders and agencies focus on recommendation threads, alternative searches, and urgent problem statements.",
   },
   {
     icon: Target,
-    title: "Intent Over Keywords",
+    title: "A cleaner action queue",
     description:
-      "We understand why someone is asking, not just what they're typing. That means fewer false positives, more conversions.",
+      "You should not need to read fifty noisy alerts to find one real opportunity. Leadly is strongest when quality matters more than volume.",
   },
   {
     icon: Zap,
-    title: "Zero Configuration",
+    title: "Founder-speed setup",
     description:
-      "No need to brainstorm keyword lists. Just tell us your product and pick your subreddits. Our AI does the rest.",
-  },
+      "Pick the communities and categories you care about, then start monitoring with a workflow that makes sense for lean teams.",
+    },
 ];
 
 export function Competitors() {
@@ -97,9 +99,13 @@ export function Competitors() {
           className="mx-auto mb-10 max-w-4xl text-center sm:mb-14 lg:mb-16"
         >
           <h2 className="font-display text-foreground mb-4 text-3xl font-bold tracking-tight sm:mb-6 sm:text-4xl md:text-5xl">
-            Leadly – <span className="text-primary">Your Best Choice</span> for
-            <br className="hidden sm:block" /> Intent-Based Lead Discovery
+            Compare Leadly with generic monitoring tools
           </h2>
+          <p className="text-muted-foreground mx-auto max-w-3xl text-base leading-relaxed sm:text-lg">
+            Most Reddit tools stop at alerts. Leadly is designed for teams that
+            need signal quality, commercial context, and a faster path from
+            thread to pipeline.
+          </p>
         </motion.div>
 
         {/* Comparison - Pixelmatters Style (Theme Aware) */}
@@ -185,13 +191,6 @@ export function Competitors() {
                           strokeWidth={3}
                         />
                       </div>
-                    ) : row.leadlyHas === "soon" ? (
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500 shadow-sm">
-                        <Clock
-                          className="h-3.5 w-3.5 text-white"
-                          strokeWidth={2.5}
-                        />
-                      </div>
                     ) : (
                       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-500 shadow-sm">
                         <X className="h-3.5 w-3.5 text-white" strokeWidth={3} />
@@ -232,13 +231,27 @@ export function Competitors() {
             className="mb-10 text-center sm:mb-14"
           >
             <h2 className="font-display text-foreground mb-3 text-3xl font-bold tracking-tight sm:mb-4 sm:text-4xl md:text-5xl">
-              Why top founders choose Leadly
+              Why founders and agencies move past raw alerts
             </h2>
             <p className="text-muted-foreground mx-auto max-w-xl px-2 text-base leading-relaxed sm:max-w-2xl sm:px-0 sm:text-lg md:text-lg lg:text-xl">
-              Stop wasting time on keyword noise. Get straight to the leads that
-              convert.
+              Leadly is for teams that want fewer false positives, better
+              timing, and a workflow that makes Reddit demand easier to act on.
             </p>
           </motion.div>
+
+          <div className="mb-10 flex flex-wrap justify-center gap-3">
+            <Button variant="outline" asChild className="rounded-full px-6">
+              <Link href="/compare/leadly-vs-syften">Leadly vs Syften</Link>
+            </Button>
+            <Button variant="outline" asChild className="rounded-full px-6">
+              <Link href="/compare/leadly-vs-f5bot">Leadly vs F5Bot</Link>
+            </Button>
+            <Button variant="outline" asChild className="rounded-full px-6">
+              <Link href="/compare/leadly-vs-gummysearch">
+                Leadly vs GummySearch
+              </Link>
+            </Button>
+          </div>
 
           {/* Video Embed */}
           {/* <motion.div

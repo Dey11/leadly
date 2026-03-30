@@ -1,20 +1,20 @@
 export const SEO_CONFIG = {
   default: {
-    title: "Leadly | AI-Powered Reddit Lead Generation & Keyword Monitoring",
+    title: "Leadly | Reddit Lead Generation for SaaS Founders and Agencies",
     description:
-      "Leadly monitors Reddit in real-time with AI-powered ICP matching and keyword tracking. Find high-intent leads, track brand mentions, and engage before competitors do.",
+      "Leadly helps SaaS founders and agencies find high-intent Reddit threads where buyers ask for alternatives, recommendations, and help.",
     keywords: [
       "Reddit lead generation",
-      "Reddit keyword monitoring",
-      "social listening",
-      "B2B sales tools",
-      "intent data",
-      "Reddit monitoring",
-      "AI sales assistant",
-      "keyword tracking",
+      "Reddit lead generation for SaaS",
+      "Reddit lead generation for agencies",
+      "Reddit alternatives monitoring",
+      "Reddit recommendation monitoring",
+      "founder led sales",
+      "agency lead generation",
       "lead scoring",
-      "brand monitoring",
-      "Reddit mentions tracker",
+      "Reddit buying signals",
+      "Reddit monitoring tool",
+      "Reddit prospecting tool",
     ],
     ogImage: "/assets/og-image.png",
   },
@@ -57,9 +57,9 @@ export const SEO_CONFIG = {
   },
   landing: {
     main: {
-      title: "Leadly | AI-Powered Reddit Lead Generation & Keyword Monitoring",
+      title: "Leadly | Find Reddit Buying Signals for SaaS and Agencies",
       description:
-        "Leadly uses AI to monitor Reddit in real time with two powerful modes: ICP-based lead scoring and keyword tracking. Surface high-intent leads and brand mentions before competitors do.",
+        "Leadly helps SaaS founders and agencies catch Reddit threads where buyers ask for alternatives, recommendations, and help, then prioritize what to reply to first.",
     },
   },
 };

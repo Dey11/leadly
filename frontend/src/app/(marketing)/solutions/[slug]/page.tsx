@@ -2,6 +2,10 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import solutionsData from "@/data/solutions.json";
 import { siteConfig } from "@/config/site";
+import {
+  buildBreadcrumbSchema,
+  buildFaqSchema,
+} from "@/lib/structured-data";
 
 // Landing Components
 import { Hero } from "@/components/landing/Hero";
@@ -58,10 +62,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${page.title} | Leadly`,
     description: page.description,
+    alternates: {
+      canonical: `${siteConfig.url}/solutions/${page.slug}`,
+    },
     openGraph: {
       title: page.title,
       description: page.description,
       type: "website",
+      url: `${siteConfig.url}/solutions/${page.slug}`,
+      images: [siteConfig.ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: page.title,
+      description: page.description,
       images: [siteConfig.ogImage],
     },
   };
@@ -89,8 +103,21 @@ export default async function SolutionPage({ params }: Props) {
     description: prop,
   }));
 
+  const schemas = [
+    buildBreadcrumbSchema(siteConfig.url, [
+      { name: "Home", path: "/" },
+      { name: "Solutions", path: "/#use-cases" },
+      { name: page.title, path: `/solutions/${page.slug}` },
+    ]),
+    ...(page.faqs?.length ? [buildFaqSchema(page.faqs)] : []),
+  ];
+
   return (
     <div className="bg-background text-foreground selection:bg-primary/20 min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }}
+      />
       {/* Floating Navbar (Copied from page.tsx structure) */}
       {/* Note: In a real app we might extract this Layout, but copying ensures 1:1 match as requested */}
       {/* We can potentially import a Shared Layout or just include the components here if they are self-contained */}
@@ -136,21 +163,22 @@ export default async function SolutionPage({ params }: Props) {
           title={page.title}
           description={page.description}
           ctaText={page.cta}
+          ctaLink="/register"
         />
         <AnimatedDemo />
-        <Features /> {/* Static */}
+        <Features />
         <DualMonitoring />
         <ThreeSteps />
         {/* Dynamic Problem Section */}
         <Problem
-          heading={`Why leads for ${page.role}s are hard to find`}
-          subheading="Your ideal clients are asking for help, but traditional methods miss them."
+          heading={`Why ${page.role} miss Reddit demand`}
+          subheading={page.why_reddit}
           items={problemItems}
         />
         {/* Dynamic Solution Section */}
         <Solution
-          heading="The Leadly Solution"
-          subheading="How we help you connect with high-intent prospects."
+          heading={`How Leadly helps ${page.role}`}
+          subheading="Turn public demand into a cleaner queue of opportunities your team can actually act on."
           items={solutionItems}
         />
         <Competitors />

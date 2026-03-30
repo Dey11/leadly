@@ -43,9 +43,9 @@ function AnimatedWord({
 
 // Stats data
 const stats = [
-  { value: "500+", label: "Leads Found" },
-  { value: "24/7", label: "Monitoring" },
-  { value: "98%", label: "Accuracy" },
+  { value: "Intent-first", label: "Lead filtering" },
+  { value: "r/SaaS + more", label: "Communities" },
+  { value: "Founder-ready", label: "Action queue" },
 ];
 
 interface HeroProps {
@@ -58,7 +58,7 @@ interface HeroProps {
 export function Hero({
   title,
   description,
-  ctaText = "Get Started",
+  ctaText = "Start free",
   ctaLink = "/register",
 }: HeroProps) {
   const { resolvedTheme } = useTheme();
@@ -67,11 +67,6 @@ export function Hero({
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const dashboardImg =
-    mounted && resolvedTheme === "dark"
-      ? "/dashboard-dark.png"
-      : "/dashboard.png";
 
   return (
     <section className="relative px-3 pt-3 pb-0 sm:px-4 sm:pt-4 md:px-6 md:pt-6">
@@ -107,7 +102,7 @@ export function Hero({
               transition={{ duration: 0.5 }}
               className="text-muted-foreground mb-4 text-xs font-medium tracking-[0.2em] uppercase sm:mb-5 sm:text-sm"
             >
-              AI-Powered Lead Generation
+              Reddit lead generation for SaaS teams
             </motion.p>
 
             {/* Main headline - reduced size */}
@@ -119,15 +114,15 @@ export function Hero({
             >
               {title || (
                 <>
-                  Find Leads on Reddit <br className="hidden sm:block" />
+                  Find SaaS buyers on Reddit <br className="hidden sm:block" />
                   <AnimatedWord
                     words={[
-                      "Automatically",
-                      "Effortlessly",
-                      "Instantly",
-                      "Intelligently",
+                      "Before competitors do",
+                      "With cleaner signals",
+                      "Without keyword chaos",
+                      "With AI triage",
                     ]}
-                    className="min-w-[140px] sm:min-w-[200px]"
+                    className="min-w-[190px] sm:min-w-[290px]"
                   />
                 </>
               )}
@@ -141,7 +136,7 @@ export function Hero({
               className="text-muted-foreground mx-auto mb-6 max-w-xl text-sm leading-relaxed sm:mb-8 sm:text-base md:text-lg"
             >
               {description ||
-                "Track subreddits and monitor keywords while our AI surfaces people actively asking for products like yours — 24/7."}
+                "Leadly helps SaaS founders and agencies catch Reddit threads where buyers ask for alternatives, recommendations, and help, then prioritize what deserves a reply first."}
             </motion.p>
 
             {/* CTA button */}

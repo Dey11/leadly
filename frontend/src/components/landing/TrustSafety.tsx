@@ -6,21 +6,21 @@ import { ShieldCheck, Lock, EyeOff } from "lucide-react";
 const features = [
   {
     icon: EyeOff,
-    title: "Read-only access",
+    title: "Read-only monitoring",
     description:
-      "Leadly only monitors public discussions. We never post, comment, or DM on your behalf.",
+      "Leadly monitors public Reddit discussions and helps you review signal quality. It does not post or reply on your behalf.",
   },
   {
     icon: Lock,
-    title: "Secure infrastructure",
+    title: "Founder-safe workflow",
     description:
-      "Your data is encrypted at rest and in transit. We follow industry-standard security practices.",
+      "The product is designed for small teams that need a simple dashboard, clear pricing, and visible control over what they monitor.",
   },
   {
     icon: ShieldCheck,
-    title: "Ethical monitoring",
+    title: "Compliance-aware by design",
     description:
-      "We respect community guidelines and rate limits to ensure sustainable, long-term access.",
+      "Leadly is focused on sustainable monitoring of public conversations and a workflow that respects platform constraints.",
   },
 ];
 

@@ -14,6 +14,9 @@ blogRouter.get("/posts", async (req, res) => {
     if (status) {
       whereClause.status = status;
     }
+    if (status === "PUBLISHED") {
+      whereClause.publishedAt = { lte: new Date() };
+    }
 
     const posts = await db.blogPost.findMany({
       where: whereClause,
@@ -50,7 +53,12 @@ blogRouter.get("/posts/:slug", async (req, res) => {
       where: { slug },
     });
 
-    if (!post) {
+    if (!post || post.status !== "PUBLISHED") {
+      res.status(404).json({ error: "Post not found" });
+      return;
+    }
+
+    if (post.publishedAt && post.publishedAt > new Date()) {
       res.status(404).json({ error: "Post not found" });
       return;
     }

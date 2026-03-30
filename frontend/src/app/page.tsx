@@ -3,6 +3,11 @@ import Image from "next/image";
 import { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { SEO_CONFIG } from "@/constants/seo";
+import {
+  buildOrganizationSchema,
+  buildProductSchema,
+  buildSoftwareApplicationSchema,
+} from "@/lib/structured-data";
 
 // Landing Components
 import { Hero } from "@/components/landing/Hero";
@@ -24,9 +29,13 @@ import { AnimatedDemo } from "@/components/landing/animated-demo";
 export const metadata: Metadata = {
   title: SEO_CONFIG.landing.main.title,
   description: SEO_CONFIG.landing.main.description,
+  alternates: {
+    canonical: siteConfig.url,
+  },
   openGraph: {
     title: SEO_CONFIG.landing.main.title,
     description: SEO_CONFIG.landing.main.description,
+    url: siteConfig.url,
     images: [SEO_CONFIG.default.ogImage],
   },
 };
@@ -38,27 +47,19 @@ const navLinks = [
 ];
 
 export default function HomePage() {
+  const homepageSchemas = [
+    buildSoftwareApplicationSchema(siteConfig.url),
+    buildOrganizationSchema(siteConfig.url),
+    buildProductSchema(siteConfig.url),
+  ];
+
   return (
     <div className="bg-background text-foreground selection:bg-primary/20 min-h-screen">
       {/* Structured Data for SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            name: "Leadly",
-            applicationCategory: "BusinessApplication",
-            operatingSystem: "Web",
-            url: siteConfig.url,
-            description:
-              "AI-powered Reddit monitoring for B2B lead generation.",
-            offers: {
-              "@type": "Offer",
-              price: "0",
-              priceCurrency: "USD",
-            },
-          }),
+          __html: JSON.stringify(homepageSchemas),
         }}
       />
 

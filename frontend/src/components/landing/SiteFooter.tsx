@@ -52,11 +52,11 @@ export function SiteFooter() {
             {/* CTA Section */}
             <div className="px-6 py-12 text-center sm:px-10 sm:py-16 md:py-20">
               <h2 className="font-display text-foreground mb-4 text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl lg:text-5xl">
-                Ready to turn Reddit into revenue?
+                Ready to turn Reddit demand into pipeline?
               </h2>
               <p className="text-muted-foreground mx-auto mb-8 max-w-xl text-sm sm:text-base md:text-lg">
-                Stop missing leads. Discover high-intent buyers on Reddit — all
-                from one powerful dashboard.
+                Leadly helps SaaS founders and agencies find recommendation
+                threads, alternatives, and urgent pain before competitors do.
               </p>
               <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
                 <Button
@@ -64,7 +64,7 @@ export function SiteFooter() {
                   className="h-11 w-full px-8 text-sm font-semibold shadow-lg sm:h-12 sm:w-auto sm:px-10 sm:text-base"
                   asChild
                 >
-                  <Link href="/register">Get Started</Link>
+                  <Link href="/register">Start free</Link>
                 </Button>
                 <Button
                   size="lg"
@@ -72,7 +72,7 @@ export function SiteFooter() {
                   className="border-border/60 dark:bg-card/80 dark:hover:bg-card h-11 w-full bg-white/80 px-8 text-sm font-semibold hover:bg-white hover:text-black sm:h-12 sm:w-auto sm:px-10 sm:text-base dark:hover:text-white"
                   asChild
                 >
-                  <Link href="#how-it-works">Explore Features</Link>
+                  <Link href="/compare/leadly-vs-syften">See comparisons</Link>
                 </Button>
               </div>
             </div>
