@@ -205,6 +205,7 @@ Leadly is designed for modern CI/CD pipelines, specifically tailored for **Cooli
 - **Production**: Triggered by push to `master`.
 - **Preview**: Triggered by Pull Requests (creates ephemeral URLs like `pr-123.leadly.live`).
 - **Proxy**: Uses Coolify's internal proxy (Traefik) for SSL and routing.
+- **Database migrations**: The backend container runs `prisma migrate deploy` on startup inside Coolify's private network before starting the API.
 
 ### CI Pipeline (GitHub Actions)
 
@@ -286,6 +287,9 @@ Complete reference for `.env` configuration.
 | `SESSION_SECRET`               | Secret for signing session cookies    |
 | `FRONTEND_URL`                 | URL of the frontend (for CORS)        |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini API Key                        |
+| `GOOGLE_CLIENT_ID`             | Google OAuth Client ID                |
+| `GOOGLE_CLIENT_SECRET`         | Google OAuth Client Secret            |
+| `GOOGLE_REDIRECT_URI`          | Google OAuth callback URL             |
 | `REDDIT_CLIENT_ID`             | Reddit App ID                         |
 | `REDDIT_CLIENT_SECRET`         | Reddit App Secret                     |
 | `REDDIT_USERNAME`              | Reddit Account Username               |

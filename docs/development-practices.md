@@ -33,6 +33,8 @@ Use Bun commands across both apps.
 - `bun run prisma:push`
 - `bun run seed`
 
+Production deploys use `bunx prisma migrate deploy` from the backend container startup path. Use `bun run prisma:migrate` only against a local or development database to create migration files, then deploy those files through Coolify.
+
 ## Frontend Practices
 
 Current frontend conventions:

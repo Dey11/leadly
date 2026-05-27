@@ -261,6 +261,7 @@ The backend image:
 - runs `prisma generate`
 - builds server and worker entrypoints with `bun build`
 - ships the compiled `dist/` output
+- runs `prisma migrate deploy` from the backend container before starting the API, unless `RUN_MIGRATIONS=false`
 
 Production compose deploys:
 
@@ -269,6 +270,17 @@ Production compose deploys:
 - frontend service
 
 Redis is expected as a separate dependency and PostgreSQL is externalized via `DATABASE_URL`.
+
+### Production migrations on Coolify
+
+Schema changes should be created in development and deployed in production:
+
+1. Create migrations against a local or development database with `bun run prisma:migrate`.
+2. Commit the generated files under `backend/prisma/migrations/`.
+3. Deploy to Coolify.
+4. The backend container runs `bunx prisma migrate deploy` inside Coolify's private network before the API starts.
+
+Do not run `prisma migrate dev` or `prisma db push` against the production database. The worker waits for the backend healthcheck, so migration application happens before background processing starts.
 
 ## Current Backend Practices
 

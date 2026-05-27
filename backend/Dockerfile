@@ -41,10 +41,13 @@ COPY --from=prerelease /usr/src/app/package.json .
 COPY --from=prerelease /usr/src/app/dist dist
 COPY --from=prerelease /usr/src/app/prisma prisma
 COPY --from=prerelease /usr/src/app/prisma.config.ts .
+COPY --from=prerelease /usr/src/app/docker-entrypoint.sh .
 
 # Create logs directory with proper permissions for bun user
-RUN mkdir -p /usr/src/app/logs && chown -R bun:bun /usr/src/app/logs
+RUN chmod +x /usr/src/app/docker-entrypoint.sh \
+    && mkdir -p /usr/src/app/logs \
+    && chown -R bun:bun /usr/src/app/logs
 
-# run the app - migrations are handled by Coolify pre-deployment command
+# Run production migrations inside the deployment network, then start the API.
 USER bun
-ENTRYPOINT [ "bun", "dist/index.js" ]
+ENTRYPOINT [ "./docker-entrypoint.sh" ]
