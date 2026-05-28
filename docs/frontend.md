@@ -32,6 +32,7 @@ Primary areas:
 - `/`
 - `/blog`
 - `/blog/[slug]`
+- `/blogs` redirects to `/blog`
 - `/solutions/[slug]`
 - `/privacy`
 - `/terms`
@@ -120,8 +121,8 @@ Blog pages are hybrid content pages:
 
 - post list is fetched from the backend blog API
 - detail page is fetched by slug from the backend blog API
-- static params are generated from backend blog slugs
-- pages use `revalidate = 3600`
+- blog index and detail pages are rendered dynamically with `cache: "no-store"`
+- `/blogs` redirects to `/blog` to catch the common plural URL
 - Markdown is rendered with custom heading IDs for TOC generation
 
 Blog detail page features:

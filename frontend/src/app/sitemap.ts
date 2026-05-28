@@ -5,6 +5,9 @@ import { backendUrl } from "@/lib/env";
 import solutionsData from "@/data/solutions.json";
 import { comparePages, alternativePages } from "@/data/commercial-pages";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.url;
 
@@ -66,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const res = await fetch(
       `${backendUrl}/api/v1/blog/posts?status=PUBLISHED&limit=1000`,
       {
-        next: { revalidate: 3600 },
+        cache: "no-store",
       },
     );
 

@@ -20,41 +20,43 @@ interface BlogPost {
   tags: string[];
 }
 
+type BlogPostsResult =
+  | { posts: BlogPost[]; error: null }
+  | { posts: []; error: string };
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Leadly Blog - Reddit Lead Generation for SaaS and Agencies",
   description:
     "Guides, comparisons, and tactical playbooks for SaaS founders and agencies using Reddit for lead generation.",
 };
 
-async function getBlogPosts() {
+async function getBlogPosts(): Promise<BlogPostsResult> {
   try {
     const apiUrl = backendUrl;
-    // Force cache to be 'no-store' for dynamic, or 'force-cache' for SSG if built
-    // For SSG during build, backend must be up.
-    // If backend isn't up during build, this will fail unless we mock or skip.
-    // For now, let's assume standard fetch with revalidation.
     const res = await fetch(
-      `${apiUrl}/api/v1/blog/posts?status=PUBLISHED&limit=20`,
+      `${apiUrl}/api/v1/blog/posts?status=PUBLISHED&limit=1000`,
       {
-        next: { revalidate: 3600 },
+        cache: "no-store",
       },
     );
 
     if (!res.ok) {
-      // Fallback or empty on error
-      return [];
+      return { posts: [], error: "Blog posts are temporarily unavailable." };
     }
 
     const data = await res.json();
-    return data.posts || [];
+    return { posts: data.posts || [], error: null };
   } catch (error) {
     console.error("Failed to fetch blog posts:", error);
-    return [];
+    return { posts: [], error: "Blog posts are temporarily unavailable." };
   }
 }
 
 export default async function BlogIndexPage() {
-  const posts = await getBlogPosts();
+  const { posts, error } = await getBlogPosts();
 
   return (
     <div className="bg-background text-foreground selection:bg-primary/20 min-h-screen">
@@ -109,7 +111,11 @@ export default async function BlogIndexPage() {
 
         {/* Blog Grid */}
         <section className="mx-auto max-w-7xl px-6 md:px-12">
-          {posts.length === 0 ? (
+          {error ? (
+            <div className="py-20 text-center">
+              <p className="text-muted-foreground text-lg">{error}</p>
+            </div>
+          ) : posts.length === 0 ? (
             <div className="py-20 text-center">
               <p className="text-muted-foreground text-lg">
                 No posts yet. Check back soon!

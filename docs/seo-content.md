@@ -71,6 +71,7 @@ Current rules:
 - dashboard and API routes are blocked
 - sitemap is exposed
 - sitemap fetches up to 1,000 published database-backed blog posts so larger blog libraries remain discoverable
+- sitemap generation uses an uncached backend fetch so newly imported blog posts appear immediately after deploy/restart
 - explicit AI crawler allow rules exist for:
   - `GPTBot`
   - `ChatGPT-User`
@@ -255,6 +256,15 @@ The blog API now only exposes posts that are:
 - and already due based on `publishedAt`
 
 This prevents scheduled drafts from leaking into public pages or the sitemap before they should be visible.
+
+The frontend blog routes are intentionally dynamic:
+
+- `/blog` fetches up to 1,000 published posts with `cache: "no-store"`
+- `/blog/[slug]` fetches the requested post with `cache: "no-store"`
+- `/blogs` redirects to `/blog`
+
+This avoids caching an empty blog page during deploys when the frontend starts
+before the backend or restored database is fully ready.
 
 ## Images
 

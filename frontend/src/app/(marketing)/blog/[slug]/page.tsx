@@ -19,7 +19,8 @@ import {
 import { siteConfig } from "@/config/site";
 
 export const dynamicParams = true;
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // --- Helper Functions ---
 
@@ -38,26 +39,10 @@ function slugify(text: string): string {
 
 // --- Data Fetching ---
 
-export async function generateStaticParams() {
-  try {
-    const res = await fetch(
-      `${backendUrl}/api/v1/blog/posts?status=PUBLISHED&limit=1000`,
-      { next: { revalidate: 3600 } },
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.posts || []).map((post: { slug: string }) => ({
-      slug: post.slug,
-    }));
-  } catch (error) {
-    return [];
-  }
-}
-
 async function getBlogPost(slug: string) {
   try {
     const res = await fetch(`${backendUrl}/api/v1/blog/posts/${slug}`, {
-      next: { revalidate: 3600 },
+      cache: "no-store",
     });
     if (!res.ok) return null;
     return await res.json();
