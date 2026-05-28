@@ -72,6 +72,7 @@ Current rules:
 - sitemap is exposed
 - sitemap fetches up to 1,000 published database-backed blog posts so larger blog libraries remain discoverable
 - sitemap generation uses an uncached backend fetch so newly imported blog posts appear immediately after deploy/restart
+- sitemap generation fails the request instead of returning a successful partial sitemap if blog post fetching fails
 - explicit AI crawler allow rules exist for:
   - `GPTBot`
   - `ChatGPT-User`

@@ -8,6 +8,29 @@ import { comparePages, alternativePages } from "@/data/commercial-pages";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+async function getBlogRoutes(baseUrl: string): Promise<MetadataRoute.Sitemap> {
+  const res = await fetch(
+    `${backendUrl}/api/v1/blog/posts?status=PUBLISHED&limit=1000`,
+    {
+      cache: "no-store",
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch blog posts for sitemap: ${res.status}`);
+  }
+
+  const data = await res.json();
+  const posts = data.posts || [];
+
+  return posts.map((post: { slug: string; updatedAt: string }) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: new Date(post.updatedAt),
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.url;
 
@@ -63,30 +86,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
-  // Dynamic Blog Posts
-  let blogRoutes: MetadataRoute.Sitemap = [];
-  try {
-    const res = await fetch(
-      `${backendUrl}/api/v1/blog/posts?status=PUBLISHED&limit=1000`,
-      {
-        cache: "no-store",
-      },
-    );
-
-    if (res.ok) {
-      const data = await res.json();
-      const posts = data.posts || [];
-
-      blogRoutes = posts.map((post: { slug: string; updatedAt: string }) => ({
-        url: `${baseUrl}/blog/${post.slug}`,
-        lastModified: new Date(post.updatedAt),
-        changeFrequency: "weekly",
-        priority: 0.7,
-      }));
-    }
-  } catch (error) {
-    console.error("Failed to fetch blog posts for sitemap:", error);
-  }
+  // Dynamic Blog Posts. Fail the sitemap request instead of returning a
+  // successful partial sitemap without blog URLs.
+  const blogRoutes = await getBlogRoutes(baseUrl);
 
   return [
     ...staticRoutes,
