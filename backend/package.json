@@ -19,6 +19,7 @@
     "seed": "bun src/scripts/seed.ts",
     "blog:generate": "bun src/scripts/manual-generate-blog.ts",
     "blog:backlog": "bun src/scripts/generate-blog-backlog.ts 8",
+    "blog:bulk-seo": "bun src/scripts/bulk-generate-seo-blogs.ts",
     "build": "bun build ./src/index.ts ./src/workers/reddit.worker.ts --outdir ./dist --minify --target bun --external 'node_modules'"
   },
   "keywords": [],

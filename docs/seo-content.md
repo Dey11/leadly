@@ -70,6 +70,7 @@ Current rules:
 - public marketing pages are indexable
 - dashboard and API routes are blocked
 - sitemap is exposed
+- sitemap fetches up to 1,000 published database-backed blog posts so larger blog libraries remain discoverable
 - explicit AI crawler allow rules exist for:
   - `GPTBot`
   - `ChatGPT-User`
@@ -127,7 +128,7 @@ Primary data source:
 
 - `frontend/src/data/solutions.json`
 
-The solutions set was intentionally reduced from a broad programmatic list to six focused pages:
+The solutions set is intentionally focused on high-intent acquisition segments instead of broad thin-page generation. Current pages target:
 
 - SaaS Founders
 - SEO Agencies
@@ -135,6 +136,10 @@ The solutions set was intentionally reduced from a broad programmatic list to si
 - Dev Shops
 - GTM Teams
 - Indie Hackers
+- AI Automation Agencies
+- B2B Sales Teams
+- Productized Services
+- Product Marketers
 
 Each page now includes:
 
@@ -145,7 +150,7 @@ Each page now includes:
 - canonical metadata
 - breadcrumb and FAQ schema
 
-This reduces thin page risk and keeps the indexable footprint aligned with the product wedge.
+This reduces thin page risk and keeps the indexable footprint aligned with the product wedge while adding landing pages for commercially relevant segments that can become paying users.
 
 ## Comparison and Alternatives Pages
 
@@ -228,6 +233,19 @@ Supporting scripts:
 
 - `backend/src/scripts/manual-generate-blog.ts`
 - `backend/src/scripts/generate-blog-backlog.ts`
+- `backend/src/scripts/bulk-generate-seo-blogs.ts`
+
+For campaign batches, run the bulk script from `backend/` with an explicit
+count:
+
+```bash
+bun run blog:bulk-seo 50
+```
+
+The bulk script is intentionally separate from the daily worker. It uses curated
+commercial briefs, existing low-cost app AI providers with Nebius excluded,
+stock images from the controlled image pool, and a local editorial review pass
+before a post is inserted.
 
 ### Blog route behavior
 

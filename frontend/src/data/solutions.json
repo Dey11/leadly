@@ -274,5 +274,189 @@
         "pain": "Keep Reddit useful instead of distracting."
       }
     ]
+  },
+  {
+    "slug": "find-high-intent-reddit-leads-for-ai-automation-agencies",
+    "title": "Find high-intent Reddit leads for AI automation agencies",
+    "description": "Leadly helps AI automation agencies catch Reddit threads where teams describe manual workflow pain, tool overload, and process bottlenecks that could become qualified client conversations.",
+    "role": "AI Automation Agencies",
+    "pain_points": [
+      "Potential clients describe repetitive workflow pain publicly, but most agencies only find them through cold outreach.",
+      "Generic AI pitches are easy to ignore when they are not tied to a specific operational problem.",
+      "Manual subreddit browsing takes too long for a small agency team to do consistently."
+    ],
+    "value_props": [
+      "Monitor communities where operators, founders, and service teams complain about manual work.",
+      "Prioritize threads with clear urgency, repeated process pain, and a likely service fit.",
+      "Use Reddit language to write sharper replies, better offers, and stronger discovery questions."
+    ],
+    "why_reddit": "Reddit is full of practical workflow complaints: spreadsheet overload, repetitive support tasks, messy handoffs, and failed tool experiments. For AI automation agencies, those threads reveal where automation demand is already active.",
+    "cta": "Start free",
+    "image_keyword": "automation workflow",
+    "faqs": [
+      {
+        "question": "What should AI automation agencies monitor first?",
+        "answer": "Start with threads about manual operations, repetitive admin work, support backlog, CRM cleanup, reporting pain, and teams asking whether a process can be automated."
+      },
+      {
+        "question": "How should an agency reply without sounding generic?",
+        "answer": "Reference the exact bottleneck in the post, give one useful diagnostic idea, and only offer a deeper conversation when the context makes it relevant."
+      }
+    ],
+    "use_cases": [
+      {
+        "title": "Manual workflow pain",
+        "description": "Catch posts where teams describe repetitive work and need a better process before they search for an agency.",
+        "pain": "Find demand before it becomes an RFP."
+      },
+      {
+        "title": "Failed tool stack threads",
+        "description": "Monitor conversations where teams complain that their current tools are not connected or adopted well.",
+        "pain": "Respond when the buyer is already open to a different approach."
+      },
+      {
+        "title": "Offer refinement",
+        "description": "Use recurring Reddit pain language to sharpen your agency niche and service packages.",
+        "pain": "Let market language shape your positioning."
+      }
+    ]
+  },
+  {
+    "slug": "turn-reddit-threads-into-sales-triggers-for-b2b-teams",
+    "title": "Turn Reddit threads into sales triggers for B2B teams",
+    "description": "Leadly helps B2B sales teams find Reddit conversations that reveal timing, pain, competitor dissatisfaction, and active software evaluation before prospects submit a form.",
+    "role": "B2B Sales Teams",
+    "pain_points": [
+      "Outbound lists rarely show whether a prospect has an active problem right now.",
+      "Competitor dissatisfaction and buying research often happen publicly before a CRM signal exists.",
+      "Sales teams waste time on generic intent data that does not explain the actual pain."
+    ],
+    "value_props": [
+      "Find public buying signals tied to recommendations, alternatives, and urgent category questions.",
+      "Review context before deciding whether a reply or follow-up is useful.",
+      "Use Reddit triggers to prioritize accounts and sharpen messaging."
+    ],
+    "why_reddit": "Reddit captures informal research and frustration that rarely appears in firmographic databases. For B2B teams, that context can reveal why now, why switch, and what objection matters most.",
+    "cta": "Start free",
+    "image_keyword": "sales pipeline",
+    "faqs": [
+      {
+        "question": "Is Reddit useful for B2B sales teams?",
+        "answer": "Yes, especially when the team sells into communities that openly discuss tools, workflows, agencies, vendors, or technical problems."
+      },
+      {
+        "question": "Should sales teams directly pitch every Reddit lead?",
+        "answer": "No. The best workflow starts with qualification and context. Some threads deserve a helpful public reply, some deserve research, and many should be ignored."
+      }
+    ],
+    "use_cases": [
+      {
+        "title": "Competitor replacement triggers",
+        "description": "Track posts where buyers complain about a current product and ask what to use instead.",
+        "pain": "Prioritize accounts showing active switching language."
+      },
+      {
+        "title": "Urgent problem detection",
+        "description": "Catch threads where teams describe a current blocker, timeline, or failed workaround.",
+        "pain": "Find timing signals that static lists miss."
+      },
+      {
+        "title": "Message personalization",
+        "description": "Use real thread context to write replies and outreach that reference the buyer's actual problem.",
+        "pain": "Replace generic openers with useful context."
+      }
+    ]
+  },
+  {
+    "slug": "find-reddit-leads-for-productized-services",
+    "title": "Find Reddit leads for productized services",
+    "description": "Leadly helps productized service operators catch Reddit threads where buyers ask for fixed-scope help, implementation support, audits, and reliable execution partners.",
+    "role": "Productized Services",
+    "pain_points": [
+      "Productized service demand often appears as messy pain before buyers know the exact service name.",
+      "Cold outreach makes fixed-scope offers feel generic when timing and context are missing.",
+      "Small service teams need a sharper queue of opportunities, not a noisy feed of weak mentions."
+    ],
+    "value_props": [
+      "Monitor pain phrases and recommendation requests tied to your service category.",
+      "Spot threads where the scope is narrow enough for a packaged offer.",
+      "Turn recurring Reddit questions into better landing-page copy and service positioning."
+    ],
+    "why_reddit": "Buyers often use Reddit to ask who can fix a specific problem, review their setup, or recommend a reliable partner. That makes it a strong channel for productized services with clear outcomes.",
+    "cta": "Start free",
+    "image_keyword": "consulting workflow",
+    "faqs": [
+      {
+        "question": "Which productized services fit Reddit lead generation?",
+        "answer": "Audit services, implementation packages, technical cleanup, content systems, automation setup, analytics work, and niche consulting offers can all work when the target buyers discuss those problems publicly."
+      },
+      {
+        "question": "How do I avoid chasing custom projects?",
+        "answer": "Filter for threads with a specific pain, clear outcome, and scope that matches your packaged offer. Ignore vague requests that would require a fully custom engagement."
+      }
+    ],
+    "use_cases": [
+      {
+        "title": "Scope-ready requests",
+        "description": "Find posts where buyers already know the problem and need someone reliable to execute.",
+        "pain": "Spend less time educating low-intent prospects."
+      },
+      {
+        "title": "Audit and cleanup demand",
+        "description": "Monitor conversations where teams ask why something is broken and need an expert review.",
+        "pain": "Catch buyers before they compare service providers."
+      },
+      {
+        "title": "Offer language mining",
+        "description": "Use repeated thread language to clarify your package names, outcomes, and FAQs.",
+        "pain": "Make your service page match how buyers describe the problem."
+      }
+    ]
+  },
+  {
+    "slug": "use-reddit-customer-research-to-sharpen-saas-positioning",
+    "title": "Use Reddit customer research to sharpen SaaS positioning",
+    "description": "Leadly helps SaaS teams turn Reddit pain, objections, comparison language, and repeated questions into clearer positioning and better acquisition pages.",
+    "role": "Product Marketers",
+    "pain_points": [
+      "Landing-page copy often sounds internal because it is not grounded in buyer language.",
+      "Customer interviews are valuable but slow, and teams still miss public category objections.",
+      "Competitor comparison language changes faster than most positioning docs."
+    ],
+    "value_props": [
+      "Monitor Reddit for pain language, objections, alternative requests, and repeated buying questions.",
+      "Use thread context to improve homepage copy, FAQs, comparison pages, and sales replies.",
+      "Keep positioning tied to current market language instead of stale assumptions."
+    ],
+    "why_reddit": "Reddit gives product marketers access to unscripted buyer language. Threads reveal what prospects compare, what frustrates them, what they distrust, and what proof they need before they care.",
+    "cta": "Start free",
+    "image_keyword": "product marketing",
+    "faqs": [
+      {
+        "question": "How can product marketers use Reddit without manually reading all day?",
+        "answer": "Define target communities, monitor specific pain and alternative phrases, then review only the threads that match the ICP and commercial context."
+      },
+      {
+        "question": "What positioning inputs should I extract?",
+        "answer": "Look for repeated pain phrases, switching triggers, objections, comparison criteria, feature gaps, and the words buyers use when they ask for recommendations."
+      }
+    ],
+    "use_cases": [
+      {
+        "title": "Homepage message refresh",
+        "description": "Use repeated buyer phrasing from Reddit to improve headlines, subcopy, and proof sections.",
+        "pain": "Replace internal jargon with market language."
+      },
+      {
+        "title": "FAQ and objection mining",
+        "description": "Turn recurring Reddit objections into sharper FAQs, comparison sections, and sales enablement notes.",
+        "pain": "Answer the questions buyers already ask in public."
+      },
+      {
+        "title": "Category language tracking",
+        "description": "Monitor how buyers describe alternatives, workflows, and unmet needs over time.",
+        "pain": "Keep positioning current as the market shifts."
+      }
+    ]
   }
 ]
