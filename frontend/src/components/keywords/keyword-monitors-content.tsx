@@ -179,7 +179,16 @@ export function KeywordMonitorsContent() {
               >
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{monitor.target}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-lg">
+                        {monitor.target}
+                      </CardTitle>
+                      {monitor.targetType === "CUSTOM_FEED" && (
+                        <span className="bg-primary/10 text-primary rounded px-1.5 py-0.5 text-[10px] font-medium">
+                          List
+                        </span>
+                      )}
+                    </div>
                     <Badge
                       variant={
                         monitor.status === "ACTIVE" ? "default" : "secondary"
@@ -267,6 +276,7 @@ export function KeywordMonitorsContent() {
         keywordSets={keywordSets}
         currentMonitorsCount={monitors.length}
         maxMonitors={planLimits.keywordMonitors}
+        tier={tier}
         onSuccess={() => {
           setCreateDialogOpen(false);
           setFeedback("Monitor created successfully.");
@@ -280,6 +290,7 @@ export function KeywordMonitorsContent() {
           onOpenChange={(open) => !open && setEditingMonitor(null)}
           monitor={editingMonitor}
           keywordSets={keywordSets}
+          tier={tier}
           onSuccess={() => {
             setEditingMonitor(null);
             setFeedback("Monitor updated successfully.");

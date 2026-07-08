@@ -12,18 +12,25 @@ import { FieldGroup } from "@/components/ui/field";
 import { MonitorIcpSelect } from "@/components/monitors/monitor-icp-select";
 import { MonitorTargetInput } from "@/components/monitors/monitor-target-input";
 import type { IcpOption } from "@/types/components/monitors";
+import type { RedditTargetType, SubscriptionTier } from "@/types/backend";
 
 type CreateMonitorFormProps = {
   icps: IcpOption[];
+  tier?: SubscriptionTier;
 };
 
-export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
+export function CreateMonitorForm({
+  icps,
+  tier = "FREE",
+}: CreateMonitorFormProps) {
   const router = useRouter();
   const [icpId, setIcpId] = useState(icps[0]?.id ?? "");
   const [platform, setPlatform] = useState(icps[0]?.platform ?? "REDDIT");
   const [target, setTarget] = useState("");
+  const [targetType, setTargetType] = useState<RedditTargetType>("SUBREDDIT");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const canUseCustomFeeds = tier === "PREMIUM";
 
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
@@ -58,12 +65,14 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
         icpId,
         target,
         platform,
+        targetType,
       });
     },
     onSuccess: () => {
       setError(null);
       setSuccess("Monitor created. Leadly will begin scraping on schedule.");
       setTarget("");
+      setTargetType("SUBREDDIT");
       setSuggestions([]);
       router.refresh();
     },
@@ -109,6 +118,14 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
     setTarget(subreddit);
   };
 
+  const handleTargetTypeChange = (next: RedditTargetType) => {
+    if (next === "CUSTOM_FEED" && !canUseCustomFeeds) return;
+    setTargetType(next);
+    setTarget("");
+    setSuggestions([]);
+    setSuggestError(null);
+  };
+
   if (icps.length === 0) {
     return (
       <Card className="bg-background/80">
@@ -152,6 +169,9 @@ export function CreateMonitorForm({ icps }: CreateMonitorFormProps) {
               suggestError={suggestError}
               suggestions={suggestions}
               onSelectSuggestion={handleSelectSuggestion}
+              targetType={targetType}
+              onTargetTypeChange={handleTargetTypeChange}
+              canUseCustomFeeds={canUseCustomFeeds}
             />
 
             {/* Platform is implicitly Reddit for now */}

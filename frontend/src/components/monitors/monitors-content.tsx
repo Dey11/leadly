@@ -1,12 +1,13 @@
 import { DashboardPageHeader } from "@/components/dashboard/page-header";
 import { CreateMonitorForm } from "@/components/monitors/create-monitor-form";
-import { getIcps } from "@/lib/backend-queries";
+import { getIcps, getUsageSummary } from "@/lib/backend-queries";
 import { MonitorGrid } from "@/components/monitors/monitor-grid";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Radar } from "lucide-react";
 
 export async function MonitorsContent() {
-  const icps = await getIcps();
+  const [icps, usage] = await Promise.all([getIcps(), getUsageSummary()]);
+  const tier = usage?.payload?.tier ?? "FREE";
   const icpOptions = icps.map((icp) => ({
     id: icp.id,
     name: icp.name,
@@ -93,6 +94,7 @@ export async function MonitorsContent() {
                 name,
                 platform,
               }))}
+              tier={tier}
             />
           )}
         </section>
@@ -106,6 +108,7 @@ export async function MonitorsContent() {
               name,
               platform,
             }))}
+            tier={tier}
           />
         </aside>
       </div>

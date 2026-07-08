@@ -9,6 +9,12 @@ import {
 import { TIER_LIMITS } from "../lib/constants";
 import { Reddit } from "../services/reddit";
 import { env } from "../env";
+import { parseCustomFeedTarget } from "../lib/reddit-target";
+
+const CUSTOM_FEED_UPGRADE_MESSAGE =
+  "Custom feeds are a Premium feature. Upgrade to Premium to monitor Reddit lists.";
+const INVALID_CUSTOM_FEED_MESSAGE =
+  "Invalid custom feed. Paste a link like reddit.com/user/<name>/m/<feed>.";
 
 export async function createKeywordMonitor(req: Request, res: Response) {
   try {
@@ -51,15 +57,42 @@ export async function createKeywordMonitor(req: Request, res: Response) {
         .json({ error: "KeywordSet not found or not owned by user" });
     }
 
-    // Validate subreddit
+    // Validate the target (subreddit or custom feed)
+    const targetType = payload.data.targetType ?? "SUBREDDIT";
+    let target = payload.data.target;
+
     if (payload.data.platform === "REDDIT") {
       const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
-      const isValid = await reddit.validateSubreddit(payload.data.target);
 
-      if (!isValid) {
-        return res.status(400).json({
-          error: `Subreddit "${payload.data.target}" is not valid or accessible`,
-        });
+      if (targetType === "CUSTOM_FEED") {
+        if (!tierLimits.customFeeds) {
+          return res.status(403).json({ error: CUSTOM_FEED_UPGRADE_MESSAGE });
+        }
+
+        const parsed = parseCustomFeedTarget(target);
+        if (!parsed) {
+          return res.status(400).json({ error: INVALID_CUSTOM_FEED_MESSAGE });
+        }
+
+        const isValid = await reddit.validateCustomFeed(
+          parsed.owner,
+          parsed.name,
+        );
+        if (!isValid) {
+          return res
+            .status(400)
+            .json({ error: "Custom feed not found or is private" });
+        }
+
+        target = `${parsed.owner}/${parsed.name}`;
+      } else {
+        const isValid = await reddit.validateSubreddit(target);
+
+        if (!isValid) {
+          return res.status(400).json({
+            error: `Subreddit "${target}" is not valid or accessible`,
+          });
+        }
       }
     }
 
@@ -68,7 +101,8 @@ export async function createKeywordMonitor(req: Request, res: Response) {
         userId: req.userId!,
         keywordSetId: payload.data.keywordSetId,
         platform: payload.data.platform,
-        target: payload.data.target,
+        target,
+        targetType,
       },
       include: {
         keywordSet: true,
@@ -171,9 +205,56 @@ export async function updateKeywordMonitor(req: Request, res: Response) {
       }
     }
 
+    // Validate the target (subreddit or custom feed) if being updated
+    const effectiveTargetType = payload.data.targetType ?? existing.targetType;
+    let target = payload.data.target;
+
+    if (target) {
+      const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
+
+      if (effectiveTargetType === "CUSTOM_FEED") {
+        const user = await db.user.findUnique({
+          where: { id: req.userId! },
+          include: { subscription: true },
+        });
+
+        if (
+          !user?.subscription ||
+          !TIER_LIMITS[user.subscription.tier].customFeeds
+        ) {
+          return res.status(403).json({ error: CUSTOM_FEED_UPGRADE_MESSAGE });
+        }
+
+        const parsed = parseCustomFeedTarget(target);
+        if (!parsed) {
+          return res.status(400).json({ error: INVALID_CUSTOM_FEED_MESSAGE });
+        }
+
+        const isValid = await reddit.validateCustomFeed(
+          parsed.owner,
+          parsed.name,
+        );
+        if (!isValid) {
+          return res
+            .status(400)
+            .json({ error: "Custom feed not found or is private" });
+        }
+
+        target = `${parsed.owner}/${parsed.name}`;
+      } else {
+        const isValid = await reddit.validateSubreddit(target);
+
+        if (!isValid) {
+          return res.status(400).json({
+            error: `Subreddit "${target}" is not valid or accessible`,
+          });
+        }
+      }
+    }
+
     const monitor = await db.keywordMonitor.update({
       where: { id: params.data.id },
-      data: payload.data,
+      data: { ...payload.data, ...(target ? { target } : {}) },
       include: {
         keywordSet: true,
       },

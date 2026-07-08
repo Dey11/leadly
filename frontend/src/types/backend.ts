@@ -2,6 +2,8 @@ export type Platform = "REDDIT";
 
 export type MonitorStatus = "ACTIVE" | "PAUSED" | "ARCHIVED";
 
+export type RedditTargetType = "SUBREDDIT" | "CUSTOM_FEED";
+
 export interface Session {
   id: string;
   ipAddress: string | null;
@@ -54,6 +56,7 @@ export interface Monitor {
   icpId: string;
   platform: Platform;
   target: string;
+  targetType: RedditTargetType;
   cursor: string | null;
   status: MonitorStatus;
   lastScrapedAt: string | null;

@@ -2,7 +2,7 @@ import axios from "axios";
 import logger from "../lib/logger";
 import { env } from "../env";
 import { cleanText, delay, fetchWithRetry } from "../lib/utils";
-import { RedditComment, RedditPost } from "../types/reddit";
+import { RedditComment, RedditFetchTarget, RedditPost } from "../types/reddit";
 
 export class Reddit {
   private clientId: string;
@@ -60,13 +60,38 @@ export class Reddit {
     }
   }
 
+  async validateCustomFeed(owner: string, name: string): Promise<boolean> {
+    const token = await this.getToken();
+
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/api/multi/user/${owner}/m/${name}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "User-Agent": `leadly by u/${env.REDDIT_USERNAME}`,
+          },
+          timeout: this.timeout,
+        },
+      );
+
+      return response.status === 200 && response.data?.kind === "LabeledMulti";
+    } catch {
+      return false;
+    }
+  }
+
   async fetchPosts(
-    subreddit: string,
+    target: RedditFetchTarget,
     limit: number = 10,
     after: string | null = null,
   ) {
     const token = await this.getToken();
-    const url = `${this.baseUrl}/r/${subreddit}/new?limit=${limit}${
+    const targetPath =
+      target.type === "CUSTOM_FEED"
+        ? `/user/${target.owner}/m/${target.name}/new`
+        : `/r/${target.subreddit}/new`;
+    const url = `${this.baseUrl}${targetPath}?limit=${limit}${
       after ? `&before=t3_${after}` : ""
     }`;
     const results: RedditPost[] = [];
@@ -105,10 +130,11 @@ export class Reddit {
 
     for (const post of posts) {
       let comments: RedditComment[] = [];
+      const postSubreddit: string = post.subreddit;
 
       try {
         await delay(1000);
-        const commentsUrl = `${this.baseUrl}/r/${subreddit}/comments/${post.id}`;
+        const commentsUrl = `${this.baseUrl}/r/${postSubreddit}/comments/${post.id}`;
         const commentsRes = await fetchWithRetry(commentsUrl, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -138,7 +164,7 @@ export class Reddit {
 
       // Add post to results regardless of comment fetch status
       results.push({
-        subreddit: subreddit,
+        subreddit: postSubreddit,
         title: cleanText(post.title),
         post: cleanText(post.selftext),
         postId: post.id,

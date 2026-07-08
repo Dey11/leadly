@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 
-import type { Monitor } from "@/types/backend";
+import type {
+  Monitor,
+  RedditTargetType,
+  SubscriptionTier,
+} from "@/types/backend";
 import { clientApi } from "@/lib/client/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,27 +33,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Lock } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type EditMonitorDialogProps = {
   monitor: Monitor & { icpName?: string };
   icps: Array<{ id: string; name: string; platform: string }>;
+  tier?: SubscriptionTier;
 };
 
-export function EditMonitorDialog({ monitor, icps }: EditMonitorDialogProps) {
+export function EditMonitorDialog({
+  monitor,
+  icps,
+  tier = "FREE",
+}: EditMonitorDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [formState, setFormState] = useState(() => ({
     icpId: monitor.icpId,
     target: monitor.target,
+    targetType: monitor.targetType,
     status: monitor.status,
   }));
   const [error, setError] = useState<string | null>(null);
+  const canUseCustomFeeds = tier === "PREMIUM";
 
   useEffect(() => {
     if (open) {
       setFormState({
         icpId: monitor.icpId,
         target: monitor.target,
+        targetType: monitor.targetType,
         status: monitor.status,
       });
       setError(null);
@@ -65,6 +85,7 @@ export function EditMonitorDialog({ monitor, icps }: EditMonitorDialogProps) {
       return clientApi.updateMonitor(monitor.id, {
         icpId: formState.icpId,
         target: formState.target,
+        targetType: formState.targetType,
         status: formState.status,
       });
     },
@@ -131,8 +152,55 @@ export function EditMonitorDialog({ monitor, icps }: EditMonitorDialogProps) {
               <FieldLabel htmlFor={`monitor-target-${monitor.id}`}>
                 Target
               </FieldLabel>
+
+              <Tabs
+                value={formState.targetType}
+                onValueChange={(next) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    targetType: next as RedditTargetType,
+                    target: next === prev.targetType ? prev.target : "",
+                  }))
+                }
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger value="SUBREDDIT" className="flex-1">
+                    Subreddit
+                  </TabsTrigger>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0} className="flex flex-1">
+                          <TabsTrigger
+                            value="CUSTOM_FEED"
+                            disabled={!canUseCustomFeeds}
+                            className="w-full gap-1.5"
+                          >
+                            {!canUseCustomFeeds && <Lock className="h-3 w-3" />}
+                            List
+                          </TabsTrigger>
+                        </span>
+                      </TooltipTrigger>
+                      {!canUseCustomFeeds && (
+                        <TooltipContent>
+                          <p>
+                            Custom feeds (lists) are available on the Premium
+                            plan.
+                          </p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
+                </TabsList>
+              </Tabs>
+
               <Input
                 id={`monitor-target-${monitor.id}`}
+                placeholder={
+                  formState.targetType === "CUSTOM_FEED"
+                    ? "reddit.com/user/<name>/m/<feed>"
+                    : "r/SaaS"
+                }
                 value={formState.target}
                 onChange={(event) =>
                   setFormState((prev) => ({
@@ -142,6 +210,11 @@ export function EditMonitorDialog({ monitor, icps }: EditMonitorDialogProps) {
                 }
                 required
               />
+              {formState.targetType === "CUSTOM_FEED" && (
+                <p className="text-muted-foreground text-xs">
+                  Paste the link to a public Reddit custom feed (multireddit).
+                </p>
+              )}
               {!formState.target && error ? (
                 <FieldError>Enter a target.</FieldError>
               ) : null}

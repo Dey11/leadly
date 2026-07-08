@@ -7,6 +7,7 @@ import {
   MAX_SCRAPE_RETRY_COUNT,
   SCRAPE_RETRY_DELAY_MS,
 } from "../lib/constants";
+import { buildRedditFetchTarget } from "../lib/reddit-target";
 import {
   filterPostsByKeywords,
   getMatchedKeywords,
@@ -44,7 +45,7 @@ async function executeKeywordCoreScrapeLogic(
     },
   });
 
-  const target = monitor.target.replace("r/", "");
+  const target = buildRedditFetchTarget(monitor.targetType, monitor.target);
   const posts = await redditClient.fetchPosts(
     target,
     MAX_SCRAPE_POSTS_LIMIT,
@@ -52,7 +53,7 @@ async function executeKeywordCoreScrapeLogic(
   );
 
   logger.info(
-    `[Keyword Processor] Fetched ${posts.length} posts from r/${target}`,
+    `[Keyword Processor] Fetched ${posts.length} posts from ${monitor.target}`,
   );
 
   // Filter posts by keywords

@@ -2,6 +2,7 @@ import type {
   Platform,
   MonitorStatus,
   LeadStatus,
+  RedditTargetType,
   SubscriptionTier,
   PaginationMeta,
 } from "./backend";
@@ -34,6 +35,7 @@ export interface KeywordMonitor {
   keywordSet: KeywordSet;
   platform: Platform;
   target: string;
+  targetType: RedditTargetType;
   cursor: string | null;
   status: MonitorStatus;
   lastScrapedAt: string | null;

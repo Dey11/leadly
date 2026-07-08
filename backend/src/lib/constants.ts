@@ -41,6 +41,8 @@ export const TIER_LIMITS: Record<
     maxKeywordsPerSet: number;
     keywordScrapesPerDay: number;
     keywordMonthlyScrapeLimit: number;
+    // Reddit custom feeds (multireddits / "lists")
+    customFeeds: boolean;
   }
 > = {
   FREE: {
@@ -54,6 +56,7 @@ export const TIER_LIMITS: Record<
     maxKeywordsPerSet: 6,
     keywordScrapesPerDay: 1,
     keywordMonthlyScrapeLimit: 30,
+    customFeeds: false,
   },
   PRO: {
     monitors: 10,
@@ -66,6 +69,7 @@ export const TIER_LIMITS: Record<
     maxKeywordsPerSet: 15,
     keywordScrapesPerDay: 6,
     keywordMonthlyScrapeLimit: 180,
+    customFeeds: false,
   },
   PREMIUM: {
     monitors: 20,
@@ -78,6 +82,7 @@ export const TIER_LIMITS: Record<
     maxKeywordsPerSet: 30,
     keywordScrapesPerDay: 24,
     keywordMonthlyScrapeLimit: 720,
+    customFeeds: true,
   },
 } as const;
 

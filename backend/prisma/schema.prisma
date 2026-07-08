@@ -12,6 +12,11 @@ enum Platform {
   // TWITTER
 }
 
+enum RedditTargetType {
+  SUBREDDIT
+  CUSTOM_FEED
+}
+
 enum LeadType {
   WARM
   COLD
@@ -273,9 +278,10 @@ model Monitor {
   icpId String
   icp   Icp    @relation(fields: [icpId], references: [id], onDelete: Cascade)
 
-  platform Platform
-  target   String
-  cursor   String?
+  platform   Platform
+  target     String
+  targetType RedditTargetType @default(SUBREDDIT)
+  cursor     String?
 
   status MonitorStatus @default(ACTIVE)
 
@@ -372,9 +378,10 @@ model KeywordMonitor {
   keywordSetId String
   keywordSet   KeywordSet @relation(fields: [keywordSetId], references: [id], onDelete: Cascade)
 
-  platform Platform @default(REDDIT)
-  target   String
-  cursor   String?
+  platform   Platform         @default(REDDIT)
+  target     String
+  targetType RedditTargetType @default(SUBREDDIT)
+  cursor     String?
 
   status MonitorStatus @default(ACTIVE)
 

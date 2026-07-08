@@ -109,6 +109,7 @@ export const BILLING_PLANS: Record<
       "Keywords: 10 keyword sets (30 keywords each)",
       "Keywords: 10 subreddit monitors",
       // General
+      "Custom feeds / lists (Reddit multireddits)",
       "CSV export for your CRM",
       "Priority feature access",
     ],

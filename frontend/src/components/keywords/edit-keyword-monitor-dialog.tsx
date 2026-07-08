@@ -22,8 +22,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Lock } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { clientApi } from "@/lib/client/api";
 import type { KeywordMonitor, KeywordSet } from "@/types/keyword";
+import type { RedditTargetType, SubscriptionTier } from "@/types/backend";
 
 interface EditKeywordMonitorDialogProps {
   open: boolean;
@@ -31,6 +40,7 @@ interface EditKeywordMonitorDialogProps {
   monitor: KeywordMonitor;
   keywordSets: KeywordSet[];
   onSuccess: () => void;
+  tier?: SubscriptionTier;
 }
 
 export function EditKeywordMonitorDialog({
@@ -39,21 +49,30 @@ export function EditKeywordMonitorDialog({
   monitor,
   keywordSets,
   onSuccess,
+  tier = "FREE",
 }: EditKeywordMonitorDialogProps) {
   const [keywordSetId, setKeywordSetId] = useState(monitor.keywordSetId);
   const [target, setTarget] = useState(monitor.target);
+  const [targetType, setTargetType] = useState<RedditTargetType>(
+    monitor.targetType,
+  );
   const [error, setError] = useState<string | null>(null);
+  const canUseCustomFeeds = tier === "PREMIUM";
 
   // Reset form when monitor changes
   useEffect(() => {
     setKeywordSetId(monitor.keywordSetId);
     setTarget(monitor.target);
+    setTargetType(monitor.targetType);
     setError(null);
   }, [monitor]);
 
   const updateMutation = useMutation({
-    mutationFn: (data: { keywordSetId?: string; target?: string }) =>
-      clientApi.updateKeywordMonitor(monitor.id, data),
+    mutationFn: (data: {
+      keywordSetId?: string;
+      target?: string;
+      targetType?: string;
+    }) => clientApi.updateKeywordMonitor(monitor.id, data),
     onSuccess: () => {
       onSuccess();
     },
@@ -69,6 +88,14 @@ export function EditKeywordMonitorDialog({
     onOpenChange(next);
   };
 
+  const handleTargetTypeChange = (next: RedditTargetType) => {
+    if (next === "CUSTOM_FEED" && !canUseCustomFeeds) return;
+    setTargetType(next);
+    if (next !== monitor.targetType) {
+      setTarget("");
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -79,23 +106,33 @@ export function EditKeywordMonitorDialog({
     }
 
     if (!target.trim()) {
-      setError("Target subreddit is required");
+      setError(
+        targetType === "CUSTOM_FEED"
+          ? "A custom feed URL is required"
+          : "Target subreddit is required",
+      );
       return;
     }
 
-    // Format subreddit target
     let formattedTarget = target.trim();
-    if (!formattedTarget.startsWith("r/")) {
+    if (targetType === "SUBREDDIT" && !formattedTarget.startsWith("r/")) {
       formattedTarget = `r/${formattedTarget}`;
     }
 
     // Only include changed fields
-    const updates: { keywordSetId?: string; target?: string } = {};
+    const updates: {
+      keywordSetId?: string;
+      target?: string;
+      targetType?: string;
+    } = {};
     if (keywordSetId !== monitor.keywordSetId) {
       updates.keywordSetId = keywordSetId;
     }
     if (formattedTarget !== monitor.target) {
       updates.target = formattedTarget;
+    }
+    if (targetType !== monitor.targetType) {
+      updates.targetType = targetType;
     }
 
     if (Object.keys(updates).length === 0) {
@@ -136,16 +173,64 @@ export function EditKeywordMonitorDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="target">Target Subreddit</Label>
+              <Label htmlFor="target">
+                {targetType === "CUSTOM_FEED"
+                  ? "Custom Feed URL"
+                  : "Target Subreddit"}
+              </Label>
+
+              <Tabs
+                value={targetType}
+                onValueChange={(next) =>
+                  handleTargetTypeChange(next as RedditTargetType)
+                }
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger value="SUBREDDIT" className="flex-1">
+                    Subreddit
+                  </TabsTrigger>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0} className="flex flex-1">
+                          <TabsTrigger
+                            value="CUSTOM_FEED"
+                            disabled={!canUseCustomFeeds}
+                            className="w-full gap-1.5"
+                          >
+                            {!canUseCustomFeeds && <Lock className="h-3 w-3" />}
+                            List
+                          </TabsTrigger>
+                        </span>
+                      </TooltipTrigger>
+                      {!canUseCustomFeeds && (
+                        <TooltipContent>
+                          <p>
+                            Custom feeds (lists) are available on the Premium
+                            plan.
+                          </p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
+                </TabsList>
+              </Tabs>
+
               <Input
                 id="target"
-                placeholder="e.g., r/saas or saas"
+                placeholder={
+                  targetType === "CUSTOM_FEED"
+                    ? "reddit.com/user/<name>/m/<feed>"
+                    : "e.g., r/saas or saas"
+                }
                 value={target}
                 onChange={(e) => setTarget(e.target.value)}
-                maxLength={50}
+                maxLength={targetType === "CUSTOM_FEED" ? 300 : 50}
               />
               <p className="text-muted-foreground text-xs">
-                Enter the subreddit name (with or without r/ prefix)
+                {targetType === "CUSTOM_FEED"
+                  ? "Paste the link to a public Reddit custom feed (multireddit)."
+                  : "Enter the subreddit name (with or without r/ prefix)"}
               </p>
             </div>
 

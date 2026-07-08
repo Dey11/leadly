@@ -15,3 +15,7 @@ export type RedditPost = {
   urlToPost: string;
   comments: RedditComment[];
 };
+
+export type RedditFetchTarget =
+  | { type: "SUBREDDIT"; subreddit: string }
+  | { type: "CUSTOM_FEED"; owner: string; name: string };

@@ -178,6 +178,7 @@ export const clientApi = {
     icpId: string;
     target: string;
     platform: string;
+    targetType?: string;
     cursor?: string | null;
   }) => request(`${apiBaseUrl}/monitors`, { method: "POST", body }),
   updateMonitorStatus: (monitorId: string, status: string) =>
@@ -189,6 +190,7 @@ export const clientApi = {
     monitorId: string,
     body: Partial<{
       target: string;
+      targetType: string;
       status: string;
       cursor: string | null;
       icpId: string;
@@ -382,6 +384,7 @@ export const clientApi = {
     keywordSetId: string;
     target: string;
     platform?: string;
+    targetType?: string;
   }) => request(`${apiBaseUrl}/keyword-monitors`, { method: "POST", body }),
   suggestKeywordSubreddits: async (body: { keywordSetId: string }) => {
     const response = await request<{ message: string; payload: string[] }>(
@@ -392,7 +395,12 @@ export const clientApi = {
   },
   updateKeywordMonitor: (
     id: string,
-    body: { keywordSetId?: string; target?: string; status?: string },
+    body: {
+      keywordSetId?: string;
+      target?: string;
+      targetType?: string;
+      status?: string;
+    },
   ) =>
     request(`${apiBaseUrl}/keyword-monitors/${id}`, { method: "PATCH", body }),
   deleteKeywordMonitor: (id: string) =>

@@ -11,6 +11,7 @@ import {
   MAX_SCRAPE_RETRY_COUNT,
   SCRAPE_RETRY_DELAY_MS,
 } from "../lib/constants";
+import { buildRedditFetchTarget } from "../lib/reddit-target";
 
 type MonitorWithIcpAndUser = Monitor & {
   icp: Icp;
@@ -41,7 +42,7 @@ async function executeCoreScrapeLogic(
     },
   });
 
-  const target = monitor.target.replace("r/", "");
+  const target = buildRedditFetchTarget(monitor.targetType, monitor.target);
   const posts = await redditClient.fetchPosts(
     target,
     MAX_SCRAPE_POSTS_LIMIT,

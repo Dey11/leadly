@@ -23,8 +23,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Lock } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { clientApi } from "@/lib/client/api";
 import type { KeywordSet } from "@/types/keyword";
+import type { RedditTargetType, SubscriptionTier } from "@/types/backend";
 
 interface CreateKeywordMonitorDialogProps {
   open: boolean;
@@ -33,6 +42,7 @@ interface CreateKeywordMonitorDialogProps {
   onSuccess: () => void;
   currentMonitorsCount?: number;
   maxMonitors?: number;
+  tier?: SubscriptionTier;
 }
 
 function SparkleIcon({ className }: { className?: string }) {
@@ -59,10 +69,13 @@ export function CreateKeywordMonitorDialog({
   onSuccess,
   currentMonitorsCount = 0,
   maxMonitors = 3,
+  tier = "FREE",
 }: CreateKeywordMonitorDialogProps) {
   const [keywordSetId, setKeywordSetId] = useState("");
   const [target, setTarget] = useState("");
+  const [targetType, setTargetType] = useState<RedditTargetType>("SUBREDDIT");
   const [error, setError] = useState<string | null>(null);
+  const canUseCustomFeeds = tier === "PREMIUM";
 
   // AI Suggestion State
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -74,6 +87,7 @@ export function CreateKeywordMonitorDialog({
       keywordSetId: string;
       target: string;
       platform: string;
+      targetType: string;
     }) => clientApi.createKeywordMonitor(data),
     onSuccess: () => {
       resetForm();
@@ -87,7 +101,16 @@ export function CreateKeywordMonitorDialog({
   const resetForm = () => {
     setKeywordSetId("");
     setTarget("");
+    setTargetType("SUBREDDIT");
     setError(null);
+    setSuggestions([]);
+    setSuggestError(null);
+  };
+
+  const handleTargetTypeChange = (next: RedditTargetType) => {
+    if (next === "CUSTOM_FEED" && !canUseCustomFeeds) return;
+    setTargetType(next);
+    setTarget("");
     setSuggestions([]);
     setSuggestError(null);
   };
@@ -126,13 +149,16 @@ export function CreateKeywordMonitorDialog({
     }
 
     if (!target.trim()) {
-      setError("Target subreddit is required");
+      setError(
+        targetType === "CUSTOM_FEED"
+          ? "A custom feed URL is required"
+          : "Target subreddit is required",
+      );
       return;
     }
 
-    // Format subreddit target
     let formattedTarget = target.trim();
-    if (!formattedTarget.startsWith("r/")) {
+    if (targetType === "SUBREDDIT" && !formattedTarget.startsWith("r/")) {
       formattedTarget = `r/${formattedTarget}`;
     }
 
@@ -140,6 +166,7 @@ export function CreateKeywordMonitorDialog({
       keywordSetId,
       target: formattedTarget,
       platform: "REDDIT",
+      targetType,
     });
   };
 
@@ -196,46 +223,99 @@ export function CreateKeywordMonitorDialog({
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="target">Target Subreddit</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSuggest}
-                  disabled={isSuggesting || !keywordSetId || atLimit}
-                  className="text-primary h-auto px-2 py-1 text-xs"
-                >
-                  {isSuggesting ? (
-                    <span className="flex items-center gap-1">
-                      <span className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
-                      Suggesting...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      <SparkleIcon className="h-3 w-3" />
-                      Suggest
-                    </span>
-                  )}
-                </Button>
+                <Label htmlFor="target">
+                  {targetType === "CUSTOM_FEED"
+                    ? "Custom Feed URL"
+                    : "Target Subreddit"}
+                </Label>
+                {targetType === "SUBREDDIT" && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSuggest}
+                    disabled={isSuggesting || !keywordSetId || atLimit}
+                    className="text-primary h-auto px-2 py-1 text-xs"
+                  >
+                    {isSuggesting ? (
+                      <span className="flex items-center gap-1">
+                        <span className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                        Suggesting...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <SparkleIcon className="h-3 w-3" />
+                        Suggest
+                      </span>
+                    )}
+                  </Button>
+                )}
               </div>
+
+              <Tabs
+                value={targetType}
+                onValueChange={(next) =>
+                  handleTargetTypeChange(next as RedditTargetType)
+                }
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger
+                    value="SUBREDDIT"
+                    className="flex-1"
+                    disabled={atLimit}
+                  >
+                    Subreddit
+                  </TabsTrigger>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0} className="flex flex-1">
+                          <TabsTrigger
+                            value="CUSTOM_FEED"
+                            disabled={!canUseCustomFeeds || atLimit}
+                            className="w-full gap-1.5"
+                          >
+                            {!canUseCustomFeeds && <Lock className="h-3 w-3" />}
+                            List
+                          </TabsTrigger>
+                        </span>
+                      </TooltipTrigger>
+                      {!canUseCustomFeeds && (
+                        <TooltipContent>
+                          <p>
+                            Custom feeds (lists) are available on the Premium
+                            plan.
+                          </p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
+                </TabsList>
+              </Tabs>
 
               <Input
                 id="target"
-                placeholder="e.g., r/saas or saas"
+                placeholder={
+                  targetType === "CUSTOM_FEED"
+                    ? "reddit.com/user/<name>/m/<feed>"
+                    : "e.g., r/saas or saas"
+                }
                 value={target}
                 onChange={(e) => setTarget(e.target.value)}
-                maxLength={50}
+                maxLength={targetType === "CUSTOM_FEED" ? 300 : 50}
                 disabled={atLimit}
               />
               <p className="text-muted-foreground text-xs">
-                Enter the subreddit name (with or without r/ prefix)
+                {targetType === "CUSTOM_FEED"
+                  ? "Paste the link to a public Reddit custom feed (multireddit)."
+                  : "Enter the subreddit name (with or without r/ prefix)"}
               </p>
 
-              {suggestError && (
+              {targetType === "SUBREDDIT" && suggestError && (
                 <p className="text-xs text-red-500">{suggestError}</p>
               )}
 
-              {suggestions.length > 0 && (
+              {targetType === "SUBREDDIT" && suggestions.length > 0 && (
                 <div className="mt-2">
                   <p className="text-muted-foreground mb-1.5 text-xs">
                     Click to use:

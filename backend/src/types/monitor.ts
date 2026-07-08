@@ -1,4 +1,4 @@
-import { MonitorStatus, Platform } from "@prisma/client";
+import { MonitorStatus, Platform, RedditTargetType } from "@prisma/client";
 import { z } from "zod/v4";
 
 export const createMonitorSchema = z
@@ -6,6 +6,7 @@ export const createMonitorSchema = z
     icpId: z.string().cuid(),
     platform: z.enum(Platform),
     target: z.string().min(1),
+    targetType: z.enum(RedditTargetType).default("SUBREDDIT"),
   })
   .strict();
 
@@ -14,6 +15,7 @@ export const updateMonitorSchema = z
     icpId: z.string().cuid().optional(),
     platform: z.enum(Platform).optional(),
     target: z.string().min(1).optional(),
+    targetType: z.enum(RedditTargetType).optional(),
     cursor: z.string().nullable().optional(),
     status: z.enum(MonitorStatus).optional(),
   })

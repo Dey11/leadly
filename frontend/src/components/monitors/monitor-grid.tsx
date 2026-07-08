@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { formatRelative } from "@/lib/format";
-import { Monitor } from "@/types/backend";
+import { Monitor, SubscriptionTier } from "@/types/backend";
 import {
   DeleteMonitorButton,
   ToggleMonitorStatusButton,
@@ -29,6 +29,7 @@ interface MonitorGridItem extends Monitor {
 interface MonitorGridProps {
   monitors: MonitorGridItem[];
   icpOptions: any[]; // For EditDialog
+  tier?: SubscriptionTier;
 }
 
 const statusConfig: Record<
@@ -52,7 +53,11 @@ const statusConfig: Record<
   },
 };
 
-export function MonitorGrid({ monitors, icpOptions }: MonitorGridProps) {
+export function MonitorGrid({
+  monitors,
+  icpOptions,
+  tier = "FREE",
+}: MonitorGridProps) {
   if (monitors.length === 0) {
     return (
       <Card className="bg-muted/5 flex flex-col items-center justify-center border-2 border-dashed px-6 py-16">
@@ -89,6 +94,11 @@ export function MonitorGrid({ monitors, icpOptions }: MonitorGridProps) {
                     {monitor.platform === "REDDIT" && (
                       <span className="rounded bg-[#FF4500]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#FF4500]">
                         Reddit
+                      </span>
+                    )}
+                    {monitor.targetType === "CUSTOM_FEED" && (
+                      <span className="bg-primary/10 text-primary rounded px-1.5 py-0.5 text-[10px] font-medium">
+                        List
                       </span>
                     )}
                   </div>
@@ -131,7 +141,11 @@ export function MonitorGrid({ monitors, icpOptions }: MonitorGridProps) {
                   monitorId={monitor.id}
                   status={monitor.status as any}
                 />
-                <EditMonitorDialog monitor={monitor} icps={icpOptions} />
+                <EditMonitorDialog
+                  monitor={monitor}
+                  icps={icpOptions}
+                  tier={tier}
+                />
               </div>
               <div className="flex gap-2">
                 {monitor.icpDetails && (

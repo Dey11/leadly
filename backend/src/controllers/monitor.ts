@@ -9,6 +9,12 @@ import {
 import { TIER_LIMITS } from "../lib/constants";
 import { Reddit } from "../services/reddit";
 import { env } from "../env";
+import { parseCustomFeedTarget } from "../lib/reddit-target";
+
+const CUSTOM_FEED_UPGRADE_MESSAGE =
+  "Custom feeds are a Premium feature. Upgrade to Premium to monitor Reddit lists.";
+const INVALID_CUSTOM_FEED_MESSAGE =
+  "Invalid custom feed. Paste a link like reddit.com/user/<name>/m/<feed>.";
 
 export const createMonitor = async (req: Request, res: Response) => {
   try {
@@ -53,13 +59,40 @@ export const createMonitor = async (req: Request, res: Response) => {
         .json({ error: "ICP not found or not owned by user" });
     }
 
-    // Validate subreddit
+    // Validate the target (subreddit or custom feed)
+    const targetType = payload.data.targetType ?? "SUBREDDIT";
+    let target = payload.data.target;
+
     if (payload.data.platform === "REDDIT") {
       const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
-      const isValid = await reddit.validateSubreddit(payload.data.target);
 
-      if (!isValid) {
-        return res.status(400).json({ error: "Invalid subreddit" });
+      if (targetType === "CUSTOM_FEED") {
+        if (!tierLimits.customFeeds) {
+          return res.status(403).json({ error: CUSTOM_FEED_UPGRADE_MESSAGE });
+        }
+
+        const parsed = parseCustomFeedTarget(target);
+        if (!parsed) {
+          return res.status(400).json({ error: INVALID_CUSTOM_FEED_MESSAGE });
+        }
+
+        const isValid = await reddit.validateCustomFeed(
+          parsed.owner,
+          parsed.name,
+        );
+        if (!isValid) {
+          return res
+            .status(400)
+            .json({ error: "Custom feed not found or is private" });
+        }
+
+        target = `${parsed.owner}/${parsed.name}`;
+      } else {
+        const isValid = await reddit.validateSubreddit(target);
+
+        if (!isValid) {
+          return res.status(400).json({ error: "Invalid subreddit" });
+        }
       }
     }
 
@@ -67,7 +100,8 @@ export const createMonitor = async (req: Request, res: Response) => {
       data: {
         icpId: payload.data.icpId,
         platform: payload.data.platform,
-        target: payload.data.target,
+        target,
+        targetType,
         userId: req.userId!,
       },
     });
@@ -164,19 +198,55 @@ export const updateMonitor = async (req: Request, res: Response) => {
       }
     }
 
-    // Validate subreddit if being updated
-    if (payload.data.target && payload.data.platform === "REDDIT") {
-      const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
-      const isValid = await reddit.validateSubreddit(payload.data.target);
+    // Validate the target (subreddit or custom feed) if being updated
+    const effectivePlatform = payload.data.platform ?? existing.platform;
+    const effectiveTargetType = payload.data.targetType ?? existing.targetType;
+    let target = payload.data.target;
 
-      if (!isValid) {
-        return res.status(400).json({ error: "Invalid subreddit" });
+    if (target && effectivePlatform === "REDDIT") {
+      const reddit = new Reddit(env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET);
+
+      if (effectiveTargetType === "CUSTOM_FEED") {
+        const user = await db.user.findUnique({
+          where: { id: req.userId! },
+          include: { subscription: true },
+        });
+
+        if (
+          !user?.subscription ||
+          !TIER_LIMITS[user.subscription.tier].customFeeds
+        ) {
+          return res.status(403).json({ error: CUSTOM_FEED_UPGRADE_MESSAGE });
+        }
+
+        const parsed = parseCustomFeedTarget(target);
+        if (!parsed) {
+          return res.status(400).json({ error: INVALID_CUSTOM_FEED_MESSAGE });
+        }
+
+        const isValid = await reddit.validateCustomFeed(
+          parsed.owner,
+          parsed.name,
+        );
+        if (!isValid) {
+          return res
+            .status(400)
+            .json({ error: "Custom feed not found or is private" });
+        }
+
+        target = `${parsed.owner}/${parsed.name}`;
+      } else {
+        const isValid = await reddit.validateSubreddit(target);
+
+        if (!isValid) {
+          return res.status(400).json({ error: "Invalid subreddit" });
+        }
       }
     }
 
     const updatedMonitor = await db.monitor.update({
       where: { id },
-      data: payload.data,
+      data: { ...payload.data, ...(target ? { target } : {}) },
     });
 
     res.json(updatedMonitor);
