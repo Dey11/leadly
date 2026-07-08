@@ -232,4 +232,164 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       },
     ],
   },
+  {
+    slug: "how-indie-hackers-get-their-first-customers-on-reddit",
+    title: "How Indie Hackers Get Their First 10 Customers on Reddit",
+    primaryKeyword: "get first customers on reddit indie hacker",
+    audience: "Indie hackers and solo founders pre- or just-post-launch",
+    angle:
+      "Early-stage founder story-driven guide focused on zero-budget, one-person Reddit outreach before any paid channel makes sense.",
+    outline: [
+      "Answer-first: the fastest path from zero to your first paying users on Reddit",
+      "Why Reddit beats cold outreach and paid ads for pre-revenue founders",
+      "Finding the handful of threads where your exact problem is being asked about",
+      "What a first reply from a no-karma account should look like",
+      "Turning a single good reply into a recurring source of signups",
+      "When to stop doing this manually and set up monitoring",
+    ],
+    internalLinks: [
+      "/solutions/turn-reddit-discussions-into-your-saas-growth-engine",
+      "/solutions/automate-your-customer-acquisition-on-reddit",
+      "/alternatives/reddit-lead-generation-tools",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      {
+        label: "Reddit Content Policy",
+        url: "https://www.redditinc.com/policies/content-policy",
+      },
+    ],
+  },
+  {
+    slug: "how-ai-automation-agencies-find-clients-on-reddit",
+    title: "How AI Automation Agencies Find Clients on Reddit",
+    primaryKeyword: "find clients for ai automation agency on reddit",
+    audience: "AI automation and workflow-automation agencies",
+    angle:
+      "Use-case post for a fast-growing agency category showing where automation demand actually surfaces on Reddit before it hits Google.",
+    outline: [
+      "Answer-first: where automation buying conversations happen on Reddit",
+      "Why businesses ask Reddit before they Google 'AI automation agency'",
+      "The subreddits and thread types that signal a real automation project",
+      "How to pitch a build without sounding like a generic AI reseller",
+      "Qualifying scope and budget before you spend time on a call",
+      "Building a repeatable intake pipeline from Reddit threads",
+    ],
+    internalLinks: [
+      "/solutions/find-high-intent-reddit-leads-for-ai-automation-agencies",
+      "/solutions/find-reddit-leads-for-productized-services",
+      "/alternatives/reddit-monitoring-tools-for-agencies",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Reddit", url: "https://www.reddit.com/" },
+    ],
+  },
+  {
+    slug: "turning-reddit-threads-into-sales-triggers-for-b2b-teams",
+    title: "Turning Reddit Threads into Sales Triggers for B2B Teams",
+    primaryKeyword: "reddit sales triggers for b2b",
+    audience: "B2B sales development and revenue teams",
+    angle:
+      "Framework post that reframes Reddit as a trigger-event source for SDRs, sitting alongside job-change and funding alerts in a modern outbound stack.",
+    outline: [
+      "Answer-first: what a Reddit sales trigger actually is",
+      "Why trigger-based outbound outperforms static prospect lists",
+      "The five thread patterns that map to a buying trigger",
+      "Routing a caught thread into your CRM and sequence tooling",
+      "Writing a first-touch message that references the thread without being creepy",
+      "Measuring trigger-to-meeting conversion over static outbound",
+    ],
+    internalLinks: [
+      "/solutions/turn-reddit-threads-into-sales-triggers-for-b2b-teams",
+      "/solutions/turn-reddit-conversations-into-your-gtm-engine",
+      "/compare/leadly-vs-syften",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Syften", url: "https://syften.com/reddit" },
+    ],
+  },
+  {
+    slug: "how-to-write-non-promotional-reddit-replies-that-convert",
+    title: "How to Write Non-Promotional Reddit Replies That Actually Convert",
+    primaryKeyword: "how to reply on reddit without being promotional",
+    audience:
+      "SaaS founders, agencies, and anyone doing manual Reddit outreach",
+    angle:
+      "Tactical, example-driven writing guide addressing the single biggest execution failure across every other Reddit lead-gen angle: the reply itself.",
+    outline: [
+      "Answer-first: the structure of a reply that helps first and sells second",
+      "Why Reddit communities punish promotional replies harder than other channels",
+      "A four-part template: acknowledge, answer, disclose, offer",
+      "Before-and-after examples of promotional vs. earned replies",
+      "When to mention your product at all, and when to hold back",
+      "How reply quality compounds into karma, trust, and long-term reach",
+    ],
+    internalLinks: [
+      "/solutions/turn-reddit-discussions-into-your-saas-growth-engine",
+      "/solutions/scale-your-marketing-consultancy-with-ai-powered-reddit-leads",
+    ],
+    sources: [
+      {
+        label: "Reddit Content Policy",
+        url: "https://www.redditinc.com/policies/content-policy",
+      },
+      {
+        label: "Reddit Moderator Code of Conduct",
+        url: "https://www.redditinc.com/policies/moderator-code-of-conduct",
+      },
+      { label: "Leadly", url: "https://leadly.live/" },
+    ],
+  },
+  {
+    slug: "using-reddit-for-saas-market-research-and-positioning",
+    title: "Using Reddit for SaaS Market Research and Positioning",
+    primaryKeyword: "reddit market research for saas positioning",
+    audience: "SaaS founders and product marketers refining positioning",
+    angle:
+      "Research-stage post distinct from demand-capture content: using Reddit language to sharpen messaging and positioning before a launch or repositioning push.",
+    outline: [
+      "Answer-first: what Reddit tells you that surveys and interviews don't",
+      "Finding the exact words your market uses to describe the problem",
+      "Mining complaint and comparison threads for positioning gaps",
+      "Turning raw language into landing page copy and feature framing",
+      "Validating a new position before you commit to a rewrite",
+      "Keeping a living research workflow instead of a one-time audit",
+    ],
+    internalLinks: [
+      "/solutions/use-reddit-customer-research-to-sharpen-saas-positioning",
+      "/solutions/turn-reddit-discussions-into-your-saas-growth-engine",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Reddit", url: "https://www.reddit.com/" },
+    ],
+  },
+  {
+    slug: "how-to-measure-roi-of-reddit-lead-generation",
+    title: "How to Measure the ROI of Reddit Lead Generation",
+    primaryKeyword: "roi of reddit lead generation",
+    audience:
+      "SaaS founders, agency owners, and GTM leads justifying the channel",
+    angle:
+      "Decision-stage measurement post for teams already running Reddit outreach who need to prove the channel to a boss, co-founder, or budget review.",
+    outline: [
+      "Answer-first: the three numbers that prove Reddit is working",
+      "Why last-click attribution undercounts Reddit-sourced pipeline",
+      "Setting up UTMs, self-report fields, and CRM source tracking for Reddit",
+      "Calculating cost per lead when the channel is mostly time, not ad spend",
+      "Benchmarking Reddit against paid search and cold outbound",
+      "Reporting the channel in a way that survives a budget review",
+    ],
+    internalLinks: [
+      "/solutions/turn-reddit-conversations-into-your-gtm-engine",
+      "/alternatives/reddit-lead-generation-tools",
+      "/compare/leadly-vs-gummysearch",
+    ],
+    sources: [
+      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "GummySearch", url: "https://gummysearch.com/" },
+    ],
+  },
 ];
