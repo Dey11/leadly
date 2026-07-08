@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { User, CreditCard, UserCircle } from "lucide-react";
+import { User, CreditCard, UserCircle, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { id: "account", label: "Account", icon: User },
   { id: "billing", label: "Billing", icon: CreditCard },
   { id: "profile", label: "Profile", icon: UserCircle },
+  { id: "notifications", label: "Notifications", icon: Bell },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];

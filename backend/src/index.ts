@@ -13,6 +13,7 @@ import leadRouter from "./routes/lead";
 import scrapeJobsRouter from "./routes/scrape-jobs";
 import billingRouter from "./routes/billing";
 import bugReportRouter from "./routes/bug-report";
+import notificationRouter from "./routes/notification";
 import { newDodoWebhookHandler } from "./controllers/webhooks-new";
 import cron from "node-cron";
 import { CRON_INTERVAL, KEYWORD_CRON_INTERVAL } from "./lib/constants";
@@ -102,6 +103,7 @@ apiRouter.use("/leads", leadRouter);
 apiRouter.use("/monitors", scrapeJobsRouter);
 apiRouter.use("/billing", billingRouter);
 apiRouter.use("/bug-reports", bugReportRouter);
+apiRouter.use("/notifications", notificationRouter);
 
 // Keyword mode routes
 apiRouter.use("/keyword-sets", keywordSetRouter);

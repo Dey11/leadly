@@ -182,6 +182,31 @@ export type SubscriptionStatus =
   | "PENDING"
   | "FAILED";
 
+export type NotificationChannelType = "DISCORD";
+
+export interface NotificationChannel {
+  id: string | null;
+  type: NotificationChannelType;
+  destination: string;
+  enabled: boolean;
+  notifyLeadTypes: LeadType[];
+  notifyKeywordMatches: boolean;
+}
+
+export interface NotificationSettingsResponse {
+  message: string;
+  payload: {
+    tier: SubscriptionTier;
+    allowed: boolean;
+    channel: NotificationChannel;
+  };
+}
+
+export interface UpsertNotificationChannelResponse {
+  message: string;
+  payload: NotificationChannel;
+}
+
 export interface PlanChangePreview {
   canPreview: boolean;
   isNewSubscription: boolean;

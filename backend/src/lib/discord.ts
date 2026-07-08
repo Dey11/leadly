@@ -218,3 +218,149 @@ export async function sendTransactionToDiscord(
     return false;
   }
 }
+
+// =============================================================================
+// PER-USER LEAD NOTIFICATIONS (NotificationChannel, type: DISCORD)
+// =============================================================================
+// Unlike the admin webhooks above (env-configured), these are sent to a
+// per-user Discord webhook URL stored on their NotificationChannel row.
+
+const LEADLY_BRAND_COLOR = 0x773344; // "Wine" - Leadly's primary brand color
+
+const MAX_LEADS_IN_EMBED = 5;
+const MAX_LEAD_CONTENT_LENGTH = 150;
+
+function truncateContent(content: string): string {
+  const singleLine = content.replace(/\s+/g, " ").trim();
+  if (singleLine.length <= MAX_LEAD_CONTENT_LENGTH) return singleLine;
+  return `${singleLine.slice(0, MAX_LEAD_CONTENT_LENGTH - 1)}…`;
+}
+
+export type DiscordLeadNotificationLead = {
+  content: string;
+  url: string;
+};
+
+export type DiscordLeadNotificationPayload = {
+  /** e.g. "r/SaaS" or "list: someuser/leads" */
+  monitorLabel: string;
+  /** e.g. "2 WARM · 1 COLD · 3 NEUTRAL" or "5 keyword matches" */
+  breakdown: string;
+  /** Total number of qualifying leads (may exceed leads.length) */
+  totalCount: number;
+  leads: DiscordLeadNotificationLead[];
+  dashboardUrl: string;
+};
+
+export async function sendDiscordLeadNotification(
+  webhookUrl: string,
+  payload: DiscordLeadNotificationPayload,
+): Promise<boolean> {
+  const shownLeads = payload.leads.slice(0, MAX_LEADS_IN_EMBED);
+  const remaining = payload.totalCount - shownLeads.length;
+
+  const description =
+    shownLeads
+      .map(
+        (lead, index) =>
+          `**${index + 1}.** ${truncateContent(lead.content)}\n[View on Reddit ↗](${lead.url})`,
+      )
+      .join("\n\n") || "No leads to display.";
+
+  const embed = {
+    title: `🎯 New leads from ${payload.monitorLabel}`,
+    description,
+    color: LEADLY_BRAND_COLOR,
+    fields: [
+      {
+        name: "Breakdown",
+        value: payload.breakdown,
+        inline: false,
+      },
+      ...(remaining > 0
+        ? [
+            {
+              name: "​",
+              value: `**[+${remaining} more →](${payload.dashboardUrl})**`,
+              inline: false,
+            },
+          ]
+        : [
+            {
+              name: "​",
+              value: `[View all leads →](${payload.dashboardUrl})`,
+              inline: false,
+            },
+          ]),
+    ],
+    footer: {
+      text: "Leadly",
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Leadly",
+        embeds: [embed],
+      }),
+    });
+
+    if (!response.ok) {
+      logger.error(
+        "Failed to send Discord lead notification:",
+        response.status,
+        await response.text(),
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    logger.error("Error sending Discord lead notification:", error);
+    return false;
+  }
+}
+
+export async function sendDiscordTestMessage(
+  webhookUrl: string,
+): Promise<boolean> {
+  const embed = {
+    title: "✅ Leadly notifications are connected",
+    description:
+      "This is a test message. When your monitors find new qualifying leads, you'll get an alert here.",
+    color: LEADLY_BRAND_COLOR,
+    footer: {
+      text: "Leadly",
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Leadly",
+        embeds: [embed],
+      }),
+    });
+
+    if (!response.ok) {
+      logger.error(
+        "Failed to send Discord test message:",
+        response.status,
+        await response.text(),
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    logger.error("Error sending Discord test message:", error);
+    return false;
+  }
+}

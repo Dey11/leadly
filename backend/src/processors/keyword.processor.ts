@@ -13,7 +13,13 @@ import {
   getMatchedKeywords,
   getMatchingSnippet,
 } from "../lib/keywords";
-import type { KeywordMonitor, KeywordSet, User } from "@prisma/client";
+import { notifyNewLeads } from "../services/notification.service";
+import type {
+  KeywordLead,
+  KeywordMonitor,
+  KeywordSet,
+  User,
+} from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
 type KeywordMonitorWithSetAndUser = KeywordMonitor & {
@@ -92,9 +98,11 @@ async function executeKeywordCoreScrapeLogic(
 
   // Insert leads (skip duplicates by URL)
   let createdCount = 0;
+  const createdLeads: KeywordLead[] = [];
   for (const lead of leads) {
     try {
-      await db.keywordLead.create({ data: lead });
+      const created = await db.keywordLead.create({ data: lead });
+      createdLeads.push(created);
       createdCount++;
     } catch (err: any) {
       if (err.code === "P2002") {
@@ -132,6 +140,28 @@ async function executeKeywordCoreScrapeLogic(
   logger.info(
     `[Keyword Processor] Job ${jobId} completed. Created ${createdCount} leads from ${matchedPosts.length} matches.`,
   );
+
+  // Fire the per-user Discord notification (if configured) after the leads
+  // have committed. Best-effort: notifyNewLeads never throws, but we still
+  // wrap it so a bug here can never fail or roll back a completed scrape job.
+  try {
+    await notifyNewLeads({
+      kind: "keyword",
+      userId: monitor.userId,
+      monitorTarget: monitor.target,
+      monitorTargetType: monitor.targetType,
+      leads: createdLeads.map((lead) => ({
+        content: lead.content,
+        url: lead.url,
+        matchedKeywords: lead.matchedKeywords,
+      })),
+    });
+  } catch (error) {
+    logger.error(
+      "[Keyword Processor] Failed to send lead notifications:",
+      error,
+    );
+  }
 
   return createdCount;
 }

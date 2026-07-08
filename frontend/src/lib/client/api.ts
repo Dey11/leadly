@@ -5,6 +5,9 @@ import type {
   LeadListResponse,
   LeadStatus,
   LeadType,
+  NotificationChannelType,
+  NotificationSettingsResponse,
+  UpsertNotificationChannelResponse,
 } from "@/types/backend";
 
 type JsonValue =
@@ -473,4 +476,30 @@ export const clientApi = {
     );
     return response.payload;
   },
+
+  // ==================== Notifications ====================
+  getNotificationSettings: async () => {
+    const response = await request<NotificationSettingsResponse>(
+      `${apiBaseUrl}/notifications`,
+    );
+    return response.payload;
+  },
+  saveNotificationChannel: async (body: {
+    type?: NotificationChannelType;
+    destination: string;
+    enabled: boolean;
+    notifyLeadTypes: LeadType[];
+    notifyKeywordMatches: boolean;
+  }) => {
+    const response = await request<UpsertNotificationChannelResponse>(
+      `${apiBaseUrl}/notifications`,
+      { method: "PUT", body },
+    );
+    return response.payload;
+  },
+  sendNotificationTestMessage: (body: { destination?: string } = {}) =>
+    request<{ message: string }>(`${apiBaseUrl}/notifications/test`, {
+      method: "POST",
+      body,
+    }),
 };

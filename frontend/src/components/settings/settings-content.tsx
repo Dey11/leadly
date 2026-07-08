@@ -6,6 +6,7 @@ import { BillingContent } from "@/components/billing/billing-content";
 import { ProfileSettings } from "@/components/account/profile-settings";
 import { AccountSkeleton } from "@/components/account/account-skeleton";
 import { BillingSkeleton } from "@/components/billing/billing-skeleton";
+import { NotificationSettings } from "@/components/notifications/notification-settings";
 
 interface SettingsContentProps {
   tab?: string;
@@ -14,7 +15,9 @@ interface SettingsContentProps {
 export async function SettingsContent({
   tab = "account",
 }: SettingsContentProps) {
-  const activeTab = ["account", "billing", "profile"].includes(tab)
+  const activeTab = ["account", "billing", "profile", "notifications"].includes(
+    tab,
+  )
     ? tab
     : "account";
 
@@ -26,7 +29,9 @@ export async function SettingsContent({
       />
 
       <SettingsTabs
-        activeTab={activeTab as "account" | "billing" | "profile"}
+        activeTab={
+          activeTab as "account" | "billing" | "profile" | "notifications"
+        }
       />
 
       <div className="min-h-[400px]">
@@ -41,6 +46,7 @@ export async function SettingsContent({
           </Suspense>
         )}
         {activeTab === "profile" && <ProfileSettings />}
+        {activeTab === "notifications" && <NotificationSettings />}
       </div>
     </div>
   );

@@ -78,6 +78,7 @@ export const BILLING_PLANS: Record<
       "Keywords: 3 keyword sets (15 keywords each)",
       "Keywords: 3 subreddit monitors",
       // General
+      "Real-time alerts (Discord)",
       "Priority email support",
     ],
     ctaLabel: "Get Started",
@@ -109,6 +110,7 @@ export const BILLING_PLANS: Record<
       "Keywords: 10 keyword sets (30 keywords each)",
       "Keywords: 10 subreddit monitors",
       // General
+      "Real-time alerts (Discord)",
       "Custom feeds / lists (Reddit multireddits)",
       "CSV export for your CRM",
       "Priority feature access",

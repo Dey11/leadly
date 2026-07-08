@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-
 }
 
 enum Platform {
@@ -98,6 +97,11 @@ enum WebhookEventStatus {
   FAILED
 }
 
+enum NotificationChannelType {
+  DISCORD
+  // TELEGRAM, EMAIL added later
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -111,12 +115,13 @@ model User {
   schedule        UserSchedule?
   keywordSchedule KeywordSchedule?
 
-  monitors        Monitor[]
-  keywordMonitors KeywordMonitor[]
-  icps            Icp[]
-  keywordSets     KeywordSet[]
-  usage           Usage?
-  bugReports      BugReport[]
+  monitors             Monitor[]
+  keywordMonitors      KeywordMonitor[]
+  icps                 Icp[]
+  keywordSets          KeywordSet[]
+  usage                Usage?
+  bugReports           BugReport[]
+  notificationChannels NotificationChannel[]
 
   name                String
   emailVerified       Boolean   @default(false)
@@ -130,11 +135,11 @@ model User {
   hasSeenWalkthrough  Boolean   @default(false)
 
   // Profile/Onboarding fields for better user experience
-  hasCompletedOnboarding Boolean  @default(false)
+  hasCompletedOnboarding Boolean @default(false)
   company                String?
   occupation             String?
   referrer               String?
-  sampleDm               String?  @db.Text
+  sampleDm               String? @db.Text
 
   @@map("users")
 }
@@ -157,6 +162,26 @@ model BugReport {
   @@index([userId])
   @@index([status])
   @@map("bug_reports")
+}
+
+model NotificationChannel {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        NotificationChannelType @default(DISCORD)
+  destination String                  @db.Text // Discord webhook URL (chat id / email later)
+  enabled     Boolean                 @default(true)
+
+  // Which ICP lead types trigger a notification (chips in UI)
+  notifyLeadTypes      LeadType[] @default([WARM, COLD, NEUTRAL])
+  notifyKeywordMatches Boolean    @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("notification_channels")
 }
 
 model Subscription {
@@ -349,14 +374,14 @@ model Lead {
   scrapeJobId String
   scrapeJob   ScrapeJob @relation(fields: [scrapeJobId], references: [id], onDelete: Cascade)
 
-  platform   Platform
-  leadType   LeadType
-  content    String   @db.Text
-  url        String   @unique
-  author     String?
-  reasoning  String?  @db.Text
-  aiProvider String?
-  generatedDm String? @db.Text
+  platform    Platform
+  leadType    LeadType
+  content     String   @db.Text
+  url         String   @unique
+  author      String?
+  reasoning   String?  @db.Text
+  aiProvider  String?
+  generatedDm String?  @db.Text
 
   status LeadStatus @default(NEW)
 
@@ -523,7 +548,7 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  @@unique([providerId, accountId])  // to prevent duplicate oauth links
+  @@unique([providerId, accountId]) // to prevent duplicate oauth links
   @@map("account")
 }
 

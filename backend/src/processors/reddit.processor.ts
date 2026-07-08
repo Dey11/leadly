@@ -12,6 +12,7 @@ import {
   SCRAPE_RETRY_DELAY_MS,
 } from "../lib/constants";
 import { buildRedditFetchTarget } from "../lib/reddit-target";
+import { notifyNewLeads } from "../services/notification.service";
 
 type MonitorWithIcpAndUser = Monitor & {
   icp: Icp;
@@ -105,6 +106,32 @@ async function executeCoreScrapeLogic(
       },
     });
   });
+
+  // Fire the per-user Discord notification (if configured) after the leads
+  // have committed. Best-effort: notifyNewLeads never throws, but we still
+  // wrap it so a bug here can never fail or roll back a completed scrape job.
+  try {
+    const createdLeads = await db.lead.findMany({
+      where: { scrapeJobId: jobId },
+    });
+
+    await notifyNewLeads({
+      kind: "icp",
+      userId: monitor.userId,
+      monitorTarget: monitor.target,
+      monitorTargetType: monitor.targetType,
+      leads: createdLeads.map((lead) => ({
+        content: lead.content,
+        url: lead.url,
+        leadType: lead.leadType,
+      })),
+    });
+  } catch (error) {
+    logger.error(
+      "[Reddit Processor] Failed to send lead notifications:",
+      error,
+    );
+  }
 
   return leads.length;
 }
