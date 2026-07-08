@@ -1,41 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { OverviewSkeleton } from "@/components/dashboard/overview/overview-skeleton";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import type { ProductMode } from "@/components/dashboard/product-mode-toggle";
 
 interface OverviewSwitcherProps {
-  leadGenContent: React.ReactNode;
-  keywordContent: React.ReactNode;
+  initialMode: ProductMode;
+  children: React.ReactNode;
 }
 
-type ProductMode = "leadgen" | "keyword";
-
+// Server renders the correct overview for `initialMode` up front (no
+// skeleton flash, no double-mount). This wrapper only exists to catch a
+// mode change that happens without a navigation already handling it, e.g.
+// another tab flipping the mode via localStorage.
 export function OverviewSwitcher({
-  leadGenContent,
-  keywordContent,
+  initialMode,
+  children,
 }: OverviewSwitcherProps) {
-  const [mode, setMode] = useState<ProductMode | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    // Read mode from localStorage
-    const stored = localStorage.getItem(
-      "leadly-product-mode",
-    ) as ProductMode | null;
-    setMode(stored === "keyword" ? "keyword" : "leadgen");
-
-    // Listen for storage changes (when mode is toggled)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "leadly-product-mode") {
-        setMode(e.newValue === "keyword" ? "keyword" : "leadgen");
+    const refreshIfStale = (nextMode: ProductMode) => {
+      if (nextMode !== initialMode) {
+        router.refresh();
       }
     };
 
-    // Also listen for custom event for same-tab updates
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "leadly-product-mode") {
+        refreshIfStale(event.newValue === "keyword" ? "keyword" : "leadgen");
+      }
+    };
+
     const handleModeChange = () => {
-      const newMode = localStorage.getItem(
+      const stored = localStorage.getItem(
         "leadly-product-mode",
       ) as ProductMode | null;
-      setMode(newMode === "keyword" ? "keyword" : "leadgen");
+      refreshIfStale(stored === "keyword" ? "keyword" : "leadgen");
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -45,16 +46,7 @@ export function OverviewSwitcher({
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("leadly-mode-change", handleModeChange);
     };
-  }, []);
+  }, [initialMode, router]);
 
-  // Show skeleton until mode is determined
-  if (mode === null) {
-    return <OverviewSkeleton />;
-  }
-
-  if (mode === "keyword") {
-    return <>{keywordContent}</>;
-  }
-
-  return <>{leadGenContent}</>;
+  return <>{children}</>;
 }

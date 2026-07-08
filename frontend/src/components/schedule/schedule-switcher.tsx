@@ -1,49 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ScheduleSkeleton } from "@/components/schedule/schedule-skeleton";
-
-type ProductMode = "leadgen" | "keyword";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import type { ProductMode } from "@/components/dashboard/product-mode-toggle";
 
 interface ScheduleSwitcherProps {
-  leadGenContent: React.ReactNode;
-  keywordContent: React.ReactNode;
+  initialMode: ProductMode;
+  children: React.ReactNode;
 }
 
+// Server renders the correct schedule content for `initialMode` up front
+// (no skeleton flash, no double-mount). This wrapper only exists to catch
+// a mode change that happens without a navigation already handling it,
+// e.g. another tab flipping the mode via localStorage.
 export function ScheduleSwitcher({
-  leadGenContent,
-  keywordContent,
+  initialMode,
+  children,
 }: ScheduleSwitcherProps) {
-  const [mode, setMode] = useState<ProductMode | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    // Read mode from localStorage
-    const stored = localStorage.getItem(
-      "leadly-product-mode",
-    ) as ProductMode | null;
-    setMode(stored === "keyword" ? "keyword" : "leadgen");
-
-    // Listen for mode changes
-    const handleModeChange = () => {
-      const newMode = localStorage.getItem(
-        "leadly-product-mode",
-      ) as ProductMode | null;
-      setMode(newMode === "keyword" ? "keyword" : "leadgen");
+    const refreshIfStale = (nextMode: ProductMode) => {
+      if (nextMode !== initialMode) {
+        router.refresh();
+      }
     };
 
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "leadly-product-mode") {
+        refreshIfStale(event.newValue === "keyword" ? "keyword" : "leadgen");
+      }
+    };
+
+    const handleModeChange = () => {
+      const stored = localStorage.getItem(
+        "leadly-product-mode",
+      ) as ProductMode | null;
+      refreshIfStale(stored === "keyword" ? "keyword" : "leadgen");
+    };
+
+    window.addEventListener("storage", handleStorageChange);
     window.addEventListener("leadly-mode-change", handleModeChange);
-    return () =>
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("leadly-mode-change", handleModeChange);
-  }, []);
+    };
+  }, [initialMode, router]);
 
-  // Show skeleton until mode is determined
-  if (mode === null) {
-    return <ScheduleSkeleton />;
-  }
-
-  if (mode === "keyword") {
-    return <>{keywordContent}</>;
-  }
-
-  return <>{leadGenContent}</>;
+  return <>{children}</>;
 }

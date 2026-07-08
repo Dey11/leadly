@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 import { DashboardShell } from "@/components/dashboard/shell";
 import { type DashboardNavItem } from "@/components/dashboard/nav";
@@ -40,6 +41,12 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const designMode = process.env.NEXT_PUBLIC_DESIGN_MODE === "1";
+
+  const cookieStore = await cookies();
+  const initialMode =
+    cookieStore.get("leadly-product-mode")?.value === "keyword"
+      ? "keyword"
+      : "leadgen";
 
   let account: AccountSummary | null = null;
 
@@ -118,6 +125,7 @@ export default async function DashboardLayout({
         accountName={account.name ?? "Leadly user"}
         accountEmail={account.email}
         keywordWalkthrough={<KeywordWalkthrough />}
+        initialMode={initialMode}
       >
         {children}
       </DashboardShell>

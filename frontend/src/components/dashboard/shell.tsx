@@ -34,6 +34,7 @@ import { BugReportDialog } from "@/components/shared/bug-report-dialog";
 import {
   ProductModeToggle,
   useProductMode,
+  type ProductMode,
 } from "@/components/dashboard/product-mode-toggle";
 
 type DashboardShellProps = {
@@ -44,6 +45,7 @@ type DashboardShellProps = {
   accountName?: string | null;
   accountEmail?: string | null;
   keywordWalkthrough?: React.ReactNode;
+  initialMode: ProductMode;
   children: React.ReactNode;
 };
 
@@ -55,13 +57,14 @@ export function DashboardShell({
   accountName,
   accountEmail,
   keywordWalkthrough,
+  initialMode,
   children,
 }: DashboardShellProps) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const [productMode, setProductMode] = useProductMode();
+  const [productMode, setProductMode] = useProductMode(initialMode);
 
   const navItems =
     productMode === "keyword" ? keywordNavItems : leadGenNavItems;
