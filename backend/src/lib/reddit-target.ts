@@ -21,8 +21,17 @@ export function parseCustomFeedTarget(
     return { owner: pathMatch[1], name: pathMatch[2] };
   }
 
+  // Bare composite form. Reddit path prefixes are not usernames, so reject
+  // things like "r/SaaS" (a subreddit) or "u/someone" here — otherwise they'd
+  // be misread as owner/name and surface a confusing "feed not found" error.
+  const REDDIT_PATH_PREFIXES = new Set(["r", "u", "user", "m"]);
   const parts = trimmed.replace(/^\/+|\/+$/g, "").split("/");
-  if (parts.length === 2 && parts[0] && parts[1]) {
+  if (
+    parts.length === 2 &&
+    parts[0] &&
+    parts[1] &&
+    !REDDIT_PATH_PREFIXES.has(parts[0].toLowerCase())
+  ) {
     return { owner: parts[0], name: parts[1] };
   }
 
