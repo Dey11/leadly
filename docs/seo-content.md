@@ -267,6 +267,46 @@ The frontend blog routes are intentionally dynamic:
 This avoids caching an empty blog page during deploys when the frontend starts
 before the backend or restored database is fully ready.
 
+### Admin publishing API
+
+Production's database is not publicly reachable (Coolify), so posts authored
+externally (e.g. with an AI assistant) are published by calling secured admin
+endpoints on the live API instead of writing to the database directly.
+
+Implementation:
+
+- `backend/src/controllers/admin-blog.ts`
+- `backend/src/types/admin-blog.ts`
+- `backend/src/routes/admin.ts`
+
+All endpoints require the `X-Admin-API-Key` header to match the server's
+`ADMIN_API_KEY` env var (same middleware as the rest of `/api/v1/admin`).
+
+- `POST /api/v1/admin/blog/posts` — create a post.
+  - Required: `title`, `content` (min 200 chars), `excerpt`.
+  - Optional: `slug` (derived from `title` via `slugify` when omitted, and
+    normalized through `slugify` even when provided), `tags` (default `[]`),
+    `coverImage`, `authorName`, `authorRole`, `authorImage`, `metaTitle`
+    (defaults to `title`), `metaDescription` (defaults to `excerpt`),
+    `canonicalUrl`, `status` (`DRAFT` | `PUBLISHED` | `ARCHIVED`, default
+    `PUBLISHED`), `publishedAt` (ISO datetime, defaults to now when
+    `status` is `PUBLISHED`), `isAiGenerated` (default `true`),
+    `generationPrompt`.
+  - Returns `201` with `{ id, slug, status, publishedAt, canonicalUrl }`.
+  - Returns `409` if a post with that slug already exists (including a race
+    caught via the Prisma unique-constraint error).
+- `PUT /api/v1/admin/blog/posts/:slug` — update an existing post by its
+  current slug. Same fields, all optional. Returns `404` if the slug does not
+  exist, `409` on a slug collision, and the same summary shape as create.
+- `GET /api/v1/admin/blog/posts` — list posts including drafts and scheduled
+  posts (the public `/blog` routes hide those). Supports `?status=` and
+  `?limit=` (default 50, max 200). Returns compact summaries: `id`, `slug`,
+  `title`, `status`, `publishedAt`, `updatedAt`, `tags`.
+
+There is intentionally no delete endpoint. A `DRAFT` post or one with a
+future `publishedAt` stays hidden from the public blog routes, matching the
+"published and due" rule described above.
+
 ## Images
 
 The content engine still uses a controlled stock-image pool for blog covers and inline visuals.
@@ -321,5 +361,8 @@ Operational guidance:
 - `backend/src/seo/topics.ts`
 - `backend/src/workers/blog.worker.ts`
 - `backend/src/routes/blog.ts`
+- `backend/src/controllers/admin-blog.ts`
+- `backend/src/types/admin-blog.ts`
+- `backend/src/routes/admin.ts`
 - `backend/src/scripts/manual-generate-blog.ts`
 - `backend/src/scripts/generate-blog-backlog.ts`
