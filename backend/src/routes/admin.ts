@@ -1,6 +1,11 @@
 import express from "express";
 import { requireAdminApiKey } from "../middleware/admin-auth";
 import { sendLogsToDiscord } from "../controllers/admin";
+import {
+  createAdminBlogPost,
+  updateAdminBlogPost,
+  listAdminBlogPosts,
+} from "../controllers/admin-blog";
 
 const router = express.Router();
 
@@ -13,5 +18,24 @@ router.use(requireAdminApiKey);
  * No request body required.
  */
 router.post("/logs/discord", sendLogsToDiscord);
+
+/**
+ * GET /api/v1/admin/blog/posts
+ * List blog posts, including drafts and scheduled posts.
+ * Supports ?status= and ?limit= query params.
+ */
+router.get("/blog/posts", listAdminBlogPosts);
+
+/**
+ * POST /api/v1/admin/blog/posts
+ * Create a new blog post.
+ */
+router.post("/blog/posts", createAdminBlogPost);
+
+/**
+ * PUT /api/v1/admin/blog/posts/:slug
+ * Update an existing blog post identified by its current slug.
+ */
+router.put("/blog/posts/:slug", updateAdminBlogPost);
 
 export default router;
