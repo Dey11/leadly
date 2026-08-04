@@ -79,4 +79,19 @@ describe("processLeads resilience", () => {
     ).rejects.toThrow("provider stalled");
     expect(calls).toBe(3);
   });
+
+  test("classifies at most two posts concurrently", async () => {
+    let active = 0;
+    let maxActive = 0;
+    const classifier: LeadClassifier = async () => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      active -= 1;
+      return { array: [], providerName: "test" };
+    };
+
+    await processor.processLeads(posts, icp, classifier);
+    expect(maxActive).toBe(processor.AI_POST_CLASSIFICATION_CONCURRENCY);
+  });
 });

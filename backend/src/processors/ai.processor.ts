@@ -7,6 +7,7 @@ import { generateAIArray } from "../lib/ai";
 import logger from "../lib/logger";
 
 export const AI_POST_CLASSIFICATION_TIMEOUT_MS = 45_000;
+export const AI_POST_CLASSIFICATION_CONCURRENCY = 2;
 const MAX_CONSECUTIVE_CLASSIFICATION_FAILURES = 3;
 
 const VENDOR_PATTERNS = [
@@ -115,53 +116,64 @@ export async function processLeads(
   let consecutiveFailures = 0;
   let lastError: unknown;
 
-  for (const post of posts) {
-    let leadsArray: Lead[];
-    let providerName: string;
+  for (
+    let offset = 0;
+    offset < posts.length;
+    offset += AI_POST_CLASSIFICATION_CONCURRENCY
+  ) {
+    const batch = posts.slice(
+      offset,
+      offset + AI_POST_CLASSIFICATION_CONCURRENCY,
+    );
+    const batchResults = await Promise.allSettled(
+      batch.map((post) =>
+        classifyPost({
+          temperature: 0.15,
+          topP: 1,
+          elementSchema: leadSchema,
+          prompt: leadGenerationPrompt
+            .replace("{icp_profile}", icpBrief)
+            .replace("{post}", JSON.stringify(post)),
+          timeoutMs: AI_POST_CLASSIFICATION_TIMEOUT_MS,
+        }),
+      ),
+    );
 
-    try {
-      const result = await classifyPost({
-        temperature: 0.15,
-        topP: 1,
-        elementSchema: leadSchema,
-        prompt: leadGenerationPrompt
-          .replace("{icp_profile}", icpBrief)
-          .replace("{post}", JSON.stringify(post)),
-        timeoutMs: AI_POST_CLASSIFICATION_TIMEOUT_MS,
-      });
-      leadsArray = result.array;
-      providerName = result.providerName;
-      successfulClassifications += 1;
-      consecutiveFailures = 0;
-    } catch (error) {
-      lastError = error;
-      consecutiveFailures += 1;
-      logger.warn(
-        `[AI] Skipping Reddit post ${post.postId} after classification failure`,
-      );
+    for (const [index, result] of batchResults.entries()) {
+      const post = batch[index];
+      if (result.status === "rejected") {
+        lastError = result.reason;
+        consecutiveFailures += 1;
+        logger.warn(
+          `[AI] Skipping Reddit post ${post.postId} after classification failure`,
+        );
 
-      if (consecutiveFailures >= MAX_CONSECUTIVE_CLASSIFICATION_FAILURES) {
-        throw error;
-      }
-      continue;
-    }
-
-    for (const lead of leadsArray) {
-      const summaryText = `${lead.title} ${lead.reasoning}`.toLowerCase();
-      if (isVendorOffer(summaryText)) {
+        if (consecutiveFailures >= MAX_CONSECUTIVE_CLASSIFICATION_FAILURES) {
+          throw result.reason;
+        }
         continue;
       }
 
-      lead.relevanceScore >= MIN_RELEVANCE_SCORE &&
-        leads.push({
-          platform: "REDDIT",
-          leadType: lead.leadType,
-          content: lead.title,
-          url: lead.url,
-          author: lead.author,
-          reasoning: lead.reasoning,
-          aiProvider: providerName,
-        });
+      successfulClassifications += 1;
+      consecutiveFailures = 0;
+
+      for (const lead of result.value.array) {
+        const summaryText = `${lead.title} ${lead.reasoning}`.toLowerCase();
+        if (isVendorOffer(summaryText)) {
+          continue;
+        }
+
+        lead.relevanceScore >= MIN_RELEVANCE_SCORE &&
+          leads.push({
+            platform: "REDDIT",
+            leadType: lead.leadType,
+            content: lead.title,
+            url: lead.url,
+            author: lead.author,
+            reasoning: lead.reasoning,
+            aiProvider: result.value.providerName,
+          });
+      }
     }
   }
 

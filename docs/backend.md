@@ -220,9 +220,10 @@ Responsibilities:
 
 - consume BullMQ `scrapeJobs`
 - run Reddit scrape processing with concurrency 10
-- bound each Reddit-post AI classification to 45 seconds, skip isolated
-  provider failures, and fail the scrape after three consecutive failures so a
-  provider stall cannot leave the monitor permanently `RUNNING`
+- classify at most two Reddit posts concurrently per monitor, bound each
+  classification to 45 seconds, skip isolated provider failures, and fail the
+  scrape after three consecutive failures so a provider stall cannot leave the
+  monitor permanently `RUNNING`
 - ship logs on a cron
 - start the blog worker cron
 
