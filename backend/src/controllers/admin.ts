@@ -7,6 +7,7 @@ import {
   MonitorDuplicateRepairError,
   repairMonitorDuplicates,
 } from "../services/monitor-duplicate-repair";
+import { recoverStaleMonitorJobs } from "../services/monitor-job-recovery";
 
 const monitorDiagnosticsSchema = z.object({
   email: z.string().email(),
@@ -17,6 +18,15 @@ const monitorDedupeSchema = z
     email: z.string().email(),
     dryRun: z.boolean().default(true),
     confirmAccountId: z.string().optional(),
+  })
+  .strict();
+
+const monitorJobRecoverySchema = z
+  .object({
+    email: z.string().email(),
+    dryRun: z.boolean().default(true),
+    confirmAccountId: z.string().optional(),
+    confirmJobIds: z.array(z.string()).optional(),
   })
   .strict();
 
@@ -90,5 +100,28 @@ export async function dedupeMonitors(req: Request, res: Response) {
 
     logger.error("Failed to repair monitor duplicates:", error);
     return res.status(500).json({ error: "Failed to repair monitors" });
+  }
+}
+
+export async function recoverMonitorJobs(req: Request, res: Response) {
+  const payload = monitorJobRecoverySchema.safeParse(req.body);
+
+  if (!payload.success) {
+    return res.status(400).json({ error: "Invalid job recovery request" });
+  }
+
+  try {
+    const result = await recoverStaleMonitorJobs(payload.data);
+    logger.info(
+      `Admin monitor job recovery ${result.applied ? "applied" : "previewed"} for account ${result.accountId}`,
+    );
+    return res.json({ payload: result });
+  } catch (error) {
+    if (error instanceof MonitorDuplicateRepairError) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
+
+    logger.error("Failed to recover stale monitor jobs:", error);
+    return res.status(500).json({ error: "Failed to recover monitor jobs" });
   }
 }

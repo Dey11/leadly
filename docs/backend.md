@@ -131,6 +131,8 @@ Mounted at `/api/v1/blog`
 - `POST /api/v1/admin/monitors/dedupe` supports a read-only `dryRun` preview;
   applying requires the inspected `confirmAccountId` and preserves related
   lead/scrape history.
+- `POST /api/v1/admin/monitors/jobs/recover` previews and safely replaces
+  account-scoped scrape jobs orphaned for at least 20 minutes.
 - `POST /api/v1/bug-reports`
 - `GET /api/v1/bug-reports`
 

@@ -3,6 +3,7 @@ import { requireAdminApiKey } from "../middleware/admin-auth";
 import {
   dedupeMonitors,
   getMonitorDiagnostics,
+  recoverMonitorJobs,
   sendLogsToDiscord,
 } from "../controllers/admin";
 import {
@@ -34,6 +35,12 @@ router.post("/monitors/diagnostics", getMonitorDiagnostics);
  * Preview or apply a lossless repair for imported duplicate monitor graphs.
  */
 router.post("/monitors/dedupe", dedupeMonitors);
+
+/**
+ * POST /api/v1/admin/monitors/jobs/recover
+ * Preview or replace account-scoped scrape jobs orphaned by a worker failure.
+ */
+router.post("/monitors/jobs/recover", recoverMonitorJobs);
 
 /**
  * GET /api/v1/admin/blog/posts

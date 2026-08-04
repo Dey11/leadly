@@ -242,6 +242,11 @@ Leadly implements a robust logging strategy using **Winston**.
     `merged_*` monitor/ICP records. Apply requests are rejected while recent
     scrape jobs may still be active.
   - **Auth**: Requires header `X-Admin-API-Key: <ADMIN_API_KEY>`
+- **Stale monitor job recovery**:
+  - **Endpoint**: `POST /api/v1/admin/monitors/jobs/recover`
+  - Uses the same dry-run, account confirmation flow and also requires
+    `confirmJobIds` to exactly match the preview before replacing stale jobs.
+  - **Auth**: Requires header `X-Admin-API-Key: <ADMIN_API_KEY>`
 
 ### Admin API Key
 
