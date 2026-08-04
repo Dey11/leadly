@@ -166,7 +166,8 @@ export const KEYWORD_CRON_INTERVAL = "30 * * * *"; // Keyword: hourly at xx:30
 export const MAX_SCRAPE_RETRY_COUNT = 3;
 export const SCRAPE_RETRY_DELAY_MS = 60 * 60 * 1000;
 
-// Stuck pending job threshold (6 hours) - jobs stuck in PENDING bypass Redis
+// Stuck job threshold (6 hours). PENDING jobs may have missed Redis delivery;
+// RUNNING jobs may have been orphaned by a worker restart or crash.
 export const STUCK_PENDING_THRESHOLD_MS = 6 * 60 * 60 * 1000;
 
 export const WEBHOOK_EVENTS = {

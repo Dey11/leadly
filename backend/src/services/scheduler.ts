@@ -56,13 +56,20 @@ async function pickupRetryJobs() {
   }
 }
 
-async function processStuckPendingJobs() {
+async function processStuckJobs() {
   const stuckThreshold = new Date(Date.now() - STUCK_PENDING_THRESHOLD_MS);
 
   const stuckJobs = await db.scrapeJob.findMany({
     where: {
-      status: "PENDING",
-      createdAt: { lte: stuckThreshold },
+      OR: [
+        { status: "PENDING", createdAt: { lte: stuckThreshold } },
+        { status: "RUNNING", startedAt: { lte: stuckThreshold } },
+        {
+          status: "RUNNING",
+          startedAt: null,
+          createdAt: { lte: stuckThreshold },
+        },
+      ],
       monitor: {
         user: {
           isDeleted: false,
@@ -74,7 +81,9 @@ async function processStuckPendingJobs() {
     },
   });
 
-  logger.info(`Found ${stuckJobs.length} stuck PENDING jobs (>6 hours old)`);
+  logger.info(
+    `Found ${stuckJobs.length} stuck PENDING/RUNNING jobs (>6 hours old)`,
+  );
 
   for (const job of stuckJobs) {
     try {
@@ -83,6 +92,7 @@ async function processStuckPendingJobs() {
           evt: "scheduler.stuck_job_processing",
           jobId: job.id,
           monitorId: job.monitorId,
+          status: job.status,
           createdAt: job.createdAt.toISOString(),
           ageHours: Math.round(
             (Date.now() - job.createdAt.getTime()) / (1000 * 60 * 60),
@@ -113,8 +123,8 @@ async function processStuckPendingJobs() {
 export async function runScheduler() {
   logger.info("Running scheduler");
 
-  // Process stuck pending jobs first
-  await processStuckPendingJobs();
+  // Recover jobs orphaned before or during worker execution.
+  await processStuckJobs();
 
   // Pick up retry jobs
   await pickupRetryJobs();

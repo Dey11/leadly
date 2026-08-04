@@ -57,13 +57,20 @@ async function pickupKeywordRetryJobs() {
   }
 }
 
-async function processStuckKeywordPendingJobs() {
+async function processStuckKeywordJobs() {
   const stuckThreshold = new Date(Date.now() - STUCK_PENDING_THRESHOLD_MS);
 
   const stuckJobs = await db.keywordScrapeJob.findMany({
     where: {
-      status: "PENDING",
-      createdAt: { lte: stuckThreshold },
+      OR: [
+        { status: "PENDING", createdAt: { lte: stuckThreshold } },
+        { status: "RUNNING", startedAt: { lte: stuckThreshold } },
+        {
+          status: "RUNNING",
+          startedAt: null,
+          createdAt: { lte: stuckThreshold },
+        },
+      ],
       keywordMonitor: {
         user: {
           isDeleted: false,
@@ -76,7 +83,7 @@ async function processStuckKeywordPendingJobs() {
   });
 
   logger.info(
-    `[Keyword Scheduler] Found ${stuckJobs.length} stuck PENDING jobs (>6 hours old)`,
+    `[Keyword Scheduler] Found ${stuckJobs.length} stuck PENDING/RUNNING jobs (>6 hours old)`,
   );
 
   for (const job of stuckJobs) {
@@ -86,6 +93,7 @@ async function processStuckKeywordPendingJobs() {
           evt: "keyword_scheduler.stuck_job_processing",
           jobId: job.id,
           keywordMonitorId: job.keywordMonitorId,
+          status: job.status,
           createdAt: job.createdAt.toISOString(),
           ageHours: Math.round(
             (Date.now() - job.createdAt.getTime()) / (1000 * 60 * 60),
@@ -121,8 +129,8 @@ async function processStuckKeywordPendingJobs() {
 export async function runKeywordScheduler() {
   logger.info("[Keyword Scheduler] Running...");
 
-  // Process stuck pending jobs first
-  await processStuckKeywordPendingJobs();
+  // Recover jobs orphaned before or during worker execution.
+  await processStuckKeywordJobs();
 
   // Pick up retry jobs
   await pickupKeywordRetryJobs();
