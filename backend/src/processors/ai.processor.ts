@@ -4,6 +4,10 @@ import { z } from "zod";
 import { leadGenerationPrompt } from "../lib/prompts";
 import { MIN_RELEVANCE_SCORE } from "../lib/constants";
 import { generateAIArray } from "../lib/ai";
+import logger from "../lib/logger";
+
+export const AI_POST_CLASSIFICATION_TIMEOUT_MS = 45_000;
+const MAX_CONSECUTIVE_CLASSIFICATION_FAILURES = 3;
 
 const VENDOR_PATTERNS = [
   /\bfor\s*hire\b/i,
@@ -80,6 +84,17 @@ const leadSchema = z.object({
 
 type Lead = z.infer<typeof leadSchema>;
 
+export type LeadClassifier = (options: {
+  temperature: number;
+  topP: number;
+  elementSchema: typeof leadSchema;
+  prompt: string;
+  timeoutMs: number;
+}) => Promise<{ array: Lead[]; providerName: string }>;
+
+const defaultLeadClassifier: LeadClassifier = (options) =>
+  generateAIArray<Lead>(options);
+
 export async function processLeads(
   posts: RedditPost[],
   icp: Pick<
@@ -92,19 +107,44 @@ export async function processLeads(
     | "qualifyingSignals"
     | "disqualifyingSignals"
   >,
+  classifyPost: LeadClassifier = defaultLeadClassifier,
 ): Promise<LeadData[]> {
   const leads: LeadData[] = [];
   const icpBrief = buildIcpBrief(icp);
+  let successfulClassifications = 0;
+  let consecutiveFailures = 0;
+  let lastError: unknown;
 
   for (const post of posts) {
-    const { array: leadsArray, providerName } = await generateAIArray<Lead>({
-      temperature: 0.15,
-      topP: 1,
-      elementSchema: leadSchema,
-      prompt: leadGenerationPrompt
-        .replace("{icp_profile}", icpBrief)
-        .replace("{post}", JSON.stringify(post)),
-    });
+    let leadsArray: Lead[];
+    let providerName: string;
+
+    try {
+      const result = await classifyPost({
+        temperature: 0.15,
+        topP: 1,
+        elementSchema: leadSchema,
+        prompt: leadGenerationPrompt
+          .replace("{icp_profile}", icpBrief)
+          .replace("{post}", JSON.stringify(post)),
+        timeoutMs: AI_POST_CLASSIFICATION_TIMEOUT_MS,
+      });
+      leadsArray = result.array;
+      providerName = result.providerName;
+      successfulClassifications += 1;
+      consecutiveFailures = 0;
+    } catch (error) {
+      lastError = error;
+      consecutiveFailures += 1;
+      logger.warn(
+        `[AI] Skipping Reddit post ${post.postId} after classification failure`,
+      );
+
+      if (consecutiveFailures >= MAX_CONSECUTIVE_CLASSIFICATION_FAILURES) {
+        throw error;
+      }
+      continue;
+    }
 
     for (const lead of leadsArray) {
       const summaryText = `${lead.title} ${lead.reasoning}`.toLowerCase();
@@ -123,6 +163,12 @@ export async function processLeads(
           aiProvider: providerName,
         });
     }
+  }
+
+  if (posts.length > 0 && successfulClassifications === 0) {
+    throw lastError instanceof Error
+      ? lastError
+      : new Error("No Reddit posts could be classified");
   }
 
   return leads;

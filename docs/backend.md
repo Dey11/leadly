@@ -187,7 +187,7 @@ Implemented in `backend/src/services/scheduler.ts`.
 
 Responsibilities:
 
-- recover stuck pending jobs
+- recover jobs stuck in either `PENDING` or `RUNNING`
 - reschedule failed jobs when retry windows open
 - check users whose `UserSchedule.scheduledHours` includes the current UTC hour
 - enforce billing limits via usage helpers
@@ -220,6 +220,9 @@ Responsibilities:
 
 - consume BullMQ `scrapeJobs`
 - run Reddit scrape processing with concurrency 10
+- bound each Reddit-post AI classification to 45 seconds, skip isolated
+  provider failures, and fail the scrape after three consecutive failures so a
+  provider stall cannot leave the monitor permanently `RUNNING`
 - ship logs on a cron
 - start the blog worker cron
 

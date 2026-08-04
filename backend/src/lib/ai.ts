@@ -78,11 +78,18 @@ async function sleep(ms: number): Promise<void> {
 async function withRetry<T>(
   fn: () => Promise<T>,
   providerName: string,
+  abortSignal?: AbortSignal,
 ): Promise<T> {
   let lastError: Error | undefined;
   let delay = RETRY_CONFIG.initialDelayMs;
 
   for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    if (abortSignal?.aborted) {
+      throw abortSignal.reason instanceof Error
+        ? abortSignal.reason
+        : new Error("AI request timed out");
+    }
+
     try {
       const result = await fn();
       // Log every successful generation
@@ -96,6 +103,12 @@ async function withRetry<T>(
       return result;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (abortSignal?.aborted) {
+        throw abortSignal.reason instanceof Error
+          ? abortSignal.reason
+          : lastError;
+      }
 
       if (!isRetryableError(error) || attempt === RETRY_CONFIG.maxRetries) {
         throw lastError;
@@ -167,6 +180,7 @@ type BaseOptions = {
   topP?: number;
   lite?: boolean;
   providerOrder?: string[]; // e.g., ["cerebras", "nebius", "gemini"]
+  timeoutMs?: number;
 };
 
 type GenerateObjectOptions<T> = BaseOptions & {
@@ -186,6 +200,9 @@ export async function generateAIObject<T>(
   opts: GenerateObjectOptions<T>,
 ): Promise<{ object: T; providerName: string }> {
   const errors: Error[] = [];
+  const abortSignal = opts.timeoutMs
+    ? AbortSignal.timeout(opts.timeoutMs)
+    : undefined;
 
   const sortedProviders = [...PROVIDERS].sort((a, b) => {
     if (!opts.providerOrder || opts.providerOrder.length === 0) return 0;
@@ -212,9 +229,11 @@ export async function generateAIObject<T>(
             system: opts.system,
             temperature: opts.temperature,
             topP: opts.topP,
+            abortSignal,
             providerOptions: AI_PROVIDER_OPTIONS,
           }),
         provider.name,
+        abortSignal,
       );
 
       if (errors.length > 0) {
@@ -245,6 +264,9 @@ export async function generateAIArray<T>(
   opts: GenerateArrayOptions<T>,
 ): Promise<{ array: T[]; providerName: string }> {
   const errors: Error[] = [];
+  const abortSignal = opts.timeoutMs
+    ? AbortSignal.timeout(opts.timeoutMs)
+    : undefined;
 
   const sortedProviders = [...PROVIDERS].sort((a, b) => {
     if (!opts.providerOrder || opts.providerOrder.length === 0) return 0;
@@ -271,9 +293,11 @@ export async function generateAIArray<T>(
             system: opts.system,
             temperature: opts.temperature,
             topP: opts.topP,
+            abortSignal,
             providerOptions: AI_PROVIDER_OPTIONS,
           }),
         provider.name,
+        abortSignal,
       );
 
       if (errors.length > 0) {
