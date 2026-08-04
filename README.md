@@ -230,6 +230,10 @@ Leadly implements a robust logging strategy using **Winston**.
   - **Endpoint**: `POST /api/v1/admin/logs/discord`
   - **Auth**: Requires header `X-Admin-API-Key: <ADMIN_API_KEY>`
   - **Response**: JSON confirmation of files sent.
+- **Monitor duplicate diagnostics**:
+  - **Endpoint**: `POST /api/v1/admin/monitors/diagnostics`
+  - **Body**: `{ "email": "account@example.com" }`
+  - **Auth**: Requires header `X-Admin-API-Key: <ADMIN_API_KEY>`
 
 ### Admin API Key
 

@@ -1,6 +1,6 @@
 import express from "express";
 import { requireAdminApiKey } from "../middleware/admin-auth";
-import { sendLogsToDiscord } from "../controllers/admin";
+import { getMonitorDiagnostics, sendLogsToDiscord } from "../controllers/admin";
 import {
   createAdminBlogPost,
   updateAdminBlogPost,
@@ -18,6 +18,12 @@ router.use(requireAdminApiKey);
  * No request body required.
  */
 router.post("/logs/discord", sendLogsToDiscord);
+
+/**
+ * POST /api/v1/admin/monitors/diagnostics
+ * Inspect exact duplicate monitor groups for an account email.
+ */
+router.post("/monitors/diagnostics", getMonitorDiagnostics);
 
 /**
  * GET /api/v1/admin/blog/posts

@@ -127,6 +127,7 @@ Mounted at `/api/v1/blog`
 ### Operations
 
 - `POST /api/v1/admin/logs/discord`
+- `POST /api/v1/admin/monitors/diagnostics` with `{ "email": "..." }`
 - `POST /api/v1/bug-reports`
 - `GET /api/v1/bug-reports`
 
