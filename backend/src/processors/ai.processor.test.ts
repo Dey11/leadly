@@ -21,9 +21,11 @@ Object.assign(process.env, {
 });
 
 let processor: typeof import("./ai.processor");
+let constants: typeof import("../lib/constants");
 
 beforeAll(async () => {
   processor = await import("./ai.processor");
+  constants = await import("../lib/constants");
 });
 
 const icp = {
@@ -47,6 +49,13 @@ const posts = ["one", "two", "three"].map((postId) => ({
 }));
 
 describe("processLeads resilience", () => {
+  test("uses a supported stable Gemini model for lead classification", () => {
+    expect(
+      constants.AI_PROVIDERS.find((provider) => provider.name === "gemini")
+        ?.model,
+    ).toBe("gemini-2.5-flash");
+  });
+
   test("bounds every classification and skips an isolated provider failure", async () => {
     const timeouts: number[] = [];
     let calls = 0;
