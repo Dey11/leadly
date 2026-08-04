@@ -188,6 +188,11 @@ Responsibilities:
 - create `ScrapeJob` rows
 - enqueue jobs to BullMQ
 
+If a paid subscription renewal advances `currentPeriodEnd` but its usage-reset
+webhook is interrupted, the next scheduler/account usage check repairs the
+expired usage window before enforcing quotas. A stale subscription period does
+not receive additional paid quota.
+
 ### Keyword scheduler
 
 Implemented in `backend/src/services/keyword-scheduler.ts`.
@@ -290,3 +295,5 @@ Do not run `prisma migrate dev` or `prisma db push` against the production datab
 - environment is validated at boot with Zod
 - verified-only mutations are enforced in middleware
 - usage controls are enforced centrally, not only in the UI
+- database IDs are treated as opaque route values so migrated records remain
+  manageable alongside newly generated CUID records

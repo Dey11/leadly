@@ -15,7 +15,9 @@ All business APIs are versioned under `/api/v1`. Non-authentication routes requi
 - **Enums:** Values are aligned with Prisma schema
   - `Platform`: `REDDIT` (future platforms can be added)
   - `MonitorStatus`: `ACTIVE`, `PAUSED`, `ARCHIVED`
-- **IDs:** All primary identifiers are [CUID](https://github.com/paralleldrive/cuid2) strings (e.g., `clyabc123...`).
+- **IDs:** Treat primary identifiers as opaque strings. Newly created records use
+  CUIDs (for example, `clyabc123...`), while migrated production records can use
+  legacy prefixes such as `merged_monitors_...`.
 
 ## Authentication
 

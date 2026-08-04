@@ -27,6 +27,9 @@ export const updateMonitorSchema = z
 
 export const monitorIdParamSchema = z
   .object({
-    id: z.string().cuid(),
+    // Monitor IDs are opaque database identifiers. Production also contains
+    // migrated records with `merged_monitors_...` IDs, so constraining route
+    // params to newly generated CUIDs makes those valid records undeletable.
+    id: z.string().trim().min(1).max(191),
   })
   .strict();

@@ -1,6 +1,7 @@
 import db from "../lib/db";
 import { TIER_LIMITS } from "./constants";
-import { SubscriptionTier } from "@prisma/client";
+import { SubscriptionTier, type Usage } from "@prisma/client";
+import { resolveUsagePeriodRollover } from "./usage-period";
 
 type Enforcement = "off" | "log" | "on";
 
@@ -19,6 +20,37 @@ function monthlyWindowForFree(now: Date = new Date()): {
   const start = new Date(Date.UTC(y, m, 1, 0, 0, 0, 0));
   const end = new Date(Date.UTC(y, m + 1, 0, 23, 59, 59, 999));
   return { start, end };
+}
+
+async function rollExpiredUsagePeriod(
+  usage: Usage,
+  userId: string,
+  tier: SubscriptionTier,
+  currentPeriodEnd?: Date | null,
+  now: Date = new Date(),
+) {
+  const rollover = resolveUsagePeriodRollover({
+    tier,
+    usagePeriodEnd: usage.periodEnd,
+    currentPeriodEnd,
+    now,
+  });
+
+  if (!rollover) {
+    return usage;
+  }
+
+  return db.usage.update({
+    where: { userId },
+    data: {
+      ...rollover,
+      scrapesUsed: 0,
+      dailyDate: startOfUtcDay(now),
+      dailyCount: 0,
+      keywordScrapesUsed: 0,
+      keywordDailyCount: 0,
+    },
+  });
 }
 
 /**
@@ -150,25 +182,14 @@ export async function previewUsage(
 }> {
   let usage = await getOrCreateUsage(userId, tier, currentPeriodEnd);
 
-  // if we've crossed month window end for FREE plan, roll to new month
   const now = new Date();
-  if (now > usage.periodEnd) {
-    if (tier === "FREE") {
-      const win = monthlyWindowForFree(now);
-      usage = await db.usage.update({
-        where: { userId },
-        data: {
-          periodStart: win.start,
-          periodEnd: win.end,
-          scrapesUsed: 0,
-          dailyDate: startOfUtcDay(now),
-          dailyCount: 0,
-          keywordScrapesUsed: 0,
-          keywordDailyCount: 0,
-        },
-      });
-    }
-  }
+  usage = await rollExpiredUsagePeriod(
+    usage,
+    userId,
+    tier,
+    currentPeriodEnd,
+    now,
+  );
 
   const { dailyLimit, monthlyLimit } = computeLimits(tier);
   const today = startOfUtcDay();
@@ -216,22 +237,13 @@ export async function tryConsumeScrapeCredit(
   let usage = await getOrCreateUsage(userId, tier, currentPeriodEnd);
   const now = new Date();
 
-  // Roll monthly window if ended
-  if (now > usage.periodEnd && tier === "FREE") {
-    const win = monthlyWindowForFree(now);
-    usage = await db.usage.update({
-      where: { userId },
-      data: {
-        periodStart: win.start,
-        periodEnd: win.end,
-        scrapesUsed: 0,
-        dailyDate: startOfUtcDay(now),
-        dailyCount: 0,
-        keywordScrapesUsed: 0,
-        keywordDailyCount: 0,
-      },
-    });
-  }
+  usage = await rollExpiredUsagePeriod(
+    usage,
+    userId,
+    tier,
+    currentPeriodEnd,
+    now,
+  );
 
   // Reset daily if date changed
   const today = startOfUtcDay(now);

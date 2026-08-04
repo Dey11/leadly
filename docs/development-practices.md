@@ -28,6 +28,7 @@ Use Bun commands across both apps.
 - `bun run build`
 - `bun run lint`
 - `bun run lint:fix`
+- `bun run test`
 - `bun run prisma:generate`
 - `bun run prisma:migrate`
 - `bun run prisma:push`
