@@ -7,7 +7,10 @@ import {
   MonitorDuplicateRepairError,
   repairMonitorDuplicates,
 } from "../services/monitor-duplicate-repair";
-import { recoverStaleMonitorJobs } from "../services/monitor-job-recovery";
+import {
+  recoverStaleMonitorJobs,
+  retryFailedMonitorJobs,
+} from "../services/monitor-job-recovery";
 
 const monitorDiagnosticsSchema = z.object({
   email: z.string().email(),
@@ -123,5 +126,31 @@ export async function recoverMonitorJobs(req: Request, res: Response) {
 
     logger.error("Failed to recover stale monitor jobs:", error);
     return res.status(500).json({ error: "Failed to recover monitor jobs" });
+  }
+}
+
+export async function retryFailedMonitorJobsHandler(
+  req: Request,
+  res: Response,
+) {
+  const payload = monitorJobRecoverySchema.safeParse(req.body);
+
+  if (!payload.success) {
+    return res.status(400).json({ error: "Invalid job retry request" });
+  }
+
+  try {
+    const result = await retryFailedMonitorJobs(payload.data);
+    logger.info(
+      `Admin failed monitor job retry ${result.applied ? "applied" : "previewed"} for account ${result.accountId}`,
+    );
+    return res.json({ payload: result });
+  } catch (error) {
+    if (error instanceof MonitorDuplicateRepairError) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
+
+    logger.error("Failed to retry monitor jobs:", error);
+    return res.status(500).json({ error: "Failed to retry monitor jobs" });
   }
 }

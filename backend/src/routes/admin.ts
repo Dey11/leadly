@@ -4,6 +4,7 @@ import {
   dedupeMonitors,
   getMonitorDiagnostics,
   recoverMonitorJobs,
+  retryFailedMonitorJobsHandler,
   sendLogsToDiscord,
 } from "../controllers/admin";
 import {
@@ -41,6 +42,12 @@ router.post("/monitors/dedupe", dedupeMonitors);
  * Preview or replace account-scoped scrape jobs orphaned by a worker failure.
  */
 router.post("/monitors/jobs/recover", recoverMonitorJobs);
+
+/**
+ * POST /api/v1/admin/monitors/jobs/retry-failed
+ * Preview or retry the latest failed job for each monitor that is not active.
+ */
+router.post("/monitors/jobs/retry-failed", retryFailedMonitorJobsHandler);
 
 /**
  * GET /api/v1/admin/blog/posts

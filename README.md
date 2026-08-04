@@ -247,6 +247,12 @@ Leadly implements a robust logging strategy using **Winston**.
   - Uses the same dry-run, account confirmation flow and also requires
     `confirmJobIds` to exactly match the preview before replacing stale jobs.
   - **Auth**: Requires header `X-Admin-API-Key: <ADMIN_API_KEY>`
+- **Failed monitor job retry**:
+  - **Endpoint**: `POST /api/v1/admin/monitors/jobs/retry-failed`
+  - Previews the latest failed job for each monitor without an active job;
+    applying requires the inspected account and exact job IDs, then enqueues
+    one fresh retry per monitor.
+  - **Auth**: Requires header `X-Admin-API-Key: <ADMIN_API_KEY>`
 
 ### Admin API Key
 

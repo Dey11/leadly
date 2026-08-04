@@ -2,6 +2,10 @@ import { Prisma } from "@prisma/client";
 import db from "../lib/db";
 import { scrapeJobsQueue } from "../lib/queue";
 import { MonitorDuplicateRepairError } from "./monitor-duplicate-repair";
+import {
+  selectLatestFailedJobsWithoutActiveMonitor,
+  type RetryableFailedMonitorJob,
+} from "./monitor-job-retry-selection";
 
 const STALE_JOB_WINDOW_MS = 20 * 60 * 1000;
 
@@ -23,6 +27,14 @@ export type MonitorJobRecoveryResult = {
   accountId: string;
   applied: boolean;
   recoverableJobs: RecoverableMonitorJob[];
+  replacementJobs: ReplacementJob[];
+  queueFailures: string[];
+};
+
+export type FailedMonitorJobRetryResult = {
+  accountId: string;
+  applied: boolean;
+  retryableJobs: RetryableFailedMonitorJob[];
   replacementJobs: ReplacementJob[];
   queueFailures: string[];
 };
@@ -51,6 +63,48 @@ async function findRecoverableJobs(
     },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
   });
+}
+
+async function findRetryableFailedJobs(
+  tx: Prisma.TransactionClient,
+  accountId: string,
+): Promise<RetryableFailedMonitorJob[]> {
+  const [failedJobs, activeJobs] = await Promise.all([
+    tx.scrapeJob.findMany({
+      where: {
+        status: "FAILED",
+        monitor: { userId: accountId },
+      },
+      select: {
+        id: true,
+        monitorId: true,
+        createdAt: true,
+        retryCount: true,
+        errorMessage: true,
+        monitor: { select: { target: true } },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    }),
+    tx.scrapeJob.findMany({
+      where: {
+        status: { in: ["PENDING", "RUNNING"] },
+        monitor: { userId: accountId },
+      },
+      select: { monitorId: true },
+    }),
+  ]);
+
+  return selectLatestFailedJobsWithoutActiveMonitor(
+    failedJobs.map((job) => ({
+      id: job.id,
+      monitorId: job.monitorId,
+      monitorTarget: job.monitor.target,
+      createdAt: job.createdAt,
+      retryCount: job.retryCount,
+      errorMessage: job.errorMessage,
+    })),
+    new Set(activeJobs.map((job) => job.monitorId)),
+  );
 }
 
 export async function recoverStaleMonitorJobs(input: {
@@ -151,6 +205,86 @@ export async function recoverStaleMonitorJobs(input: {
         accountId: account.id,
         applied: true,
         recoverableJobs,
+        replacementJobs,
+      };
+    },
+    { isolationLevel: "Serializable" },
+  );
+
+  const queueFailures: string[] = [];
+  for (const replacement of transactionResult.replacementJobs) {
+    try {
+      await scrapeJobsQueue.add("scrapeJobs", {
+        monitorId: replacement.monitorId,
+        jobId: replacement.id,
+      });
+    } catch {
+      queueFailures.push(replacement.id);
+    }
+  }
+
+  return { ...transactionResult, queueFailures };
+}
+
+export async function retryFailedMonitorJobs(input: {
+  email: string;
+  dryRun: boolean;
+  confirmAccountId?: string;
+  confirmJobIds?: string[];
+}): Promise<FailedMonitorJobRetryResult> {
+  const transactionResult = await db.$transaction(
+    async (tx) => {
+      if (input.dryRun) {
+        await tx.$executeRaw`SET TRANSACTION READ ONLY`;
+      }
+
+      const account = await tx.user.findUnique({
+        where: { email: input.email.trim().toLowerCase() },
+        select: { id: true },
+      });
+      if (!account) {
+        throw new MonitorDuplicateRepairError("Account not found", 404);
+      }
+
+      const retryableJobs = await findRetryableFailedJobs(tx, account.id);
+      if (input.dryRun) {
+        return {
+          accountId: account.id,
+          applied: false,
+          retryableJobs,
+          replacementJobs: [] as ReplacementJob[],
+        };
+      }
+
+      if (input.confirmAccountId !== account.id) {
+        throw new MonitorDuplicateRepairError(
+          "confirmAccountId must exactly match the inspected account",
+          400,
+        );
+      }
+
+      const expectedIds = retryableJobs.map((job) => job.id).sort();
+      const confirmedIds = [...(input.confirmJobIds ?? [])].sort();
+      if (JSON.stringify(expectedIds) !== JSON.stringify(confirmedIds)) {
+        throw new MonitorDuplicateRepairError(
+          "confirmJobIds must exactly match the current retry preview",
+          409,
+        );
+      }
+
+      const replacementJobs: ReplacementJob[] = [];
+      for (const job of retryableJobs) {
+        const replacement = await tx.scrapeJob.create({
+          data: { monitorId: job.monitorId, status: "PENDING" },
+          select: { id: true, monitorId: true },
+        });
+        replacementJobs.push(replacement);
+      }
+
+      return {
+        accountId: account.id,
+        applied: true,
+        retryableJobs,
         replacementJobs,
       };
     },

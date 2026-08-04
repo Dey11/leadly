@@ -133,6 +133,8 @@ Mounted at `/api/v1/blog`
   lead/scrape history.
 - `POST /api/v1/admin/monitors/jobs/recover` previews and safely replaces
   account-scoped scrape jobs orphaned for at least 20 minutes.
+- `POST /api/v1/admin/monitors/jobs/retry-failed` previews and safely retries
+  the latest failed job for each inactive account monitor.
 - `POST /api/v1/bug-reports`
 - `GET /api/v1/bug-reports`
 
