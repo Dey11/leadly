@@ -117,10 +117,10 @@ export type AIProviderConfig = {
 export const AI_PROVIDERS: AIProviderConfig[] = [
   {
     name: "gemini",
-    // Keep lead classification on the stable model name exposed by the
-    // production Gemini API. `gemini-3-flash` is not a valid API model ID.
-    model: "gemini-2.5-flash",
-    liteModel: "gemini-2.5-flash-lite",
+    // Gemini 3.5 Flash is the stable production model ID. The older
+    // `gemini-3-flash` alias is not valid for GenerateContent requests.
+    model: "gemini-3.5-flash",
+    liteModel: "gemini-3.5-flash-lite",
     enabled: true,
   },
   {

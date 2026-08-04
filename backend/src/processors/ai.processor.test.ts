@@ -49,11 +49,13 @@ const posts = ["one", "two", "three"].map((postId) => ({
 }));
 
 describe("processLeads resilience", () => {
-  test("uses a supported stable Gemini model for lead classification", () => {
-    expect(
-      constants.AI_PROVIDERS.find((provider) => provider.name === "gemini")
-        ?.model,
-    ).toBe("gemini-2.5-flash");
+  test("uses Gemini 3.5 Flash for lead classification", () => {
+    const gemini = constants.AI_PROVIDERS.find(
+      (provider) => provider.name === "gemini",
+    );
+
+    expect(gemini?.model).toBe("gemini-3.5-flash");
+    expect(gemini?.liteModel).toBe("gemini-3.5-flash-lite");
   });
 
   test("bounds every classification and skips an isolated provider failure", async () => {
