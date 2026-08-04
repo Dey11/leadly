@@ -146,11 +146,7 @@ export function rateLimit(action: keyof typeof rateLimitConfigs) {
 }
 
 export type UserRateLimitAction =
-  | "read"
-  | "write"
-  | "delete"
-  | "ai"
-  | "billing";
+  "read" | "write" | "delete" | "ai" | "billing";
 
 type UserRateLimitConfig = {
   windowMs: number;
