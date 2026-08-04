@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import db from "../lib/db";
 
-type IcpIdentity = {
+export type IcpIdentity = {
   id: string;
   name: string;
   summary: string;
@@ -14,7 +14,7 @@ type IcpIdentity = {
   createdAt: Date;
 };
 
-type MonitorIdentity = {
+export type MonitorIdentity = {
   id: string;
   icpId: string;
   platform: string;

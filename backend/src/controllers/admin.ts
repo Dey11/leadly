@@ -3,10 +3,22 @@ import { sendAllLogsToDiscord } from "../services/logger.service";
 import logger from "../lib/logger";
 import { z } from "zod";
 import { getMonitorDuplicateDiagnostics } from "../services/monitor-diagnostics";
+import {
+  MonitorDuplicateRepairError,
+  repairMonitorDuplicates,
+} from "../services/monitor-duplicate-repair";
 
 const monitorDiagnosticsSchema = z.object({
   email: z.string().email(),
 });
+
+const monitorDedupeSchema = z
+  .object({
+    email: z.string().email(),
+    dryRun: z.boolean().default(true),
+    confirmAccountId: z.string().optional(),
+  })
+  .strict();
 
 /**
  * POST /api/v1/admin/logs/discord
@@ -55,5 +67,28 @@ export async function getMonitorDiagnostics(req: Request, res: Response) {
   } catch (error) {
     logger.error("Failed to inspect monitor duplicates:", error);
     return res.status(500).json({ error: "Failed to inspect monitors" });
+  }
+}
+
+export async function dedupeMonitors(req: Request, res: Response) {
+  const payload = monitorDedupeSchema.safeParse(req.body);
+
+  if (!payload.success) {
+    return res.status(400).json({ error: "Invalid monitor repair request" });
+  }
+
+  try {
+    const result = await repairMonitorDuplicates(payload.data);
+    logger.info(
+      `Admin monitor dedupe ${result.applied ? "applied" : "previewed"} for account ${result.plan.accountId}`,
+    );
+    return res.json({ payload: result });
+  } catch (error) {
+    if (error instanceof MonitorDuplicateRepairError) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
+
+    logger.error("Failed to repair monitor duplicates:", error);
+    return res.status(500).json({ error: "Failed to repair monitors" });
   }
 }

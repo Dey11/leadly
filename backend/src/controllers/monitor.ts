@@ -10,6 +10,13 @@ import { TIER_LIMITS } from "../lib/constants";
 import { Reddit } from "../services/reddit";
 import { env } from "../env";
 import { parseCustomFeedTarget } from "../lib/reddit-target";
+import {
+  DuplicateMonitorError,
+  DUPLICATE_MONITOR_MESSAGE,
+  createMonitorWithIdentityGuard,
+  normalizeMonitorTargetForStorage,
+  updateMonitorWithIdentityGuard,
+} from "../services/monitor-identity";
 
 const CUSTOM_FEED_UPGRADE_MESSAGE =
   "Custom feeds are a Premium feature. Upgrade to Premium to monitor Reddit lists.";
@@ -96,18 +103,20 @@ export const createMonitor = async (req: Request, res: Response) => {
       }
     }
 
-    const monitor = await db.monitor.create({
-      data: {
-        icpId: payload.data.icpId,
-        platform: payload.data.platform,
-        target,
-        targetType,
-        userId: req.userId!,
-      },
+    target = normalizeMonitorTargetForStorage(target);
+    const monitor = await createMonitorWithIdentityGuard({
+      icpId: payload.data.icpId,
+      platform: payload.data.platform,
+      target,
+      targetType,
+      userId: req.userId!,
     });
 
     res.status(201).json(monitor);
   } catch (err) {
+    if (err instanceof DuplicateMonitorError) {
+      return res.status(409).json({ error: DUPLICATE_MONITOR_MESSAGE });
+    }
     logger.error("Failed to create monitor:", err);
     res.status(500).json({ error: "Failed to create monitor" });
   }
@@ -244,13 +253,27 @@ export const updateMonitor = async (req: Request, res: Response) => {
       }
     }
 
-    const updatedMonitor = await db.monitor.update({
-      where: { id },
+    if (target) {
+      target = normalizeMonitorTargetForStorage(target);
+    }
+
+    const identity = {
+      icpId: payload.data.icpId ?? existing.icpId,
+      platform: effectivePlatform,
+      targetType: effectiveTargetType,
+      target: target ?? existing.target,
+    };
+    const updatedMonitor = await updateMonitorWithIdentityGuard({
+      id,
+      identity,
       data: { ...payload.data, ...(target ? { target } : {}) },
     });
 
     res.json(updatedMonitor);
   } catch (err) {
+    if (err instanceof DuplicateMonitorError) {
+      return res.status(409).json({ error: DUPLICATE_MONITOR_MESSAGE });
+    }
     res.status(500).json({ error: "Failed to update monitor" });
   }
 };

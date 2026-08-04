@@ -234,6 +234,14 @@ Leadly implements a robust logging strategy using **Winston**.
   - **Endpoint**: `POST /api/v1/admin/monitors/diagnostics`
   - **Body**: `{ "email": "account@example.com" }`
   - **Auth**: Requires header `X-Admin-API-Key: <ADMIN_API_KEY>`
+- **Monitor duplicate repair**:
+  - **Endpoint**: `POST /api/v1/admin/monitors/dedupe`
+  - **Preview body**: `{ "email": "account@example.com", "dryRun": true }`
+  - **Apply body**: `{ "email": "account@example.com", "dryRun": false, "confirmAccountId": "..." }`
+  - Preserves unique monitors, leads, and scrape history while removing copied
+    `merged_*` monitor/ICP records. Apply requests are rejected while recent
+    scrape jobs may still be active.
+  - **Auth**: Requires header `X-Admin-API-Key: <ADMIN_API_KEY>`
 
 ### Admin API Key
 

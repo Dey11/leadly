@@ -1,6 +1,10 @@
 import express from "express";
 import { requireAdminApiKey } from "../middleware/admin-auth";
-import { getMonitorDiagnostics, sendLogsToDiscord } from "../controllers/admin";
+import {
+  dedupeMonitors,
+  getMonitorDiagnostics,
+  sendLogsToDiscord,
+} from "../controllers/admin";
 import {
   createAdminBlogPost,
   updateAdminBlogPost,
@@ -24,6 +28,12 @@ router.post("/logs/discord", sendLogsToDiscord);
  * Inspect exact duplicate monitor groups for an account email.
  */
 router.post("/monitors/diagnostics", getMonitorDiagnostics);
+
+/**
+ * POST /api/v1/admin/monitors/dedupe
+ * Preview or apply a lossless repair for imported duplicate monitor graphs.
+ */
+router.post("/monitors/dedupe", dedupeMonitors);
 
 /**
  * GET /api/v1/admin/blog/posts

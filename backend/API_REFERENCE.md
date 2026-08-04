@@ -290,6 +290,8 @@ Monitors describe specific sources (e.g., a subreddit) to watch for an ICP. User
 - **Failure cases:**
   - `400` if validation fails, the ICP is missing, or tier monitor limit reached.
   - `400` if user lacks an active subscription (no `subscription` row).
+  - `409` if the same ICP already monitors the normalized target. Target
+    identity is case-insensitive and ignores surrounding whitespace.
 
 ### GET `/monitors`
 
