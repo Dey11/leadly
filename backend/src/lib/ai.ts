@@ -6,13 +6,6 @@ import { AI_PROVIDERS, type AIProviderConfig } from "./constants";
 import logger from "./logger";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
-const nebius = createOpenAICompatible({
-  name: "nebius",
-  baseURL: "https://api.tokenfactory.nebius.com/v1",
-  apiKey: process.env.NEBIUS_API_KEY ?? "",
-  supportsStructuredOutputs: true,
-});
-
 const wavespeed = createOpenAICompatible({
   name: "wavespeed",
   baseURL: "https://llm.wavespeed.ai/v1",
@@ -136,8 +129,6 @@ function createProviderModel(config: AIProviderConfig): LanguageModel {
       return google(config.model);
     case "cerebras":
       return cerebras(config.model);
-    case "nebius":
-      return nebius(config.model);
     case "wavespeed":
       return wavespeed(config.model);
     default:
@@ -154,8 +145,6 @@ function createProviderLiteModel(
       return google(config.liteModel);
     case "cerebras":
       return config.liteModel ? cerebras(config.liteModel) : undefined;
-    case "nebius":
-      return config.liteModel ? nebius(config.liteModel) : undefined;
     case "wavespeed":
       return config.liteModel ? wavespeed(config.liteModel) : undefined;
     default:
@@ -179,7 +168,7 @@ type BaseOptions = {
   temperature?: number;
   topP?: number;
   lite?: boolean;
-  providerOrder?: string[]; // e.g., ["cerebras", "nebius", "gemini"]
+  providerOrder?: string[]; // e.g., ["cerebras", "gemini"]
   timeoutMs?: number;
 };
 

@@ -133,21 +133,15 @@ export const AI_PROVIDERS: AIProviderConfig[] = [
     model: "zai-glm-4.7",
     enabled: true,
   },
-  {
-    name: "nebius",
-    model: "Qwen/Qwen3-235B-A22B-Instruct-2507",
-    enabled: true,
-  },
 ] as const;
 
 /**
  * Provider fallback order for ICP generation (fast, user-facing).
- * Order: WaveSpeed → Cerebras → Nebius → Gemini (fallback)
+ * Order: Gemini → Cerebras → WaveSpeed.
  */
 export const AI_PROVIDER_ORDER_ICP: string[] = [
   "gemini",
   "cerebras",
-  "nebius",
   "wavespeed",
 ] as const;
 
@@ -157,7 +151,6 @@ export const AI_PROVIDER_ORDER_ICP: string[] = [
 export const AI_PROVIDER_ORDER_DM: string[] = [
   "wavespeed",
   "cerebras",
-  "nebius",
   "gemini",
 ] as const;
 

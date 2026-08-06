@@ -56,6 +56,11 @@ describe("processLeads resilience", () => {
 
     expect(gemini?.model).toBe("gemini-3.5-flash");
     expect(gemini?.liteModel).toBe("gemini-3.5-flash-lite");
+    expect(
+      constants.AI_PROVIDERS.some((provider) => provider.name === "nebius"),
+    ).toBeFalse();
+    expect(constants.AI_PROVIDER_ORDER_ICP).not.toContain("nebius");
+    expect(constants.AI_PROVIDER_ORDER_DM).not.toContain("nebius");
   });
 
   test("bounds every classification and skips an isolated provider failure", async () => {
