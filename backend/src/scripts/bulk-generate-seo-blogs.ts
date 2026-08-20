@@ -22,7 +22,6 @@ type BulkBlogBrief = {
 const SITE_URL = "https://leadly.live";
 const AUTHOR_NAME = "Leadly Editorial";
 const AUTHOR_ROLE = "Reddit Demand Research";
-const PROVIDER_ORDER_WITHOUT_NEBIUS = ["cerebras", "wavespeed", "gemini"];
 const COOLDOWN_MS = Number(process.env.BULK_BLOG_COOLDOWN_MS ?? "12000");
 
 const SHARED_SOURCES = {
@@ -1295,7 +1294,6 @@ async function generateArticle(brief: BulkBlogBrief, attempt: number) {
   const images = pickImages(brief.slug);
   const { object, providerName } = await generateAIObject<ArticlePayload>({
     lite: true,
-    providerOrder: PROVIDER_ORDER_WITHOUT_NEBIUS,
     temperature: attempt === 1 ? 0.35 : 0.25,
     topP: 0.9,
     schema: articleSchema,

@@ -7,6 +7,7 @@ import { getCookieOptions } from "./auth";
 import logger from "../lib/logger";
 import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
 import { initializeOrResetUsagePeriod } from "../lib/usage";
+import { recordAuthenticatedActivity } from "../services/automation";
 
 const oauth2Client = new OAuth2Client(
   env.GOOGLE_CLIENT_ID,
@@ -214,6 +215,7 @@ export async function googleOAuthCallback(req: Request, res: Response) {
       });
 
       const session = await createSessionInTransaction(db as any, user.id);
+      await recordAuthenticatedActivity(user.id);
       return res
         .cookie("session_token", session.token, getCookieOptions())
         .redirect(`${env.FRONTEND_URL}/dashboard`);
@@ -276,6 +278,8 @@ export async function googleOAuthCallback(req: Request, res: Response) {
         return await createSessionInTransaction(tx, existingUser.id);
       });
 
+      await recordAuthenticatedActivity(existingUser.id);
+
       return res
         .cookie("session_token", session.token, getCookieOptions())
         .redirect(`${env.FRONTEND_URL}/dashboard`);
@@ -330,6 +334,8 @@ export async function googleOAuthCallback(req: Request, res: Response) {
 
       return await createSessionInTransaction(tx, newUser.id);
     });
+
+    await recordAuthenticatedActivity(session.userId);
 
     return res
       .cookie("session_token", session.token, getCookieOptions())

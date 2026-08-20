@@ -24,6 +24,13 @@ export interface AccountSummary {
   occupation: string | null;
   referrer: string | null;
   sampleDm: string | null;
+  automation: AutomationState | null;
+}
+
+export interface AutomationState {
+  enabled: boolean;
+  pausedForInactivity: boolean;
+  inactivityThresholdDays: number;
 }
 
 export interface AccountResponse {
@@ -69,7 +76,7 @@ export interface Monitor {
 export interface ScrapeJob {
   id: string;
   monitorId: string;
-  status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
+  status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCELLED";
   errorMessage: string | null;
   metadata: Record<string, unknown> | null;
   warmLeads: number;

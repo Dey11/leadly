@@ -47,6 +47,7 @@ const envSchema = z.object({
   GOOGLE_GENERATIVE_AI_API_KEY: z
     .string()
     .min(1, "GOOGLE_GENERATIVE_AI_API_KEY is required"),
+  NEBIUS_API_KEY: z.string().min(1, "NEBIUS_API_KEY is required"),
 
   // Discord
   DISCORD_WEBHOOK_URL: z.string().url().optional(),

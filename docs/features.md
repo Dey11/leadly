@@ -81,7 +81,15 @@ Current tier system in code:
 
 Usage is enforced for both lead-generation scrapes and keyword scrapes.
 
+Free-tier automation pauses after three consecutive days without authenticated
+product activity. Monitor and schedule definitions remain intact. The first
+dashboard visit after the pause shows an “Enable jobs again” banner; the action
+resumes future ICP and keyword jobs. Paid tiers are exempt.
+
 ## AI-Assisted Features
+
+All AI-assisted features use Nebius DeepSeek V4 Flash first. Google Gemini,
+Cerebras, and WaveSpeed remain available as automatic fallbacks.
 
 - ICP suggestion
 - subreddit suggestion for monitors

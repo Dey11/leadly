@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import db from "../lib/db";
+import { recordAuthenticatedActivity } from "../services/automation";
 
 function getClearCookieOptions() {
   const isProduction = process.env.NODE_ENV === "production";
@@ -77,6 +78,8 @@ export async function authMiddleware(
   req.userId = result.session!.userId;
   req.emailVerified = result.session!.user.emailVerified;
 
+  await recordAuthenticatedActivity(result.session!.userId);
+
   next();
 }
 
@@ -106,6 +109,8 @@ export async function authMiddlewareVerifiedOnly(
 
   req.userId = session.userId;
   req.emailVerified = session.user.emailVerified;
+
+  await recordAuthenticatedActivity(session.userId);
 
   next();
 }

@@ -9,7 +9,7 @@
 - Database: PostgreSQL
 - Queue: BullMQ
 - Cache and rate limiting: Redis via ioredis
-- AI: Google Gemini through both `@google/generative-ai` and Vercel AI SDK packages
+- AI: Nebius DeepSeek V4 Flash first, with Google Gemini, Cerebras, and WaveSpeed fallbacks through the Vercel AI SDK
 - Billing: Dodo Payments
 - Email: Resend
 - OAuth: Google OAuth
@@ -27,7 +27,7 @@ It is responsible for:
 - registering the raw-body Dodo webhook route before JSON parsing
 - exposing `/health`
 - starting the hourly lead scheduler
-- starting the half-hour keyword scheduler
+- starting the hourly keyword scheduler at minute 30
 - starting hourly log shipping
 - handling graceful shutdown for HTTP, Redis, and Prisma
 
@@ -63,6 +63,7 @@ Mounted at `/api/v1/account`
 - `DELETE /`
 - `GET /sessions`
 - `GET /usage`
+- `POST /automation/enable`
 
 ### ICP Lead Generation
 
@@ -155,6 +156,12 @@ There are two auth middleware variants:
 - `authMiddleware`: authenticated access, verified or unverified
 - `authMiddlewareVerifiedOnly`: blocks unverified users with a specific error code
 
+Successful authenticated use records account activity. Writes are throttled to
+once per hour, while the three-day free-tier inactivity decision is evaluated
+before refreshing the timestamp. Returning therefore does not silently resume
+paused jobs; the user must call `POST /account/automation/enable` from the
+dashboard banner.
+
 ## Rate Limiting
 
 Redis-backed rate limiting exists at two levels.
@@ -195,6 +202,7 @@ Responsibilities:
 - enforce billing limits via usage helpers
 - create `ScrapeJob` rows
 - enqueue jobs to BullMQ
+- skip inactive free-tier accounts and cancel their pending jobs
 
 If a paid subscription renewal advances `currentPeriodEnd` but its usage-reset
 webhook is interrupted, the next scheduler/account usage check repairs the
@@ -213,6 +221,7 @@ Responsibilities:
 - enforce keyword usage limits
 - create `KeywordScrapeJob` rows
 - process jobs inline
+- skip inactive free-tier accounts and cancel their pending jobs
 
 ### Worker
 
@@ -233,7 +242,7 @@ Responsibilities:
 
 Core tables and their roles:
 
-- `User`: account, onboarding fields, profile fields, verification state
+- `User`: account, onboarding fields, profile fields, verification state, last authenticated activity, and free-tier automation pause state
 - `Session`: persistent session storage
 - `Subscription`: plan, state, Dodo identifiers
 - `Usage`: monthly and daily usage counters for both lead-gen and keyword monitoring
@@ -265,7 +274,7 @@ Main categories:
 - scraping: `NITTER_URL`, Reddit API credentials
 - billing: Dodo API keys, product ids, webhook secret
 - email: `RESEND_API_KEY`
-- AI: `GOOGLE_GENERATIVE_AI_API_KEY`
+- AI: `NEBIUS_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`, and fallback-provider keys
 - logging and ops: Discord webhook URLs, `ADMIN_API_KEY`
 - OAuth: Google client credentials and redirect URI
 - feature flags: `FEATURE_BILLING_ENFORCEMENT`

@@ -1,33 +1,25 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
 import path from "path";
 import slugify from "slugify";
-import { env } from "../env";
-
-// Manually load dotenv for standalone script execution
-import dotenv from "dotenv";
-dotenv.config();
-
-const API_KEY =
-  process.env.GOOGLE_GENERATIVE_AI_API_KEY || env.GOOGLE_GENERATIVE_AI_API_KEY;
-
-if (!API_KEY) {
-  console.error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
-  process.exit(1);
-}
-
-const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
-
-// ... (existing code, note: we are only replacing the changed parts via MultiReplace if needed, but here simple replace is fine if we target blocks)
-
-// Actually, I need to check the file content again to target correctly.
-// Let's just use the known block.
+import { z } from "zod";
+import { generateAIObject } from "../lib/ai";
 
 const SOLUTIONS_PATH = path.join(
   __dirname,
   "../../../frontend/src/data/solutions.json",
 );
+
+const landingPageSchema = z.object({
+  slug: z.string(),
+  title: z.string(),
+  description: z.string(),
+  role: z.string(),
+  pain_points: z.array(z.string()).length(3),
+  value_props: z.array(z.string()).length(3),
+  why_reddit: z.string(),
+  cta: z.string(),
+  image_keyword: z.string(),
+});
 
 const ROLES_TO_GENERATE = [
   // Real Estate & Home Services
@@ -124,16 +116,12 @@ async function generatePage(role: string) {
             "image_keyword": "string (2-3 words for unsplash search, e.g. 'modern house interior' or 'law office')"
             }
             
-            Return ONLY valid JSON.
         `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response
-      .text()
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-    const data = JSON.parse(text);
+    const { object: data } = await generateAIObject({
+      prompt,
+      schema: landingPageSchema,
+    });
 
     // Sanitize Slug
     data.slug = slugify(data.title, { lower: true, strict: true });

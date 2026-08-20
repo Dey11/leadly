@@ -213,6 +213,11 @@ export const clientApi = {
       message: string;
       payload: { data: import("@/types/backend").AccountSummary };
     }>(`${apiBaseUrl}/account`),
+  enableAutomation: () =>
+    request<{
+      message: string;
+      payload: import("@/types/backend").AutomationState;
+    }>(`${apiBaseUrl}/account/automation/enable`, { method: "POST" }),
   updateAccount: (body: { name: string }) =>
     request(`${apiBaseUrl}/account`, { method: "PATCH", body }),
   deleteAccount: () => request(`${apiBaseUrl}/account`, { method: "DELETE" }),

@@ -18,6 +18,7 @@ import { initializeOrResetUsagePeriod } from "../lib/usage";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/email";
 import { validateEmail } from "../lib/email-validator";
 import { checkRateLimit, incrementRateLimit } from "../lib/rate-limit";
+import { recordAuthenticatedActivity } from "../services/automation";
 
 // const isDevelopment = env.NODE_ENV === "development";
 const isDevelopment = false; // turn this on when testing non registration
@@ -294,6 +295,7 @@ export async function login(req: Request, res: Response) {
     // Allow both verified and unverified users to log in
     // Unverified users will be restricted at the route level for protected operations
     const session = await createUserSession(userInDb.id);
+    await recordAuthenticatedActivity(userInDb.id);
 
     res
       .cookie("session_token", session.token, getCookieOptions())

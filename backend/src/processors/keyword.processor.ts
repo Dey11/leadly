@@ -14,13 +14,13 @@ import {
   getMatchingSnippet,
 } from "../lib/keywords";
 import { notifyNewLeads } from "../services/notification.service";
-import type {
-  KeywordLead,
-  KeywordMonitor,
-  KeywordSet,
-  User,
-} from "@prisma/client";
+import type { KeywordMonitor, KeywordSet, User } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
+import {
+  automationEligibleUserWhere,
+  getAutomationStateForUser,
+  INACTIVITY_CANCELLATION_MESSAGE,
+} from "../services/automation";
 
 type KeywordMonitorWithSetAndUser = KeywordMonitor & {
   keywordSet: KeywordSet;
@@ -30,6 +30,7 @@ type KeywordMonitorWithSetAndUser = KeywordMonitor & {
 type FailureContext = {
   keywordMonitorId: string;
   jobId: string;
+  userId: string;
   source: "scheduler" | "stuck_job_fallback";
 };
 
@@ -43,13 +44,23 @@ async function executeKeywordCoreScrapeLogic(
     env.REDDIT_CLIENT_SECRET,
   );
 
-  await db.keywordScrapeJob.update({
-    where: { id: jobId },
+  const startResult = await db.keywordScrapeJob.updateMany({
+    where: {
+      id: jobId,
+      status: { in: ["PENDING", "RUNNING"] },
+    },
     data: {
       status: "RUNNING",
       startedAt: new Date(),
     },
   });
+
+  if (startResult.count === 0) {
+    logger.info(
+      `[Keyword Processor] Skipping job ${jobId}: it is no longer runnable`,
+    );
+    return 0;
+  }
 
   const target = buildRedditFetchTarget(monitor.targetType, monitor.target);
   const posts = await redditClient.fetchPosts(
@@ -96,45 +107,61 @@ async function executeKeywordCoreScrapeLogic(
     };
   });
 
-  // Insert leads (skip duplicates by URL)
-  let createdCount = 0;
-  const createdLeads: KeywordLead[] = [];
-  for (const lead of leads) {
-    try {
-      const created = await db.keywordLead.create({ data: lead });
-      createdLeads.push(created);
-      createdCount++;
-    } catch (err: any) {
-      if (err.code === "P2002") {
-        logger.info(`[Keyword Processor] Skipping duplicate URL: ${lead.url}`);
-      } else {
-        throw err;
-      }
-    }
-  }
-
   // Update cursor for pagination
   const newCursor =
     posts.length > 0 ? posts[posts.length - 1].postId : monitor.cursor;
 
-  await db.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.keywordMonitor.update({
-      where: { id: keywordMonitorId },
-      data: {
-        cursor: newCursor,
-        lastScrapedAt: new Date(),
-      },
-    });
+  const commitResult = await db.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      const completion = await tx.keywordScrapeJob.updateMany({
+        where: {
+          id: jobId,
+          status: "RUNNING",
+          keywordMonitor: { user: automationEligibleUserWhere() },
+        },
+        data: {
+          status: "COMPLETED",
+          completedAt: new Date(),
+          matchCount: 0,
+          nextRetryAt: null,
+        },
+      });
 
-    await tx.keywordScrapeJob.update({
-      where: { id: jobId },
-      data: {
-        status: "COMPLETED",
-        completedAt: new Date(),
-        matchCount: createdCount,
-        nextRetryAt: null,
-      },
-    });
+      if (completion.count === 0) return null;
+
+      const created = await tx.keywordLead.createMany({
+        data: leads,
+        skipDuplicates: true,
+      });
+
+      await tx.keywordMonitor.update({
+        where: { id: keywordMonitorId },
+        data: {
+          cursor: newCursor,
+          lastScrapedAt: new Date(),
+        },
+      });
+
+      await tx.keywordScrapeJob.update({
+        where: { id: jobId },
+        data: { matchCount: created.count },
+      });
+
+      return { createdCount: created.count };
+    },
+  );
+
+  if (!commitResult) {
+    await getAutomationStateForUser(monitor.userId);
+    logger.info(
+      `[Keyword Processor] Discarded results for cancelled job ${jobId}`,
+    );
+    return 0;
+  }
+
+  const { createdCount } = commitResult;
+  const createdLeads = await db.keywordLead.findMany({
+    where: { scrapeJobId: jobId },
   });
 
   logger.info(
@@ -174,6 +201,7 @@ async function handleKeywordJobFailure(
   skipRetry: boolean,
 ) {
   const errorMessage = error instanceof Error ? error.message : "Unknown error";
+  const userWhere = automationEligibleUserWhere();
 
   if (!skipRetry && currentRetryCount < MAX_SCRAPE_RETRY_COUNT) {
     const nextRetryAt = new Date(Date.now() + SCRAPE_RETRY_DELAY_MS);
@@ -181,8 +209,12 @@ async function handleKeywordJobFailure(
       `[Keyword Processor] Scheduling retry for job ${jobId} at ${nextRetryAt.toISOString()}`,
     );
 
-    await db.keywordScrapeJob.update({
-      where: { id: jobId },
+    await db.keywordScrapeJob.updateMany({
+      where: {
+        id: jobId,
+        status: { not: "CANCELLED" },
+        keywordMonitor: { user: userWhere },
+      },
       data: {
         status: "FAILED",
         retryCount: currentRetryCount,
@@ -196,16 +228,12 @@ async function handleKeywordJobFailure(
     );
 
     await db.$transaction(async (tx: Prisma.TransactionClient) => {
-      await tx.failedKeywordScrapeJob.create({
-        data: {
-          keywordMonitorId: context.keywordMonitorId,
-          originalJobId: jobId,
-          errorMessage,
+      const failure = await tx.keywordScrapeJob.updateMany({
+        where: {
+          id: jobId,
+          status: { not: "CANCELLED" },
+          keywordMonitor: { user: userWhere },
         },
-      });
-
-      await tx.keywordScrapeJob.update({
-        where: { id: jobId },
         data: {
           status: "FAILED",
           errorMessage,
@@ -213,8 +241,20 @@ async function handleKeywordJobFailure(
           nextRetryAt: null,
         },
       });
+
+      if (failure.count === 0) return;
+
+      await tx.failedKeywordScrapeJob.create({
+        data: {
+          keywordMonitorId: context.keywordMonitorId,
+          originalJobId: jobId,
+          errorMessage,
+        },
+      });
     });
   }
+
+  await getAutomationStateForUser(context.userId);
 }
 
 export async function processKeywordScrapeJob(
@@ -231,6 +271,11 @@ export async function processKeywordScrapeJob(
 
   if (!scrapeJob) {
     logger.warn("[Keyword Processor] Scrape job not found:", jobId);
+    return;
+  }
+
+  if (scrapeJob.status === "CANCELLED") {
+    logger.info(`[Keyword Processor] Skipping cancelled job ${jobId}`);
     return;
   }
 
@@ -262,6 +307,25 @@ export async function processKeywordScrapeJob(
     return;
   }
 
+  const automation = await getAutomationStateForUser(monitor.userId);
+  if (!automation?.enabled) {
+    await db.keywordScrapeJob.updateMany({
+      where: {
+        id: jobId,
+        status: { in: ["PENDING", "RUNNING"] },
+      },
+      data: {
+        status: "CANCELLED",
+        errorMessage: INACTIVITY_CANCELLATION_MESSAGE,
+        nextRetryAt: null,
+      },
+    });
+    logger.info(
+      `[Keyword Processor] Cancelled job ${jobId}: automation paused`,
+    );
+    return;
+  }
+
   try {
     const leadsCreated = await executeKeywordCoreScrapeLogic(
       keywordMonitorId,
@@ -282,7 +346,12 @@ export async function processKeywordScrapeJob(
 
     await handleKeywordJobFailure(
       jobId,
-      { keywordMonitorId, jobId, source: "scheduler" },
+      {
+        keywordMonitorId,
+        jobId,
+        userId: monitor.userId,
+        source: "scheduler",
+      },
       error,
       scrapeJob.retryCount + 1,
       false,
@@ -327,6 +396,30 @@ export async function processKeywordStuckJob(
     return;
   }
 
+  if (scrapeJob.status === "CANCELLED") {
+    logger.info(`[Keyword Processor] Skipping cancelled stuck job ${jobId}`);
+    return;
+  }
+
+  const automation = await getAutomationStateForUser(monitor.userId);
+  if (!automation?.enabled) {
+    await db.keywordScrapeJob.updateMany({
+      where: {
+        id: jobId,
+        status: { in: ["PENDING", "RUNNING"] },
+      },
+      data: {
+        status: "CANCELLED",
+        errorMessage: INACTIVITY_CANCELLATION_MESSAGE,
+        nextRetryAt: null,
+      },
+    });
+    logger.info(
+      `[Keyword Processor] Cancelled stuck job ${jobId}: automation paused`,
+    );
+    return;
+  }
+
   try {
     const leadsCreated = await executeKeywordCoreScrapeLogic(
       keywordMonitorId,
@@ -347,7 +440,12 @@ export async function processKeywordStuckJob(
 
     await handleKeywordJobFailure(
       jobId,
-      { keywordMonitorId, jobId, source: "stuck_job_fallback" },
+      {
+        keywordMonitorId,
+        jobId,
+        userId: monitor.userId,
+        source: "stuck_job_fallback",
+      },
       error,
       scrapeJob.retryCount + 1,
       true,

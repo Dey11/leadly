@@ -1,53 +1,21 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
 import path from "path";
-import { env } from "../env";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const API_KEY =
-  process.env.GOOGLE_GENERATIVE_AI_API_KEY || env.GOOGLE_GENERATIVE_AI_API_KEY;
-
-if (!API_KEY) {
-  console.error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
-  process.exit(1);
-}
-
-const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+import { z } from "zod";
+import { generateAIObject } from "../lib/ai";
 
 const SOLUTIONS_PATH = path.join(
   __dirname,
   "../../../frontend/src/data/solutions.json",
 );
 
-async function generateWithRetry(
-  prompt: string,
-  retries = 5,
-  delay = 5000,
-): Promise<string> {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const result = await model.generateContent(prompt);
-      return result.response.text();
-    } catch (error: any) {
-      if (
-        (error.status === 503 || error.message.includes("Overloaded")) &&
-        i < retries - 1
-      ) {
-        console.warn(
-          `Model overloaded. Retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`,
-        );
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        delay *= 2; // Exponential backoff
-        continue;
-      }
-      throw error;
-    }
-  }
-  throw new Error("Max retries reached");
-}
+const enrichmentSchema = z.object({
+  faqs: z
+    .array(z.object({ question: z.string(), answer: z.string() }))
+    .length(3),
+  use_cases: z
+    .array(z.object({ title: z.string(), description: z.string() }))
+    .length(3),
+});
 
 async function enrichData() {
   if (!fs.existsSync(SOLUTIONS_PATH)) {
@@ -98,12 +66,10 @@ async function enrichData() {
         Make sure Use Cases are concrete examples.
       `;
 
-      const text = await generateWithRetry(prompt);
-      const cleanedText = text
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
-      const enriched = JSON.parse(cleanedText);
+      const { object: enriched } = await generateAIObject({
+        prompt,
+        schema: enrichmentSchema,
+      });
 
       // Updates
       data[i] = { ...page, ...enriched };

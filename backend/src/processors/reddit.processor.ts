@@ -13,6 +13,11 @@ import {
 } from "../lib/constants";
 import { buildRedditFetchTarget } from "../lib/reddit-target";
 import { notifyNewLeads } from "../services/notification.service";
+import {
+  automationEligibleUserWhere,
+  getAutomationStateForUser,
+  INACTIVITY_CANCELLATION_MESSAGE,
+} from "../services/automation";
 
 type MonitorWithIcpAndUser = Monitor & {
   icp: Icp;
@@ -22,6 +27,7 @@ type MonitorWithIcpAndUser = Monitor & {
 type FailureContext = {
   monitorId: string;
   jobId: string;
+  userId: string;
   source: "bullmq" | "stuck_job_fallback";
 };
 
@@ -35,13 +41,23 @@ async function executeCoreScrapeLogic(
     env.REDDIT_CLIENT_SECRET,
   );
 
-  await db.scrapeJob.update({
-    where: { id: jobId },
+  const startResult = await db.scrapeJob.updateMany({
+    where: {
+      id: jobId,
+      status: { in: ["PENDING", "RUNNING"] },
+    },
     data: {
       status: "RUNNING",
       startedAt: new Date(),
     },
   });
+
+  if (startResult.count === 0) {
+    logger.info(
+      `[Reddit Processor] Skipping job ${jobId}: it is no longer runnable`,
+    );
+    return 0;
+  }
 
   const target = buildRedditFetchTarget(monitor.targetType, monitor.target);
   const posts = await redditClient.fetchPosts(
@@ -70,42 +86,60 @@ async function executeCoreScrapeLogic(
   const coldLeads = leads.filter((lead) => lead.leadType === "COLD");
   const neutralLeads = leads.filter((lead) => lead.leadType === "NEUTRAL");
 
-  await db.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.lead.createMany({
-      data: leads.map((lead) => ({
-        scrapeJobId: jobId,
-        platform: lead.platform,
-        leadType: lead.leadType,
-        content: lead.content,
-        url: lead.url,
-        author: lead.author,
-        reasoning: lead.reasoning,
-        aiProvider: lead.aiProvider,
-        status: "NEW" as LeadStatus,
-      })),
-      skipDuplicates: true,
-    });
+  const didCommit = await db.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      const completion = await tx.scrapeJob.updateMany({
+        where: {
+          id: jobId,
+          status: "RUNNING",
+          monitor: { user: automationEligibleUserWhere() },
+        },
+        data: {
+          status: "COMPLETED",
+          completedAt: new Date(),
+          warmLeads: warmLeads.length,
+          coldLeads: coldLeads.length,
+          neutralLeads: neutralLeads.length,
+          nextRetryAt: null,
+        },
+      });
 
-    await tx.scrapeJob.update({
-      where: { id: jobId },
-      data: {
-        status: "COMPLETED",
-        completedAt: new Date(),
-        warmLeads: warmLeads.length,
-        coldLeads: coldLeads.length,
-        neutralLeads: neutralLeads.length,
-        nextRetryAt: null,
-      },
-    });
+      if (completion.count === 0) return false;
 
-    await tx.monitor.update({
-      where: { id: monitorId },
-      data: {
-        cursor: lastPostId,
-        lastScrapedAt: new Date(),
-      },
-    });
-  });
+      await tx.lead.createMany({
+        data: leads.map((lead) => ({
+          scrapeJobId: jobId,
+          platform: lead.platform,
+          leadType: lead.leadType,
+          content: lead.content,
+          url: lead.url,
+          author: lead.author,
+          reasoning: lead.reasoning,
+          aiProvider: lead.aiProvider,
+          status: "NEW" as LeadStatus,
+        })),
+        skipDuplicates: true,
+      });
+
+      await tx.monitor.update({
+        where: { id: monitorId },
+        data: {
+          cursor: lastPostId,
+          lastScrapedAt: new Date(),
+        },
+      });
+
+      return true;
+    },
+  );
+
+  if (!didCommit) {
+    await getAutomationStateForUser(monitor.userId);
+    logger.info(
+      `[Reddit Processor] Discarded results for cancelled job ${jobId}`,
+    );
+    return 0;
+  }
 
   // Fire the per-user Discord notification (if configured) after the leads
   // have committed. Best-effort: notifyNewLeads never throws, but we still
@@ -144,6 +178,7 @@ async function handleJobFailure(
   skipRetry: boolean,
 ) {
   const errorMessage = error instanceof Error ? error.message : "Unknown error";
+  const userWhere = automationEligibleUserWhere();
 
   if (!skipRetry && currentRetryCount < MAX_SCRAPE_RETRY_COUNT) {
     const nextRetryAt = new Date(Date.now() + SCRAPE_RETRY_DELAY_MS);
@@ -151,8 +186,12 @@ async function handleJobFailure(
       `[Reddit Processor] Scheduling retry for job ${jobId} at ${nextRetryAt.toISOString()}`,
     );
 
-    await db.scrapeJob.update({
-      where: { id: jobId },
+    await db.scrapeJob.updateMany({
+      where: {
+        id: jobId,
+        status: { not: "CANCELLED" },
+        monitor: { user: userWhere },
+      },
       data: {
         status: "FAILED",
         retryCount: currentRetryCount,
@@ -166,16 +205,12 @@ async function handleJobFailure(
     );
 
     await db.$transaction(async (tx: Prisma.TransactionClient) => {
-      await tx.failedScrapeJob.create({
-        data: {
-          monitorId: context.monitorId,
-          originalJobId: jobId,
-          errorMessage,
+      const failure = await tx.scrapeJob.updateMany({
+        where: {
+          id: jobId,
+          status: { not: "CANCELLED" },
+          monitor: { user: userWhere },
         },
-      });
-
-      await tx.scrapeJob.update({
-        where: { id: jobId },
         data: {
           status: "FAILED",
           errorMessage,
@@ -183,8 +218,20 @@ async function handleJobFailure(
           nextRetryAt: null,
         },
       });
+
+      if (failure.count === 0) return;
+
+      await tx.failedScrapeJob.create({
+        data: {
+          monitorId: context.monitorId,
+          originalJobId: jobId,
+          errorMessage,
+        },
+      });
     });
   }
+
+  await getAutomationStateForUser(context.userId);
 }
 
 export async function processRedditScrape(job: Job) {
@@ -200,6 +247,11 @@ export async function processRedditScrape(job: Job) {
 
   if (!scrapeJob) {
     logger.warn("[Reddit Processor] Scrape job not found:", jobId);
+    return;
+  }
+
+  if (scrapeJob.status === "CANCELLED") {
+    logger.info(`[Reddit Processor] Skipping cancelled job ${jobId}`);
     return;
   }
 
@@ -225,6 +277,23 @@ export async function processRedditScrape(job: Job) {
     return;
   }
 
+  const automation = await getAutomationStateForUser(monitor.userId);
+  if (!automation?.enabled) {
+    await db.scrapeJob.updateMany({
+      where: {
+        id: jobId,
+        status: { in: ["PENDING", "RUNNING"] },
+      },
+      data: {
+        status: "CANCELLED",
+        errorMessage: INACTIVITY_CANCELLATION_MESSAGE,
+        nextRetryAt: null,
+      },
+    });
+    logger.info(`[Reddit Processor] Cancelled job ${jobId}: automation paused`);
+    return;
+  }
+
   try {
     const leadsCreated = await executeCoreScrapeLogic(
       monitorId,
@@ -245,7 +314,7 @@ export async function processRedditScrape(job: Job) {
 
     await handleJobFailure(
       jobId,
-      { monitorId, jobId, source: "bullmq" },
+      { monitorId, jobId, userId: monitor.userId, source: "bullmq" },
       error,
       scrapeJob.retryCount + 1,
       false,
@@ -284,6 +353,30 @@ export async function processStuckJob(monitorId: string, jobId: string) {
     return;
   }
 
+  if (scrapeJob.status === "CANCELLED") {
+    logger.info(`[Reddit Processor] Skipping cancelled stuck job ${jobId}`);
+    return;
+  }
+
+  const automation = await getAutomationStateForUser(monitor.userId);
+  if (!automation?.enabled) {
+    await db.scrapeJob.updateMany({
+      where: {
+        id: jobId,
+        status: { in: ["PENDING", "RUNNING"] },
+      },
+      data: {
+        status: "CANCELLED",
+        errorMessage: INACTIVITY_CANCELLATION_MESSAGE,
+        nextRetryAt: null,
+      },
+    });
+    logger.info(
+      `[Reddit Processor] Cancelled stuck job ${jobId}: automation paused`,
+    );
+    return;
+  }
+
   try {
     const leadsCreated = await executeCoreScrapeLogic(
       monitorId,
@@ -304,7 +397,12 @@ export async function processStuckJob(monitorId: string, jobId: string) {
 
     await handleJobFailure(
       jobId,
-      { monitorId, jobId, source: "stuck_job_fallback" },
+      {
+        monitorId,
+        jobId,
+        userId: monitor.userId,
+        source: "stuck_job_fallback",
+      },
       error,
       scrapeJob.retryCount + 1,
       true,

@@ -10,6 +10,7 @@ import {
 } from "../lib/constants";
 import { tryConsumeScrapeCredit } from "../lib/usage";
 import { env } from "../env";
+import { getAutomationStateForUser } from "./automation";
 
 async function pickupKeywordRetryJobs() {
   const now = new Date();
@@ -36,6 +37,16 @@ async function pickupKeywordRetryJobs() {
 
   for (const job of jobsToRetry) {
     try {
+      const automation = await getAutomationStateForUser(
+        job.keywordMonitor.userId,
+      );
+      if (!automation?.enabled) {
+        logger.info(
+          `[Keyword Scheduler] Skipping retry job ${job.id}: account automation is paused`,
+        );
+        continue;
+      }
+
       logger.info(
         `[Keyword Scheduler] Retrying job ${job.id} (attempt ${
           job.retryCount + 1
@@ -88,6 +99,16 @@ async function processStuckKeywordJobs() {
 
   for (const job of stuckJobs) {
     try {
+      const automation = await getAutomationStateForUser(
+        job.keywordMonitor.userId,
+      );
+      if (!automation?.enabled) {
+        logger.info(
+          `[Keyword Scheduler] Skipping stuck job ${job.id}: account automation is paused`,
+        );
+        continue;
+      }
+
       logger.info(
         JSON.stringify({
           evt: "keyword_scheduler.stuck_job_processing",
@@ -122,7 +143,7 @@ async function processStuckKeywordJobs() {
 }
 
 /**
- * Keyword scheduler - runs every 30 minutes
+ * Keyword scheduler - runs hourly at minute 30
  * Includes stuck job recovery and retry logic (mirroring lead gen scheduler)
  * Only processes monitors for users who have the current hour in their KeywordSchedule
  */
@@ -176,6 +197,18 @@ export async function runKeywordScheduler() {
     const { user } = keywordSchedule;
 
     if (!user.subscription) {
+      continue;
+    }
+
+    const automation = await getAutomationStateForUser(user.id);
+    if (!automation?.enabled) {
+      logger.info(
+        JSON.stringify({
+          evt: "keyword_scheduler.automation_paused",
+          userId: user.id,
+          pausedForInactivity: automation?.pausedForInactivity ?? false,
+        }),
+      );
       continue;
     }
 

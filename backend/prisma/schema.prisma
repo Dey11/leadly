@@ -33,6 +33,7 @@ enum ScrapeJobStatus {
   RUNNING
   COMPLETED
   FAILED
+  CANCELLED
 }
 
 enum LeadStatus {
@@ -123,16 +124,18 @@ model User {
   bugReports           BugReport[]
   notificationChannels NotificationChannel[]
 
-  name                String
-  emailVerified       Boolean   @default(false)
-  emailOtp            String?
-  emailOtpExpiresAt   DateTime?
-  resetToken          String?   @unique
-  resetTokenExpiresAt DateTime?
-  image               String?
-  sessions            Session[]
-  accounts            Account[]
-  hasSeenWalkthrough  Boolean   @default(false)
+  name                   String
+  emailVerified          Boolean   @default(false)
+  emailOtp               String?
+  emailOtpExpiresAt      DateTime?
+  resetToken             String?   @unique
+  resetTokenExpiresAt    DateTime?
+  image                  String?
+  sessions               Session[]
+  accounts               Account[]
+  hasSeenWalkthrough     Boolean   @default(false)
+  lastActiveAt           DateTime  @default(now())
+  freeAutomationPausedAt DateTime?
 
   // Profile/Onboarding fields for better user experience
   hasCompletedOnboarding Boolean @default(false)
@@ -141,6 +144,7 @@ model User {
   referrer               String?
   sampleDm               String? @db.Text
 
+  @@index([lastActiveAt, freeAutomationPausedAt])
   @@map("users")
 }
 

@@ -73,6 +73,11 @@ export default async function DashboardLayout({
         occupation: null,
         referrer: null,
         sampleDm: null,
+        automation: {
+          enabled: true,
+          pausedForInactivity: false,
+          inactivityThresholdDays: 3,
+        },
       };
     } else {
       redirect("/login");
@@ -126,6 +131,7 @@ export default async function DashboardLayout({
         accountEmail={account.email}
         keywordWalkthrough={<KeywordWalkthrough />}
         initialMode={initialMode}
+        automation={account.automation}
       >
         {children}
       </DashboardShell>

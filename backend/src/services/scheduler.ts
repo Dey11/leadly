@@ -9,6 +9,7 @@ import {
 } from "../lib/constants";
 import { tryConsumeScrapeCredit, previewUsage } from "../lib/usage";
 import { processStuckJob } from "../processors/reddit.processor";
+import { getAutomationStateForUser } from "./automation";
 
 async function pickupRetryJobs() {
   const now = new Date();
@@ -33,6 +34,14 @@ async function pickupRetryJobs() {
 
   for (const job of jobsToRetry) {
     try {
+      const automation = await getAutomationStateForUser(job.monitor.userId);
+      if (!automation?.enabled) {
+        logger.info(
+          `Skipping retry job ${job.id}: account automation is paused`,
+        );
+        continue;
+      }
+
       logger.info(
         `Retrying job ${job.id} (attempt ${
           job.retryCount + 1
@@ -87,6 +96,14 @@ async function processStuckJobs() {
 
   for (const job of stuckJobs) {
     try {
+      const automation = await getAutomationStateForUser(job.monitor.userId);
+      if (!automation?.enabled) {
+        logger.info(
+          `Skipping stuck job ${job.id}: account automation is paused`,
+        );
+        continue;
+      }
+
       logger.info(
         JSON.stringify({
           evt: "scheduler.stuck_job_processing",
@@ -162,6 +179,18 @@ export async function runScheduler() {
     const { user } = userSchedule;
 
     if (user.isDeleted || !user.subscription) {
+      continue;
+    }
+
+    const automation = await getAutomationStateForUser(user.id);
+    if (!automation?.enabled) {
+      logger.info(
+        JSON.stringify({
+          evt: "scheduler.automation_paused",
+          userId: user.id,
+          pausedForInactivity: automation?.pausedForInactivity ?? false,
+        }),
+      );
       continue;
     }
 

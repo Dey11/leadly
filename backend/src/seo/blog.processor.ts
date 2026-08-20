@@ -1,8 +1,7 @@
-import { google } from "@ai-sdk/google";
-import { generateObject, generateText } from "ai";
 import slugify from "slugify";
 import { z } from "zod";
 import db from "../lib/db";
+import { generateAIObject, generateAIText } from "../lib/ai";
 import logger from "../lib/logger";
 import { BLOG_BRIEFS, BLOG_STOCK_IMAGES, type BlogBrief } from "./topics";
 
@@ -11,17 +10,19 @@ const BLOG_INTERVAL_DAYS = 4;
 const BLOG_AUTHOR_NAME = "Leadly Editorial";
 const BLOG_AUTHOR_ROLE = "Reddit Demand Research";
 const SITE_URL = "https://leadly.live";
-const BLOG_MODEL = "gemini-3-flash-preview";
-
 function isModelCapacityError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
+  const messages =
+    error instanceof AggregateError
+      ? [error.message, ...error.errors.map((item) => String(item))]
+      : [error instanceof Error ? error.message : String(error)];
 
-  return (
-    message.includes("Quota exceeded") ||
-    message.includes("RESOURCE_EXHAUSTED") ||
-    message.includes("current quota") ||
-    message.includes("experiencing high demand") ||
-    message.includes("UNAVAILABLE")
+  return messages.some(
+    (message) =>
+      message.includes("Quota exceeded") ||
+      message.includes("RESOURCE_EXHAUSTED") ||
+      message.includes("current quota") ||
+      message.includes("experiencing high demand") ||
+      message.includes("UNAVAILABLE"),
   );
 }
 
@@ -54,8 +55,7 @@ async function chooseNextBrief() {
 }
 
 async function buildBlogPlan(brief: BlogBrief) {
-  const { object } = await generateObject({
-    model: google(BLOG_MODEL),
+  const { object } = await generateAIObject({
     prompt: `You are a B2B SaaS content strategist.
 
 Produce a detailed blog plan for this brief:
@@ -97,8 +97,7 @@ async function buildBlogContent(
     .map((path) => `${SITE_URL}${path}`)
     .join("\n");
 
-  const { text } = await generateText({
-    model: google(BLOG_MODEL),
+  const { text } = await generateAIText({
     prompt: `You are a senior content marketer writing for SaaS founders and agencies.
 
 Write a long-form Markdown article.
@@ -149,8 +148,7 @@ Formatting and quality rules:
 }
 
 async function buildBlogMeta(brief: BlogBrief, content: string) {
-  const { object } = await generateObject({
-    model: google(BLOG_MODEL),
+  const { object } = await generateAIObject({
     prompt: `Generate SEO metadata for this blog.
 
 Title: ${brief.title}

@@ -13,7 +13,7 @@ At runtime, the system depends on:
 - PostgreSQL for durable application data
 - Redis for rate limiting, queue transport, and operational coordination
 - BullMQ for queued lead-generation scrape jobs
-- External APIs for Reddit, Google Gemini, Dodo Payments, Resend, and Google OAuth
+- External APIs for Reddit, Nebius Token Factory, Google Gemini and other AI fallbacks, Dodo Payments, Resend, and Google OAuth
 
 ## Runtime Topology
 
@@ -63,7 +63,7 @@ Flow:
 
 1. User creates keyword sets
 2. User creates keyword monitors targeting subreddits
-3. Keyword scheduler runs every 30 minutes
+3. Keyword scheduler runs hourly at minute 30
 4. Scheduler enforces keyword usage limits
 5. `KeywordScrapeJob` records are created
 6. Keyword processing runs immediately in-process without BullMQ
@@ -74,7 +74,7 @@ Flow:
 There are three cron-driven operational loops in the backend stack:
 
 - Lead generation scheduler: hourly
-- Keyword scheduler: every 30 minutes
+- Keyword scheduler: hourly at minute 30
 - Log delivery to Discord: hourly from backend and hourly from worker at an offset
 
 There is also a daily blog generation cron started from the worker process:
@@ -99,6 +99,15 @@ The backend includes retry and stuck-job recovery behavior:
 - Pending jobs older than the configured stuck threshold are reprocessed
 - Separate failed-job tables exist for lead-gen and keyword monitoring
 - Health endpoint validates both database and Redis connectivity
+
+Free-tier automation also has an account-level inactivity gate:
+
+- authenticated product activity updates `User.lastActiveAt` with an hourly write throttle
+- after three inactive days, schedulers stop creating or retrying jobs and pending/running jobs are marked `CANCELLED`
+- processors recheck the gate before execution so queued jobs cannot bypass it
+- processor completion and failure writes are conditional, so a cancellation cannot be overwritten by late results or retry handling
+- returning users must explicitly re-enable future jobs from the dashboard banner
+- Pro and Premium accounts are exempt
 
 ## Deployment Shape
 

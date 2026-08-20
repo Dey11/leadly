@@ -2,7 +2,7 @@
 
 ## Overview
 
-Leadly's backend powers a lead-monitoring platform that watches user-defined sources (currently Reddit) and surfaces high-signal posts as actionable leads. The service is built with Express 5, Prisma, and PostgreSQL. It manages user accounts, subscriptions, ICP briefings (lead definitions), monitors for each ICP, scrape job history, and user-specific scheduling preferences. A background scheduler (`runScheduler`) executes every 30 minutes to launch queued scraping work.
+Leadly's backend powers a lead-monitoring platform that watches user-defined sources (currently Reddit) and surfaces high-signal posts as actionable leads. The service is built with Express 5, Prisma, and PostgreSQL. It manages user accounts, subscriptions, ICP briefings (lead definitions), monitors for each ICP, scrape job history, and user-specific scheduling preferences. The ICP scheduler runs hourly, while the keyword scheduler runs hourly at minute 30.
 
 All business APIs are versioned under `/api/v1`. Non-authentication routes require a valid session established through the authentication flow. Sessions are persisted in the database and delivered to clients via an HTTP-only `session_token` cookie.
 
@@ -15,6 +15,7 @@ All business APIs are versioned under `/api/v1`. Non-authentication routes requi
 - **Enums:** Values are aligned with Prisma schema
   - `Platform`: `REDDIT` (future platforms can be added)
   - `MonitorStatus`: `ACTIVE`, `PAUSED`, `ARCHIVED`
+  - `ScrapeJobStatus`: `PENDING`, `RUNNING`, `COMPLETED`, `FAILED`, `CANCELLED`
 - **IDs:** Treat primary identifiers as opaque strings. Newly created records use
   CUIDs (for example, `clyabc123...`), while migrated production records can use
   legacy prefixes such as `merged_monitors_...`.
@@ -86,8 +87,33 @@ All business APIs are versioned under `/api/v1`. Non-authentication routes requi
         "email": "ada@example.com",
         "emailVerified": false,
         "image": "https://cdn.example/avatar.png",
-        "createdAt": "2024-03-06T12:15:30.123Z"
+        "createdAt": "2024-03-06T12:15:30.123Z",
+        "automation": {
+          "enabled": true,
+          "pausedForInactivity": false,
+          "inactivityThresholdDays": 3
+        }
       }
+    }
+  }
+  ```
+
+For free-tier accounts, authenticated product use updates the inactivity clock.
+After three inactive days, `automation.pausedForInactivity` becomes `true` and
+future ICP and keyword jobs remain disabled until explicitly re-enabled.
+
+### POST `/account/automation/enable`
+
+- **Auth:** Required
+- **Purpose:** Re-enable future ICP and keyword jobs after a free-tier inactivity pause. Monitor and schedule definitions are preserved.
+- **Success:** `200 OK`
+  ```json
+  {
+    "message": "Future jobs enabled.",
+    "payload": {
+      "enabled": true,
+      "pausedForInactivity": false,
+      "inactivityThresholdDays": 3
     }
   }
   ```

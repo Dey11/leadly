@@ -13,6 +13,13 @@ const wavespeed = createOpenAICompatible({
   supportsStructuredOutputs: true,
 });
 
+const nebius = createOpenAICompatible({
+  name: "nebius",
+  baseURL: "https://api.tokenfactory.us-central1.nebius.com/v1",
+  apiKey: process.env.NEBIUS_API_KEY ?? "",
+  supportsStructuredOutputs: true,
+});
+
 export const AI_SAFETY_SETTINGS = [
   {
     category: "HARM_CATEGORY_HATE_SPEECH",
@@ -125,6 +132,8 @@ async function withRetry<T>(
 // Build PROVIDERS array from centralized config
 function createProviderModel(config: AIProviderConfig): LanguageModel {
   switch (config.name) {
+    case "nebius":
+      return nebius(config.model);
     case "gemini":
       return google(config.model);
     case "cerebras":
@@ -141,6 +150,8 @@ function createProviderLiteModel(
 ): LanguageModel | undefined {
   if (!config.liteModel) return undefined;
   switch (config.name) {
+    case "nebius":
+      return config.liteModel ? nebius(config.liteModel) : undefined;
     case "gemini":
       return google(config.liteModel);
     case "cerebras":
@@ -180,18 +191,16 @@ type GenerateArrayOptions<T> = BaseOptions & {
   elementSchema: z.ZodType<T>;
 };
 
+type GenerateTextOptions = BaseOptions;
+
 /**
- * Generate a structured object using AI with automatic provider fallback and retry logic.
- * Uses generateText with Output.object() as per AI SDK 6.0.
- * Returns both the generated object and the name of the provider that succeeded.
+ * Generate free-form text using the same provider ordering, retry, and fallback
+ * behavior as the structured-output helpers.
  */
-export async function generateAIObject<T>(
-  opts: GenerateObjectOptions<T>,
-): Promise<{ object: T; providerName: string }> {
+export async function generateAIText(
+  opts: GenerateTextOptions,
+): Promise<{ text: string; providerName: string }> {
   const errors: Error[] = [];
-  const abortSignal = opts.timeoutMs
-    ? AbortSignal.timeout(opts.timeoutMs)
-    : undefined;
 
   const sortedProviders = [...PROVIDERS].sort((a, b) => {
     if (!opts.providerOrder || opts.providerOrder.length === 0) return 0;
@@ -205,6 +214,70 @@ export async function generateAIObject<T>(
 
   for (const provider of sortedProviders) {
     const model = opts.lite && provider.lite ? provider.lite : provider.model;
+    const abortSignal = opts.timeoutMs
+      ? AbortSignal.timeout(opts.timeoutMs)
+      : undefined;
+
+    try {
+      const result = await withRetry(
+        () =>
+          generateText({
+            model,
+            prompt: opts.prompt,
+            system: opts.system,
+            temperature: opts.temperature,
+            topP: opts.topP,
+            abortSignal,
+            providerOptions: AI_PROVIDER_OPTIONS,
+          }),
+        provider.name,
+        abortSignal,
+      );
+
+      if (errors.length > 0) {
+        logger.info(
+          `[AI] ${provider.name} succeeded after ${errors.length} provider fallback(s)`,
+        );
+      }
+
+      return { text: result.text, providerName: provider.name };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      errors.push(error);
+      logger.warn(
+        `[AI] ${provider.name} exhausted all retries: ${error.message}`,
+      );
+    }
+  }
+
+  throw new AggregateError(errors, "All AI providers failed after retries");
+}
+
+/**
+ * Generate a structured object using AI with automatic provider fallback and retry logic.
+ * Uses generateText with Output.object() as per AI SDK 6.0.
+ * Returns both the generated object and the name of the provider that succeeded.
+ */
+export async function generateAIObject<T>(
+  opts: GenerateObjectOptions<T>,
+): Promise<{ object: T; providerName: string }> {
+  const errors: Error[] = [];
+
+  const sortedProviders = [...PROVIDERS].sort((a, b) => {
+    if (!opts.providerOrder || opts.providerOrder.length === 0) return 0;
+    const aIndex = opts.providerOrder.indexOf(a.name);
+    const bIndex = opts.providerOrder.indexOf(b.name);
+    if (aIndex === -1 && bIndex === -1) return 0;
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    return aIndex - bIndex;
+  });
+
+  for (const provider of sortedProviders) {
+    const model = opts.lite && provider.lite ? provider.lite : provider.model;
+    const abortSignal = opts.timeoutMs
+      ? AbortSignal.timeout(opts.timeoutMs)
+      : undefined;
 
     try {
       const result = await withRetry(
@@ -253,9 +326,6 @@ export async function generateAIArray<T>(
   opts: GenerateArrayOptions<T>,
 ): Promise<{ array: T[]; providerName: string }> {
   const errors: Error[] = [];
-  const abortSignal = opts.timeoutMs
-    ? AbortSignal.timeout(opts.timeoutMs)
-    : undefined;
 
   const sortedProviders = [...PROVIDERS].sort((a, b) => {
     if (!opts.providerOrder || opts.providerOrder.length === 0) return 0;
@@ -269,6 +339,9 @@ export async function generateAIArray<T>(
 
   for (const provider of sortedProviders) {
     const model = opts.lite && provider.lite ? provider.lite : provider.model;
+    const abortSignal = opts.timeoutMs
+      ? AbortSignal.timeout(opts.timeoutMs)
+      : undefined;
 
     try {
       const result = await withRetry(

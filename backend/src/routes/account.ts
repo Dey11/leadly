@@ -7,6 +7,7 @@ import {
   getAccountSessions,
   getUsageSummary,
   updateWalkthroughStatus,
+  enableAutomation,
 } from "../controllers/account";
 import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
@@ -20,6 +21,13 @@ accountRouter.get(
   authMiddleware,
   userRateLimit("read"),
   getAccountSessions,
+);
+
+accountRouter.post(
+  "/automation/enable",
+  authMiddleware,
+  userRateLimit("write"),
+  enableAutomation,
 );
 
 accountRouter.get(

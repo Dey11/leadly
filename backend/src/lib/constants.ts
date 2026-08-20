@@ -116,6 +116,11 @@ export type AIProviderConfig = {
  */
 export const AI_PROVIDERS: AIProviderConfig[] = [
   {
+    name: "nebius",
+    model: "deepseek-ai/DeepSeek-V4-Flash",
+    enabled: true,
+  },
+  {
     name: "gemini",
     // Gemini 3.5 Flash is the stable production model ID. The older
     // `gemini-3-flash` alias is not valid for GenerateContent requests.
@@ -137,9 +142,10 @@ export const AI_PROVIDERS: AIProviderConfig[] = [
 
 /**
  * Provider fallback order for ICP generation (fast, user-facing).
- * Order: Gemini → Cerebras → WaveSpeed.
+ * Order: Nebius → Gemini → Cerebras → WaveSpeed.
  */
 export const AI_PROVIDER_ORDER_ICP: string[] = [
+  "nebius",
   "gemini",
   "cerebras",
   "wavespeed",
@@ -149,6 +155,7 @@ export const AI_PROVIDER_ORDER_ICP: string[] = [
  * Provider fallback order for DM generation (fast, user-facing).
  */
 export const AI_PROVIDER_ORDER_DM: string[] = [
+  "nebius",
   "wavespeed",
   "cerebras",
   "gemini",

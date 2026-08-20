@@ -3,7 +3,7 @@
 > **Turn Reddit Conversations into Revenue.**  
 > Automated monitoring, AI qualification, and high-intent lead discovery for B2B sales teams.
 
-Leadly is a sophisticated intelligence engine designed to cut through the noise of social media. Instead of manually scrolling through subreddits or relying on basic keyword alerts, Leadly uses **Google Gemini 2.5 Flash** to semantically analyze conversations, determining not just _what_ is being said, but the _intent_ behind it.
+Leadly is a sophisticated intelligence engine designed to cut through the noise of social media. Instead of manually scrolling through subreddits or relying on basic keyword alerts, Leadly uses **DeepSeek V4 Flash through Nebius Token Factory** to semantically analyze conversations, determining not just _what_ is being said, but the _intent_ behind it.
 
 This repository contains the complete source code for the Leadly platform, comprising a Next.js 16 frontend and an Express 5 backend.
 
@@ -100,8 +100,8 @@ Leadly is built as a monorepo with two primary applications:
 - **Worker**: Dedicated worker process for heavy lifting (Reddit scraping + AI processing).
 - **Worker**: Dedicated worker process for heavy lifting (Reddit scraping + AI processing).
 - **AI Stack**:
-  - **Gemini 2.5 Flash** (Reasoning, Scoring, Sentiment)
-  - **WaveSpeed (Llama 3)**, **Cerebras**, **Nebius** (Human-like Text Generation)
+  - **Nebius DeepSeek V4 Flash** is the first-choice model for qualification, suggestions, outreach, and content generation.
+  - **Google Gemini**, **Cerebras**, and **WaveSpeed** remain automatic fallbacks.
 
 ### 2. Frontend (`/frontend`)
 
@@ -170,7 +170,7 @@ The heart of Leadly is the scraping pipeline.
     - Picks up the job.
     - **Fetch**: Calls Reddit API (or Nitter fallback) to get recent posts from the target subreddit.
     - **Filter**: Discards posts already seen or outside criteria.
-    - **Analyze**: Sends post content + ICP definition to **Gemini Flash**.
+    - **Analyze**: Sends post content + ICP definition through the shared Nebius-first AI provider chain.
       - _Prompt Strategy_: "You are a sales expert. Does this post matches this ICP? Rate 0-100."
     - **Save**: If Score > Threshold (e.g. 75), saves as a `Lead` in Postgres.
 
@@ -267,7 +267,8 @@ Generate one via: `openssl rand -hex 32`
 
 - Node.js 20+ (or Bun)
 - Docker (for Redis/Postgres) or local instances
-- Google AI Studio Key (Gemini)
+- Nebius Token Factory API key
+- Google AI Studio Key (fallback)
 - Reddit App Credentials
 
 ### Quick Start
@@ -309,7 +310,8 @@ Complete reference for `.env` configuration.
 | `REDIS_URL`                    | Redis Connection String               |
 | `SESSION_SECRET`               | Secret for signing session cookies    |
 | `FRONTEND_URL`                 | URL of the frontend (for CORS)        |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini API Key                        |
+| `NEBIUS_API_KEY`              | Nebius Token Factory API key          |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini fallback API key              |
 | `GOOGLE_CLIENT_ID`             | Google OAuth Client ID                |
 | `GOOGLE_CLIENT_SECRET`         | Google OAuth Client Secret            |
 | `GOOGLE_REDIRECT_URI`          | Google OAuth callback URL             |

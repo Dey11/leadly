@@ -36,6 +36,8 @@ import {
   useProductMode,
   type ProductMode,
 } from "@/components/dashboard/product-mode-toggle";
+import type { AutomationState } from "@/types/backend";
+import { FreeTierAutomationBanner } from "./free-tier-automation-banner";
 
 type DashboardShellProps = {
   leadGenNavItems: DashboardNavItem[];
@@ -46,6 +48,7 @@ type DashboardShellProps = {
   accountEmail?: string | null;
   keywordWalkthrough?: React.ReactNode;
   initialMode: ProductMode;
+  automation: AutomationState | null;
   children: React.ReactNode;
 };
 
@@ -58,6 +61,7 @@ export function DashboardShell({
   accountEmail,
   keywordWalkthrough,
   initialMode,
+  automation,
   children,
 }: DashboardShellProps) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -301,6 +305,7 @@ export function DashboardShell({
 
         <main className="flex-1">
           <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-10">
+            <FreeTierAutomationBanner automation={automation} />
             {children}
           </div>
         </main>

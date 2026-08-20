@@ -34,7 +34,7 @@ Where older docs conflict with code, prefer the code and these centralized docs.
 
 Leadly is a Bun-based monorepo with:
 
-- A backend API built on Express 5, Prisma, PostgreSQL, Redis, BullMQ, and Google Gemini-based AI workflows
+- A backend API built on Express 5, Prisma, PostgreSQL, Redis, BullMQ, and a Nebius-first AI provider chain
 - A frontend built on Next.js 16 App Router, React 19, Tailwind CSS v4, and TanStack Query
 - Two product modes:
   - ICP-based lead generation

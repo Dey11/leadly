@@ -47,7 +47,7 @@ export interface KeywordMonitor {
 export interface KeywordScrapeJob {
   id: string;
   keywordMonitorId: string;
-  status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
+  status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCELLED";
   errorMessage: string | null;
   metadata: Record<string, unknown> | null;
   matchCount: number;

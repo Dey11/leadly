@@ -46,6 +46,7 @@ export const JOB_STATUS_STYLES: Record<ScrapeJob["status"], string> = {
   PENDING: "border border-muted/60 bg-muted text-muted-foreground",
   FAILED:
     "border border-[rgba(187,47,66,0.2)] bg-[rgba(187,47,66,0.1)] text-[#bb2f42]",
+  CANCELLED: "border border-muted/60 bg-muted text-muted-foreground",
 };
 
 // Monitor status config

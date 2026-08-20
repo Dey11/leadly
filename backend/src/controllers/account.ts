@@ -4,6 +4,10 @@ import db from "../lib/db";
 import { patchAccountSchema, patchProfileSchema } from "../types/account";
 import { previewUsage } from "../lib/usage";
 import { SubscriptionTier } from "@prisma/client";
+import {
+  enableAutomationForUser,
+  getAutomationStateForUser,
+} from "../services/automation";
 
 export async function getAccount(req: Request, res: Response) {
   try {
@@ -18,6 +22,7 @@ export async function getAccount(req: Request, res: Response) {
       return res.status(400).json({ error: "User does not exist" });
     }
 
+    const automation = await getAutomationStateForUser(findExistingUser.id);
     const user = {
       data: {
         id: findExistingUser?.id,
@@ -26,14 +31,14 @@ export async function getAccount(req: Request, res: Response) {
         emailVerified: findExistingUser?.emailVerified,
         image: findExistingUser?.image,
         createdAt: findExistingUser?.createdAt,
-        hasSeenWalkthrough:
-          (findExistingUser as any).hasSeenWalkthrough ?? false,
+        hasSeenWalkthrough: findExistingUser.hasSeenWalkthrough ?? false,
         hasCompletedOnboarding:
           findExistingUser?.hasCompletedOnboarding ?? false,
         company: findExistingUser?.company ?? null,
         occupation: findExistingUser?.occupation ?? null,
         referrer: findExistingUser?.referrer ?? null,
         sampleDm: findExistingUser?.sampleDm ?? null,
+        automation,
       },
     };
 
@@ -42,6 +47,23 @@ export async function getAccount(req: Request, res: Response) {
       .json({ message: "User retrieved successfully", payload: user });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export async function enableAutomation(req: Request, res: Response) {
+  try {
+    const state = await enableAutomationForUser(req.userId!);
+    if (!state) {
+      return res.status(404).json({ error: "User does not exist" });
+    }
+
+    return res.status(200).json({
+      message: "Future jobs enabled.",
+      payload: state,
+    });
+  } catch (error) {
+    logger.error("Failed to enable account automation:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 

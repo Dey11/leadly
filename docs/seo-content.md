@@ -245,7 +245,7 @@ bun run blog:bulk-seo 50
 ```
 
 The bulk script is intentionally separate from the daily worker. It uses curated
-commercial briefs, existing low-cost app AI providers with Nebius excluded,
+commercial briefs through the shared Nebius-first AI provider chain,
 stock images from the controlled image pool, and a local editorial review pass
 before a post is inserted.
 

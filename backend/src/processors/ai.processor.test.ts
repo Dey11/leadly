@@ -15,6 +15,7 @@ Object.assign(process.env, {
   DODO_PREMIUM_PRODUCT_ID: "test-premium-product",
   RESEND_API_KEY: "test-resend-key",
   GOOGLE_GENERATIVE_AI_API_KEY: "test-google-ai-key",
+  NEBIUS_API_KEY: "test-nebius-key",
   GOOGLE_CLIENT_ID: "test-google-client",
   GOOGLE_CLIENT_SECRET: "test-google-secret",
   GOOGLE_REDIRECT_URI: "http://localhost:3000/auth/google/callback",
@@ -49,18 +50,30 @@ const posts = ["one", "two", "three"].map((postId) => ({
 }));
 
 describe("processLeads resilience", () => {
-  test("uses Gemini 3.5 Flash for lead classification", () => {
-    const gemini = constants.AI_PROVIDERS.find(
-      (provider) => provider.name === "gemini",
-    );
-
-    expect(gemini?.model).toBe("gemini-3.5-flash");
-    expect(gemini?.liteModel).toBe("gemini-3.5-flash-lite");
-    expect(
-      constants.AI_PROVIDERS.some((provider) => provider.name === "nebius"),
-    ).toBeFalse();
-    expect(constants.AI_PROVIDER_ORDER_ICP).not.toContain("nebius");
-    expect(constants.AI_PROVIDER_ORDER_DM).not.toContain("nebius");
+  test("uses Nebius first while preserving every fallback order", () => {
+    expect(constants.AI_PROVIDERS[0]).toEqual({
+      name: "nebius",
+      model: "deepseek-ai/DeepSeek-V4-Flash",
+      enabled: true,
+    });
+    expect(constants.AI_PROVIDERS.map((provider) => provider.name)).toEqual([
+      "nebius",
+      "gemini",
+      "wavespeed",
+      "cerebras",
+    ]);
+    expect(constants.AI_PROVIDER_ORDER_ICP).toEqual([
+      "nebius",
+      "gemini",
+      "cerebras",
+      "wavespeed",
+    ]);
+    expect(constants.AI_PROVIDER_ORDER_DM).toEqual([
+      "nebius",
+      "wavespeed",
+      "cerebras",
+      "gemini",
+    ]);
   });
 
   test("bounds every classification and skips an isolated provider failure", async () => {
