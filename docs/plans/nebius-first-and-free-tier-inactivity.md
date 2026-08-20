@@ -2,7 +2,8 @@
 
 ## Status
 
-Implementation and local verification complete; production deployment pending.
+Complete. The feature revision (`942c167`) was deployed to the personal Coolify
+Leadly application on 2026-08-20 and passed post-deployment checks.
 
 ## Goal
 
@@ -67,7 +68,15 @@ The account response carries the effective automation state. A dashboard-shell b
 - Focused scheduler integration tests confirm paused accounts consume no credits and create, enqueue, retry, or run no ICP/keyword jobs.
 - Backend lint, type check, full test suite, and production build.
 - Frontend lint and production build.
-- Post-deployment health check, migration confirmation, and one non-persistent production AI classification test.
+- Coolify deployment completed successfully for feature revision `942c167`.
+- The public backend health check reported connected database and Redis services,
+  and the frontend returned HTTP 200. Because the backend entrypoint runs
+  `prisma migrate deploy` under `set -e` before starting the API, the healthy
+  backend also confirms the additive migration completed without blocking
+  startup.
+- A post-deployment, non-persistent live-key smoke test exercised both structured
+  and free-form generation through the repository adapter; both selected
+  `nebius`.
 
 ## Risks
 
