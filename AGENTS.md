@@ -21,6 +21,7 @@ Explicit user instructions take precedence. Keep changes scoped, reversible, and
 - **Automation**: Scheduled ICP jobs, keyword jobs, retries, and stuck-job recovery.
 - **Monitor**: A saved Reddit target. A monitor can remain active while account-level automation is paused.
 - **Free-tier inactivity pause**: An account-level automation gate applied after the configured period without authenticated product activity.
+- **Administrative automation pause**: An all-tier account gate that stops future automation until the account explicitly re-enables it.
 - **Scheduler**: Backend cron logic that finds eligible users and starts jobs.
 - **Worker**: The BullMQ consumer that performs ICP scrapes and AI classification.
 

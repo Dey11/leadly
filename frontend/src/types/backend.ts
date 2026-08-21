@@ -30,6 +30,7 @@ export interface AccountSummary {
 export interface AutomationState {
   enabled: boolean;
   pausedForInactivity: boolean;
+  pauseReason: "ADMINISTRATIVE" | "FREE_TIER_INACTIVITY" | null;
   inactivityThresholdDays: number;
 }
 

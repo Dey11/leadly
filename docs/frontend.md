@@ -153,7 +153,7 @@ This is a programmatic landing-page system rather than fully custom page code pe
 The dashboard layout:
 
 - fetches account summary server-side
-- presents account-wide automation state in the shared dashboard shell, including the free-tier inactivity re-enable banner
+- presents account-wide automation state in the shared dashboard shell, including pause-specific copy and the shared re-enable banner
 - redirects unauthenticated users to `/login`
 - loads tier and limit descriptions from the backend
 - renders different nav models for lead-gen mode and keyword mode

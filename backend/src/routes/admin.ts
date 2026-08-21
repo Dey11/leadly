@@ -3,6 +3,7 @@ import { requireAdminApiKey } from "../middleware/admin-auth";
 import {
   dedupeMonitors,
   getMonitorDiagnostics,
+  pauseAccountAutomation,
   recoverMonitorJobs,
   retryFailedMonitorJobsHandler,
   sendLogsToDiscord,
@@ -48,6 +49,12 @@ router.post("/monitors/jobs/recover", recoverMonitorJobs);
  * Preview or retry the latest failed job for each monitor that is not active.
  */
 router.post("/monitors/jobs/retry-failed", retryFailedMonitorJobsHandler);
+
+/**
+ * POST /api/v1/admin/automation/pause
+ * Preview or apply an all-tier administrative automation pause.
+ */
+router.post("/automation/pause", pauseAccountAutomation);
 
 /**
  * GET /api/v1/admin/blog/posts

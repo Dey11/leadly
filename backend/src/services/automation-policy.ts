@@ -8,17 +8,22 @@ export type AutomationPolicyInput = {
   tier: SubscriptionTier | null;
   lastActiveAt: Date;
   freeAutomationPausedAt: Date | null;
+  administrativeAutomationPausedAt: Date | null;
 };
+
+export type AutomationPauseReason = "ADMINISTRATIVE" | "FREE_TIER_INACTIVITY";
 
 export type AutomationPolicyDecision = {
   enabled: boolean;
   pausedForInactivity: boolean;
+  pauseReason: AutomationPauseReason | null;
   transition: "pause" | "clear-paid-pause" | null;
 };
 
 export type AutomationState = {
   enabled: boolean;
   pausedForInactivity: boolean;
+  pauseReason: AutomationPauseReason | null;
   inactivityThresholdDays: number;
 };
 
@@ -30,10 +35,20 @@ export function resolveAutomationPolicy(
   account: AutomationPolicyInput,
   now = new Date(),
 ): AutomationPolicyDecision {
+  if (account.administrativeAutomationPausedAt) {
+    return {
+      enabled: false,
+      pausedForInactivity: false,
+      pauseReason: "ADMINISTRATIVE",
+      transition: null,
+    };
+  }
+
   if (account.tier === null) {
     return {
       enabled: false,
       pausedForInactivity: false,
+      pauseReason: null,
       transition: null,
     };
   }
@@ -42,6 +57,7 @@ export function resolveAutomationPolicy(
     return {
       enabled: true,
       pausedForInactivity: false,
+      pauseReason: null,
       transition: account.freeAutomationPausedAt ? "clear-paid-pause" : null,
     };
   }
@@ -50,6 +66,7 @@ export function resolveAutomationPolicy(
     return {
       enabled: false,
       pausedForInactivity: true,
+      pauseReason: "FREE_TIER_INACTIVITY",
       transition: null,
     };
   }
@@ -61,6 +78,7 @@ export function resolveAutomationPolicy(
     return {
       enabled: false,
       pausedForInactivity: true,
+      pauseReason: "FREE_TIER_INACTIVITY",
       transition: "pause",
     };
   }
@@ -68,6 +86,7 @@ export function resolveAutomationPolicy(
   return {
     enabled: true,
     pausedForInactivity: false,
+    pauseReason: null,
     transition: null,
   };
 }
@@ -78,6 +97,7 @@ export function toAutomationState(
   return {
     enabled: decision.enabled,
     pausedForInactivity: decision.pausedForInactivity,
+    pauseReason: decision.pauseReason,
     inactivityThresholdDays: FREE_TIER_INACTIVITY_DAYS,
   };
 }

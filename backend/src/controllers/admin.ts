@@ -11,6 +11,10 @@ import {
   recoverStaleMonitorJobs,
   retryFailedMonitorJobs,
 } from "../services/monitor-job-recovery";
+import {
+  pauseAllAutomationAdministratively,
+  previewAdministrativeAutomationPause,
+} from "../services/automation";
 
 const monitorDiagnosticsSchema = z.object({
   email: z.string().email(),
@@ -32,6 +36,16 @@ const monitorJobRecoverySchema = z
     confirmJobIds: z.array(z.string()).optional(),
   })
   .strict();
+
+const administrativeAutomationPauseSchema = z.discriminatedUnion("dryRun", [
+  z.object({ dryRun: z.literal(true) }).strict(),
+  z
+    .object({
+      dryRun: z.literal(false),
+      confirm: z.literal("PAUSE_ALL_AUTOMATION"),
+    })
+    .strict(),
+]);
 
 /**
  * POST /api/v1/admin/logs/discord
@@ -80,6 +94,33 @@ export async function getMonitorDiagnostics(req: Request, res: Response) {
   } catch (error) {
     logger.error("Failed to inspect monitor duplicates:", error);
     return res.status(500).json({ error: "Failed to inspect monitors" });
+  }
+}
+
+/** Preview or apply the all-tier account automation pause. */
+export async function pauseAccountAutomation(req: Request, res: Response) {
+  const payload = administrativeAutomationPauseSchema.safeParse(req.body);
+
+  if (!payload.success) {
+    return res.status(400).json({
+      error:
+        "Use dryRun=true, or confirm PAUSE_ALL_AUTOMATION when applying the pause.",
+    });
+  }
+
+  try {
+    if (payload.data.dryRun) {
+      const preview = await previewAdministrativeAutomationPause();
+      return res.json({ payload: { applied: false, ...preview } });
+    }
+
+    const result = await pauseAllAutomationAdministratively();
+    return res.json({ payload: { applied: true, ...result } });
+  } catch (error) {
+    logger.error("Failed to pause account automation:", error);
+    return res
+      .status(500)
+      .json({ error: "Failed to pause account automation" });
   }
 }
 

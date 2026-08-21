@@ -109,6 +109,11 @@ Free-tier automation also has an account-level inactivity gate:
 - returning users must explicitly re-enable future jobs from the dashboard banner
 - Pro and Premium accounts are exempt
 
+An independent administrative pause gate applies to every subscription tier.
+It takes precedence over inactivity policy, participates in the same scheduler
+and processor write-boundary checks, and is cleared only by the explicit
+account re-enable action.
+
 ## Deployment Shape
 
 The root `docker-compose.yml` defines three services:

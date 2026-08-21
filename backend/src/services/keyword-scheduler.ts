@@ -206,7 +206,7 @@ export async function runKeywordScheduler() {
         JSON.stringify({
           evt: "keyword_scheduler.automation_paused",
           userId: user.id,
-          pausedForInactivity: automation?.pausedForInactivity ?? false,
+          pauseReason: automation?.pauseReason ?? null,
         }),
       );
       continue;

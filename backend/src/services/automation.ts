@@ -13,15 +13,144 @@ import {
 const ACTIVITY_WRITE_INTERVAL_MS = 60 * 60 * 1000;
 export const INACTIVITY_CANCELLATION_MESSAGE =
   "Cancelled because free-tier automation paused after 3 days of inactivity.";
+export const ADMINISTRATIVE_CANCELLATION_MESSAGE =
+  "Cancelled because automation was paused administratively.";
+const AUTOMATION_UNAVAILABLE_CANCELLATION_MESSAGE =
+  "Cancelled because account automation is unavailable.";
+
+/** Returns truthful job history copy for the effective account-level gate. */
+export function automationCancellationMessage(
+  state: AutomationState | null,
+): string {
+  if (state?.pauseReason === "ADMINISTRATIVE") {
+    return ADMINISTRATIVE_CANCELLATION_MESSAGE;
+  }
+  if (state?.pauseReason === "FREE_TIER_INACTIVITY") {
+    return INACTIVITY_CANCELLATION_MESSAGE;
+  }
+  return AUTOMATION_UNAVAILABLE_CANCELLATION_MESSAGE;
+}
 
 type StoredAutomationAccount = AutomationPolicyInput & {
   id: string;
 };
 
+export type AdministrativeAutomationPauseResult = {
+  pausedAt: Date;
+  pausedAccounts: number;
+  cancelledIcpJobs: number;
+  cancelledKeywordJobs: number;
+};
+
+export type AdministrativeAutomationPausePreview = {
+  affectedAccounts: number;
+  cancellableIcpJobs: number;
+  cancellableKeywordJobs: number;
+};
+
+/** Returns the exact scope of a global pause without changing production data. */
+export async function previewAdministrativeAutomationPause(): Promise<AdministrativeAutomationPausePreview> {
+  const userWhere = { isDeleted: false } as const;
+  const [affectedAccounts, cancellableIcpJobs, cancellableKeywordJobs] =
+    await Promise.all([
+      db.user.count({ where: userWhere }),
+      db.scrapeJob.count({
+        where: {
+          OR: [
+            { status: { in: ["PENDING", "RUNNING"] } },
+            { status: "FAILED", nextRetryAt: { not: null } },
+          ],
+          monitor: { user: userWhere },
+        },
+      }),
+      db.keywordScrapeJob.count({
+        where: {
+          OR: [
+            { status: { in: ["PENDING", "RUNNING"] } },
+            { status: "FAILED", nextRetryAt: { not: null } },
+          ],
+          keywordMonitor: { user: userWhere },
+        },
+      }),
+    ]);
+
+  return {
+    affectedAccounts,
+    cancellableIcpJobs,
+    cancellableKeywordJobs,
+  };
+}
+
+/**
+ * Stops automation for every non-deleted account without changing monitors,
+ * schedules, or subscription entitlements.
+ */
+export async function pauseAllAutomationAdministratively(
+  now = new Date(),
+): Promise<AdministrativeAutomationPauseResult> {
+  const userWhere = { isDeleted: false } as const;
+
+  const result = await db.$transaction(
+    async (tx) => {
+      const [users, icpJobs, keywordJobs] = await Promise.all([
+        tx.user.updateMany({
+          where: userWhere,
+          data: { administrativeAutomationPausedAt: now },
+        }),
+        tx.scrapeJob.updateMany({
+          where: {
+            OR: [
+              { status: { in: ["PENDING", "RUNNING"] } },
+              { status: "FAILED", nextRetryAt: { not: null } },
+            ],
+            monitor: { user: userWhere },
+          },
+          data: {
+            status: "CANCELLED",
+            errorMessage: ADMINISTRATIVE_CANCELLATION_MESSAGE,
+            nextRetryAt: null,
+          },
+        }),
+        tx.keywordScrapeJob.updateMany({
+          where: {
+            OR: [
+              { status: { in: ["PENDING", "RUNNING"] } },
+              { status: "FAILED", nextRetryAt: { not: null } },
+            ],
+            keywordMonitor: { user: userWhere },
+          },
+          data: {
+            status: "CANCELLED",
+            errorMessage: ADMINISTRATIVE_CANCELLATION_MESSAGE,
+            nextRetryAt: null,
+          },
+        }),
+      ]);
+
+      return {
+        pausedAt: now,
+        pausedAccounts: users.count,
+        cancelledIcpJobs: icpJobs.count,
+        cancelledKeywordJobs: keywordJobs.count,
+      };
+    },
+    { isolationLevel: "Serializable" },
+  );
+
+  logger.info(
+    JSON.stringify({
+      evt: "automation.administrative_pause_applied",
+      ...result,
+    }),
+  );
+
+  return result;
+}
+
 /**
  * Database predicate for writes that must only commit while account automation
  * is eligible. Keeping this predicate at the write boundary closes races with
- * the inactivity pause transaction.
+ * account-level pause transactions.
  */
 export function automationEligibleUserWhere(
   now = new Date(),
@@ -29,6 +158,7 @@ export function automationEligibleUserWhere(
   const inactivityCutoff = new Date(now.getTime() - FREE_TIER_INACTIVITY_MS);
 
   return {
+    administrativeAutomationPausedAt: null,
     OR: [
       {
         subscription: {
@@ -53,6 +183,7 @@ async function loadAutomationAccount(
       id: true,
       lastActiveAt: true,
       freeAutomationPausedAt: true,
+      administrativeAutomationPausedAt: true,
       subscription: {
         select: { tier: true },
       },
@@ -66,6 +197,7 @@ async function loadAutomationAccount(
     tier: user.subscription?.tier ?? null,
     lastActiveAt: user.lastActiveAt,
     freeAutomationPausedAt: user.freeAutomationPausedAt,
+    administrativeAutomationPausedAt: user.administrativeAutomationPausedAt,
   };
 }
 
@@ -189,6 +321,7 @@ export async function recordAuthenticatedActivity(
     where: {
       id: userId,
       lastActiveAt: { lte: writeCutoff },
+      administrativeAutomationPausedAt: null,
       OR: [
         {
           subscription: {
@@ -207,9 +340,9 @@ export async function recordAuthenticatedActivity(
 
   const state = await getAutomationStateForUser(userId, now);
 
-  // A returning user who was already inactive remains paused, but their visit
-  // is still recorded for account history and the subsequent re-enable cycle.
-  if (state?.pausedForInactivity) {
+  // A returning user with any sticky pause remains paused, but their visit is
+  // recorded for account history and the subsequent re-enable cycle.
+  if (state?.pauseReason) {
     await db.user.updateMany({
       where: {
         id: userId,
@@ -235,6 +368,7 @@ export async function enableAutomationForUser(
     data: {
       lastActiveAt: now,
       freeAutomationPausedAt: null,
+      administrativeAutomationPausedAt: null,
     },
   });
 
@@ -249,6 +383,7 @@ export async function enableAutomationForUser(
   return {
     enabled: account.tier !== null,
     pausedForInactivity: false,
+    pauseReason: null,
     inactivityThresholdDays: FREE_TIER_INACTIVITY_DAYS,
   };
 }

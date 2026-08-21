@@ -86,6 +86,10 @@ product activity. Monitor and schedule definitions remain intact. The first
 dashboard visit after the pause shows an “Enable jobs again” banner; the action
 resumes future ICP and keyword jobs. Paid tiers are exempt.
 
+Administrative automation pauses are distinct from inactivity pauses and can
+stop future jobs for every tier without changing subscription entitlements,
+monitors, or schedules. The same banner lets an active returning user resume.
+
 ## AI-Assisted Features
 
 All AI-assisted features use Nebius DeepSeek V4 Flash first. Google Gemini,

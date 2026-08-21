@@ -37,7 +37,7 @@ import {
   type ProductMode,
 } from "@/components/dashboard/product-mode-toggle";
 import type { AutomationState } from "@/types/backend";
-import { FreeTierAutomationBanner } from "./free-tier-automation-banner";
+import { AutomationPauseBanner } from "./automation-pause-banner";
 
 type DashboardShellProps = {
   leadGenNavItems: DashboardNavItem[];
@@ -305,7 +305,7 @@ export function DashboardShell({
 
         <main className="flex-1">
           <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-10">
-            <FreeTierAutomationBanner automation={automation} />
+            <AutomationPauseBanner automation={automation} />
             {children}
           </div>
         </main>

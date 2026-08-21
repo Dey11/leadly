@@ -17,9 +17,9 @@ import { notifyNewLeads } from "../services/notification.service";
 import type { KeywordMonitor, KeywordSet, User } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import {
+  automationCancellationMessage,
   automationEligibleUserWhere,
   getAutomationStateForUser,
-  INACTIVITY_CANCELLATION_MESSAGE,
 } from "../services/automation";
 
 type KeywordMonitorWithSetAndUser = KeywordMonitor & {
@@ -316,7 +316,7 @@ export async function processKeywordScrapeJob(
       },
       data: {
         status: "CANCELLED",
-        errorMessage: INACTIVITY_CANCELLATION_MESSAGE,
+        errorMessage: automationCancellationMessage(automation),
         nextRetryAt: null,
       },
     });
@@ -410,7 +410,7 @@ export async function processKeywordStuckJob(
       },
       data: {
         status: "CANCELLED",
-        errorMessage: INACTIVITY_CANCELLATION_MESSAGE,
+        errorMessage: automationCancellationMessage(automation),
         nextRetryAt: null,
       },
     });

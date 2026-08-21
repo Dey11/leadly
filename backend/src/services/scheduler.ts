@@ -188,7 +188,7 @@ export async function runScheduler() {
         JSON.stringify({
           evt: "scheduler.automation_paused",
           userId: user.id,
-          pausedForInactivity: automation?.pausedForInactivity ?? false,
+          pauseReason: automation?.pauseReason ?? null,
         }),
       );
       continue;

@@ -2,7 +2,8 @@ import { beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 
 const getAutomationStateForUser = mock(async () => ({
   enabled: false,
-  pausedForInactivity: true,
+  pausedForInactivity: false,
+  pauseReason: "ADMINISTRATIVE" as const,
   inactivityThresholdDays: 3,
 }));
 const tryConsumeScrapeCredit = mock(async () => {
@@ -19,10 +20,10 @@ const createScrapeJob = mock(async () => undefined);
 const createKeywordScrapeJob = mock(async () => undefined);
 
 const scheduledUser = {
-  id: "free-user",
+  id: "premium-user",
   isDeleted: false,
   subscription: {
-    tier: "FREE",
+    tier: "PREMIUM",
     currentPeriodEnd: new Date("2026-09-01T00:00:00.000Z"),
   },
   monitors: [{ id: "monitor-1" }],
@@ -105,7 +106,7 @@ describe("scheduler automation gate", () => {
   test("paused ICP accounts consume no credit and create or enqueue no jobs", async () => {
     await runScheduler();
 
-    expect(getAutomationStateForUser).toHaveBeenCalledWith("free-user");
+    expect(getAutomationStateForUser).toHaveBeenCalledWith("premium-user");
     expect(previewUsage).not.toHaveBeenCalled();
     expect(tryConsumeScrapeCredit).not.toHaveBeenCalled();
     expect(createScrapeJob).not.toHaveBeenCalled();
@@ -116,7 +117,7 @@ describe("scheduler automation gate", () => {
   test("paused keyword accounts consume no credit and create or run no jobs", async () => {
     await runKeywordScheduler();
 
-    expect(getAutomationStateForUser).toHaveBeenCalledWith("free-user");
+    expect(getAutomationStateForUser).toHaveBeenCalledWith("premium-user");
     expect(tryConsumeScrapeCredit).not.toHaveBeenCalled();
     expect(createKeywordScrapeJob).not.toHaveBeenCalled();
     expect(processKeywordScrapeJob).not.toHaveBeenCalled();

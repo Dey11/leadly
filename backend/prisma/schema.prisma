@@ -124,18 +124,19 @@ model User {
   bugReports           BugReport[]
   notificationChannels NotificationChannel[]
 
-  name                   String
-  emailVerified          Boolean   @default(false)
-  emailOtp               String?
-  emailOtpExpiresAt      DateTime?
-  resetToken             String?   @unique
-  resetTokenExpiresAt    DateTime?
-  image                  String?
-  sessions               Session[]
-  accounts               Account[]
-  hasSeenWalkthrough     Boolean   @default(false)
-  lastActiveAt           DateTime  @default(now())
-  freeAutomationPausedAt DateTime?
+  name                             String
+  emailVerified                    Boolean   @default(false)
+  emailOtp                         String?
+  emailOtpExpiresAt                DateTime?
+  resetToken                       String?   @unique
+  resetTokenExpiresAt              DateTime?
+  image                            String?
+  sessions                         Session[]
+  accounts                         Account[]
+  hasSeenWalkthrough               Boolean   @default(false)
+  lastActiveAt                     DateTime  @default(now())
+  freeAutomationPausedAt           DateTime?
+  administrativeAutomationPausedAt DateTime?
 
   // Profile/Onboarding fields for better user experience
   hasCompletedOnboarding Boolean @default(false)

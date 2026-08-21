@@ -160,7 +160,8 @@ Successful authenticated use records account activity. Writes are throttled to
 once per hour, while the three-day free-tier inactivity decision is evaluated
 before refreshing the timestamp. Returning therefore does not silently resume
 paused jobs; the user must call `POST /account/automation/enable` from the
-dashboard banner.
+dashboard banner. A separate administrative pause timestamp applies to every
+tier and is cleared by the same endpoint without changing subscription data.
 
 ## Rate Limiting
 
@@ -242,7 +243,7 @@ Responsibilities:
 
 Core tables and their roles:
 
-- `User`: account, onboarding fields, profile fields, verification state, last authenticated activity, and free-tier automation pause state
+- `User`: account, onboarding fields, profile fields, verification state, last authenticated activity, free-tier inactivity pause state, and all-tier administrative automation pause state
 - `Session`: persistent session storage
 - `Subscription`: plan, state, Dodo identifiers
 - `Usage`: monthly and daily usage counters for both lead-gen and keyword monitoring

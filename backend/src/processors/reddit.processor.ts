@@ -14,9 +14,9 @@ import {
 import { buildRedditFetchTarget } from "../lib/reddit-target";
 import { notifyNewLeads } from "../services/notification.service";
 import {
+  automationCancellationMessage,
   automationEligibleUserWhere,
   getAutomationStateForUser,
-  INACTIVITY_CANCELLATION_MESSAGE,
 } from "../services/automation";
 
 type MonitorWithIcpAndUser = Monitor & {
@@ -286,7 +286,7 @@ export async function processRedditScrape(job: Job) {
       },
       data: {
         status: "CANCELLED",
-        errorMessage: INACTIVITY_CANCELLATION_MESSAGE,
+        errorMessage: automationCancellationMessage(automation),
         nextRetryAt: null,
       },
     });
@@ -367,7 +367,7 @@ export async function processStuckJob(monitorId: string, jobId: string) {
       },
       data: {
         status: "CANCELLED",
-        errorMessage: INACTIVITY_CANCELLATION_MESSAGE,
+        errorMessage: automationCancellationMessage(automation),
         nextRetryAt: null,
       },
     });

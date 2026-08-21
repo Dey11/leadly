@@ -76,6 +76,7 @@ export default async function DashboardLayout({
         automation: {
           enabled: true,
           pausedForInactivity: false,
+          pauseReason: null,
           inactivityThresholdDays: 3,
         },
       };

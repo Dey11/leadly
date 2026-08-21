@@ -91,6 +91,7 @@ All business APIs are versioned under `/api/v1`. Non-authentication routes requi
         "automation": {
           "enabled": true,
           "pausedForInactivity": false,
+          "pauseReason": null,
           "inactivityThresholdDays": 3
         }
       }
@@ -99,13 +100,15 @@ All business APIs are versioned under `/api/v1`. Non-authentication routes requi
   ```
 
 For free-tier accounts, authenticated product use updates the inactivity clock.
-After three inactive days, `automation.pausedForInactivity` becomes `true` and
-future ICP and keyword jobs remain disabled until explicitly re-enabled.
+After three inactive days, `automation.pauseReason` becomes
+`FREE_TIER_INACTIVITY` and future ICP and keyword jobs remain disabled until
+explicitly re-enabled. `ADMINISTRATIVE` pauses apply to every tier and use the
+same explicit recovery action.
 
 ### POST `/account/automation/enable`
 
 - **Auth:** Required
-- **Purpose:** Re-enable future ICP and keyword jobs after a free-tier inactivity pause. Monitor and schedule definitions are preserved.
+- **Purpose:** Re-enable future ICP and keyword jobs after an account-level pause. Monitor and schedule definitions are preserved.
 - **Success:** `200 OK`
   ```json
   {
@@ -113,6 +116,7 @@ future ICP and keyword jobs remain disabled until explicitly re-enabled.
     "payload": {
       "enabled": true,
       "pausedForInactivity": false,
+      "pauseReason": null,
       "inactivityThresholdDays": 3
     }
   }
@@ -548,6 +552,20 @@ Scrape jobs represent the execution history of monitoring tasks for specific mon
   }
   ```
 - **Failure cases:** `404` if monitor not found, `403` if not owned by user.
+
+## Administrative Automation
+
+### POST `/admin/automation/pause`
+
+- **Auth:** `X-Admin-API-Key` header.
+- **Purpose:** Preview or atomically apply an all-tier automation pause. The
+  operation preserves subscriptions, monitors, and schedules while cancelling
+  pending, running, and scheduled-retry ICP and keyword jobs.
+- **Preview body:** `{ "dryRun": true }`
+- **Apply body:**
+  `{ "dryRun": false, "confirm": "PAUSE_ALL_AUTOMATION" }`
+- **Recovery:** Each account clears the pause through
+  `POST /account/automation/enable`.
 
 ## Additional Notes for Frontend Integration
 

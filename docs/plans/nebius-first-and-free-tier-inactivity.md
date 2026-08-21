@@ -2,8 +2,10 @@
 
 ## Status
 
-Complete. The feature revision (`942c167`) was deployed to the personal Coolify
-Leadly application on 2026-08-20 and passed post-deployment checks.
+The original Nebius-first and inactivity work is complete. An all-tier
+administrative-pause extension is in progress as of 2026-08-21. All 39
+production free accounts were paused operationally at `2026-08-21T06:48:44Z`;
+the single internally granted Premium account awaits the extension deployment.
 
 ## Goal
 
@@ -11,7 +13,12 @@ Use Nebius Token Factory's DeepSeek V4 Flash as Leadly's first-choice AI provide
 
 ## Context
 
-Leadly currently puts Gemini first for classification and ICP generation, WaveSpeed first for DM generation, and has no account-level inactivity state. The production Coolify application already stores `NEBIUS_API_KEY`. A live pre-implementation test confirmed that `deepseek-ai/DeepSeek-V4-Flash` accepts strict structured-output requests through the repository's OpenAI-compatible Vercel AI SDK adapter.
+Before this work, Leadly put Gemini first for classification and ICP generation,
+WaveSpeed first for DM generation, and had no account-level inactivity state.
+The production Coolify application already stored `NEBIUS_API_KEY`. A live
+pre-implementation test confirmed that `deepseek-ai/DeepSeek-V4-Flash` accepts
+strict structured-output requests through the repository's OpenAI-compatible
+Vercel AI SDK adapter.
 
 ## Scope
 
@@ -24,24 +31,37 @@ Leadly currently puts Gemini first for classification and ICP generation, WaveSp
 - Keep monitor and schedule definitions unchanged while automation is paused.
 - Expose automation state through the authenticated account API and add an idempotent re-enable operation.
 - Display a dashboard-wide banner with an explicit “Enable jobs again” action.
+- Represent administrative pauses separately from inactivity so every tier can
+  be stopped without changing subscriptions, monitors, or schedules.
 
 ## Non-goals
 
 - No global AI concurrency limiter or retry redesign.
 - No automatic reactivation merely because a user returns.
-- No inactivity pause for Pro or Premium subscriptions.
+- No inactivity pause for Pro or Premium subscriptions; administrative pauses
+  are a separate all-tier state.
 - No deletion or pausing of individual monitor records.
 - No change to subscription quotas or scheduled hours.
 
 ## Chosen architecture
 
-The `User` record owns `lastActiveAt` and `freeAutomationPausedAt`. A cohesive backend automation-policy module calculates eligibility, records throttled activity, applies the inactivity pause atomically, clears stale free-tier pause state for paid accounts, and re-enables automation on explicit request.
+The `User` record owns `lastActiveAt`, `freeAutomationPausedAt`, and
+`administrativeAutomationPausedAt`. A cohesive backend automation-policy module
+calculates eligibility, records throttled activity, applies inactivity and
+administrative gates with explicit reasons, clears stale free-tier state for
+paid accounts, and clears both pause sources on explicit re-enable.
 
 The activity write claims eligible recent activity before policy evaluation, and processor completion/failure writes include the account-eligibility predicate in the database update itself. These write-boundary checks prevent stale scheduler reads or late worker results from overriding the three-day gate.
 
 Both schedulers apply the same policy before usage consumption or job creation. Retry and stuck-job selectors exclude paused inactive free-tier accounts. Processors perform a final eligibility check so already queued work cannot bypass the account gate. When the pause transition wins a race with in-flight processing, pending and running job records are cancelled and the processor is prevented from committing leads, cursor movement, completion, or retry state.
 
 The account response carries the effective automation state. A dashboard-shell banner calls an authenticated account endpoint, hides only after a successful response, and refreshes server-rendered state.
+
+The administrative extension uses a second timestamp rather than overloading
+the free-tier field. A protected admin operation supports a read-only preview
+and an explicitly confirmed, serializable all-account pause. Administrative
+state takes precedence over subscription policy; the existing account
+re-enable operation clears both pause sources and refreshes activity.
 
 ## Alternatives considered
 
@@ -59,6 +79,9 @@ The account response carries the effective automation state. A dashboard-shell b
 4. Add the dashboard banner and its re-enable mutation.
 5. Update documentation and run backend/frontend verification.
 6. Commit, push to `master`, observe Coolify deployment and migration, and run a small production Nebius classification check.
+7. Add and deploy the all-tier administrative pause, preview its production
+   scope, apply it to every non-deleted account, and verify the shared recovery
+   banner and scheduler/processor gates.
 
 ## Validation
 
@@ -82,5 +105,7 @@ The account response carries the effective automation state. A dashboard-shell b
 
 - The Nebius endpoint is a shared public endpoint whose availability may change; fallbacks remain enabled.
 - Scheduler runs define how quickly an inactive account is paused. Both product schedulers run hourly, with the keyword scheduler offset to minute 30.
-- An external Reddit or AI request already in flight cannot be forcibly aborted, but its results are discarded if the inactivity cancellation reaches the job before its completion transaction.
+- An external Reddit or AI request already in flight cannot be forcibly
+  aborted, but its results are discarded when an account-level pause wins the
+  job completion transaction.
 - A failed production migration would prevent backend startup; migration SQL must remain additive and backward-compatible with the previous application image.
