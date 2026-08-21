@@ -2,10 +2,10 @@
 
 ## Status
 
-The original Nebius-first and inactivity work is complete. An all-tier
-administrative-pause extension is in progress as of 2026-08-21. All 39
-production free accounts were paused operationally at `2026-08-21T06:48:44Z`;
-the single internally granted Premium account awaits the extension deployment.
+Complete. The original Nebius-first and inactivity work and the all-tier
+administrative-pause extension are deployed. All 40 non-deleted production
+accounts were administratively paused at `2026-08-21T07:15:18.537Z`, including
+39 Free accounts and the single internally granted Premium account.
 
 ## Goal
 
@@ -100,6 +100,16 @@ re-enable operation clears both pause sources and refreshes activity.
 - A post-deployment, non-persistent live-key smoke test exercised both structured
   and free-form generation through the repository adapter; both selected
   `nebius`.
+- Administrative-pause revision `4de1513` passed backend lint, type checking,
+  all 29 backend tests, backend build, frontend formatting and type checking,
+  and the frontend production build before deployment.
+- The protected production preview reported 40 affected accounts, 6 cancellable
+  ICP jobs, and 0 cancellable keyword jobs. The confirmed operation paused all
+  40 accounts and cancelled those 6 ICP jobs.
+- Post-apply API and direct database checks reported 40 administratively paused
+  accounts, 0 unpaused accounts, 0 runnable or scheduled-retry ICP jobs, and 0
+  runnable or scheduled-retry keyword jobs. The backend remained healthy with
+  database and Redis connectivity, and the frontend returned HTTP 200.
 
 ## Risks
 
