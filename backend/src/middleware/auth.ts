@@ -1,17 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import db from "../lib/db";
 import { recordAuthenticatedActivity } from "../services/automation";
+import { getCookieOptions } from "../lib/cookie-options";
 
 function getClearCookieOptions() {
-  const isProduction = process.env.NODE_ENV === "production";
-  return {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
-    domain: isProduction ? ".leadly.live" : undefined,
-    maxAge: 0,
-    path: "/",
-  } as const;
+  return getCookieOptions(0);
 }
 
 /**

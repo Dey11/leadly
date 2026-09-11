@@ -218,7 +218,7 @@ export async function sendVerificationEmail(email: string, otp: string) {
   `;
 
   const { error } = await resend.emails.send({
-    from: "Leadly Team <hello@leadly.live>",
+    from: env.EMAIL_FROM,
     to: email,
     subject: "🔐 Verify your email - Leadly",
     html: wrapEmailContent(content, "Your verification code is ready"),
@@ -263,7 +263,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   `;
 
   const { error } = await resend.emails.send({
-    from: "Leadly Security <security@leadly.live>",
+    from: env.SECURITY_EMAIL_FROM,
     to: email,
     subject: "🔑 Reset your password - Leadly",
     html: wrapEmailContent(content, "Reset your Leadly password"),
@@ -305,7 +305,7 @@ export async function sendSubscriptionActiveEmail(
   `;
 
   const { error } = await resend.emails.send({
-    from: "Leadly Team <hello@leadly.live>",
+    from: env.EMAIL_FROM,
     to: email,
     subject: "🎉 Your subscription is active - Leadly",
     html: wrapEmailContent(content, "Welcome to Leadly Premium!"),
@@ -348,7 +348,7 @@ export async function sendSubscriptionOnHoldEmail(
   `;
 
   const { error } = await resend.emails.send({
-    from: "Leadly Team <hello@leadly.live>",
+    from: env.EMAIL_FROM,
     to: email,
     subject: "⚠️ Your subscription is on hold - Leadly",
     html: wrapEmailContent(
@@ -392,7 +392,7 @@ export async function sendSubscriptionRenewedEmail(
   `;
 
   const { error } = await resend.emails.send({
-    from: "Leadly Team <hello@leadly.live>",
+    from: env.EMAIL_FROM,
     to: email,
     subject: "🔄 Your subscription is renewed - Leadly",
     html: wrapEmailContent(
@@ -456,7 +456,7 @@ export async function sendSubscriptionPlanChangedEmail(
   `;
 
   const { error } = await resend.emails.send({
-    from: "Leadly Team <hello@leadly.live>",
+    from: env.EMAIL_FROM,
     to: email,
     subject: `${emoji} Your plan is now ${planName} - Leadly`,
     html: wrapEmailContent(
@@ -501,7 +501,7 @@ export async function sendSubscriptionCancelledEmail(
   `;
 
   const { error } = await resend.emails.send({
-    from: "Leadly Team <hello@leadly.live>",
+    from: env.EMAIL_FROM,
     to: email,
     subject: "👋 Your subscription is cancelled - Leadly",
     html: wrapEmailContent(
@@ -546,7 +546,7 @@ export async function sendSubscriptionExpiredEmail(
   `;
 
   const { error } = await resend.emails.send({
-    from: "Leadly Team <hello@leadly.live>",
+    from: env.EMAIL_FROM,
     to: email,
     subject: "⏰ Your subscription has expired - Leadly",
     html: wrapEmailContent(content, "Your Leadly subscription needs attention"),
@@ -590,7 +590,7 @@ export async function sendSubscriptionFailedEmail(
   `;
 
   const { error } = await resend.emails.send({
-    from: "Leadly Team <hello@leadly.live>",
+    from: env.EMAIL_FROM,
     to: email,
     subject: "❌ Payment failed - Action required - Leadly",
     html: wrapEmailContent(content, "Your payment needs attention"),

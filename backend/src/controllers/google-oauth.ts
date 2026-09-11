@@ -3,17 +3,27 @@ import { OAuth2Client } from "google-auth-library";
 import crypto from "crypto";
 import db from "../lib/db";
 import { env } from "../env";
-import { getCookieOptions } from "./auth";
+import { getCookieOptions } from "../lib/cookie-options";
 import logger from "../lib/logger";
 import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
 import { initializeOrResetUsagePeriod } from "../lib/usage";
 import { recordAuthenticatedActivity } from "../services/automation";
 
-const oauth2Client = new OAuth2Client(
-  env.GOOGLE_CLIENT_ID,
-  env.GOOGLE_CLIENT_SECRET,
-  env.GOOGLE_REDIRECT_URI,
-);
+const oauth2Client =
+  env.GOOGLE_OAUTH_ENABLED &&
+  env.GOOGLE_CLIENT_ID &&
+  env.GOOGLE_CLIENT_SECRET &&
+  env.GOOGLE_REDIRECT_URI
+    ? new OAuth2Client(
+        env.GOOGLE_CLIENT_ID,
+        env.GOOGLE_CLIENT_SECRET,
+        env.GOOGLE_REDIRECT_URI,
+      )
+    : null;
+
+function rejectDisabledGoogleOAuth(res: Response) {
+  return res.status(404).json({ error: "Google sign-in is disabled" });
+}
 
 // Reuses the same session token generation logic from auth.ts
 // Duplicated here to allow transactional session creation with `tx`
@@ -77,20 +87,16 @@ async function createSessionInTransaction(
  * Source: https://developers.google.com/identity/protocols/oauth2/web-server
  */
 export async function googleOAuthInitiate(req: Request, res: Response) {
+  if (!oauth2Client) {
+    return rejectDisabledGoogleOAuth(res);
+  }
+
   try {
     // Generate cryptographically random state for CSRF protection
     const state = crypto.randomBytes(32).toString("hex");
 
     // Store state in a short-lived httpOnly cookie (10 minutes)
-    const isProduction = process.env.NODE_ENV === "production";
-    res.cookie("oauth_state", state, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      domain: isProduction ? ".leadly.live" : undefined,
-      maxAge: 10 * 60 * 1000, // 10 minutes
-      path: "/",
-    });
+    res.cookie("oauth_state", state, getCookieOptions(10 * 60 * 1000));
 
     // Generate the Google authorization URL
     const authorizationUrl = oauth2Client.generateAuthUrl({
@@ -115,6 +121,10 @@ export async function googleOAuthInitiate(req: Request, res: Response) {
  * and creates/links user accounts.
  */
 export async function googleOAuthCallback(req: Request, res: Response) {
+  if (!oauth2Client) {
+    return rejectDisabledGoogleOAuth(res);
+  }
+
   try {
     const { code, state, error: oauthError } = req.query;
 
@@ -134,15 +144,7 @@ export async function googleOAuthCallback(req: Request, res: Response) {
     }
 
     // Clear the state cookie
-    const isProduction = process.env.NODE_ENV === "production";
-    res.cookie("oauth_state", "", {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      domain: isProduction ? ".leadly.live" : undefined,
-      maxAge: 0,
-      path: "/",
-    });
+    res.cookie("oauth_state", "", getCookieOptions(0));
 
     if (!code || typeof code !== "string") {
       return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_no_code`);

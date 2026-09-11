@@ -133,7 +133,7 @@ export function AnimatedDemo() {
                 {/* URL Bar */}
                 <div className="bg-background/60 flex-1 rounded-md px-3 py-1 sm:py-1.5">
                   <span className="text-muted-foreground text-xs sm:text-sm">
-                    leadly.live
+                    leadly.tryhanabi.com
                   </span>
                 </div>
               </div>

@@ -185,7 +185,7 @@ export default async function BlogPostPage({
                 </span>
                 <ShareButtonClient
                   title={post.title}
-                  url={`https://leadly.live/blog/${post.slug}`}
+                  url={`${siteConfig.url}/blog/${post.slug}`}
                 />
               </div>
             </header>

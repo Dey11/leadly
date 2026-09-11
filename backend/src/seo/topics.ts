@@ -1,3 +1,5 @@
+import { siteUrl } from "../lib/site-url";
+
 export type BlogBrief = {
   slug: string;
   title: string;
@@ -43,7 +45,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/solutions/turn-reddit-discussions-into-your-saas-growth-engine",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       { label: "Syften", url: "https://syften.com/reddit" },
       { label: "F5Bot", url: "https://f5bot.com/" },
       { label: "GummySearch", url: "https://gummysearch.com/" },
@@ -70,7 +72,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/alternatives/reddit-monitoring-tools-for-agencies",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       { label: "Syften", url: "https://syften.com/reddit" },
       { label: "F5Bot", url: "https://f5bot.com/" },
     ],
@@ -102,7 +104,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
         label: "Reddit Moderator Code of Conduct",
         url: "https://www.redditinc.com/policies/moderator-code-of-conduct",
       },
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
     ],
   },
   {
@@ -125,7 +127,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/alternatives/reddit-monitoring-tools-for-agencies",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       { label: "Syften", url: "https://syften.com/reddit" },
       { label: "F5Bot", url: "https://f5bot.com/" },
     ],
@@ -150,7 +152,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/alternatives/reddit-lead-generation-tools",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       {
         label: "Princeton GEO paper",
         url: "https://arxiv.org/abs/2311.09735",
@@ -177,7 +179,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/compare/leadly-vs-f5bot",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       { label: "F5Bot", url: "https://f5bot.com/" },
       { label: "Syften", url: "https://syften.com/reddit" },
     ],
@@ -201,7 +203,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/solutions/automate-your-customer-acquisition-on-reddit",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       { label: "Reddit", url: "https://www.reddit.com/" },
     ],
   },
@@ -225,7 +227,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/compare/leadly-vs-syften",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       {
         label: "Reddit Content Policy",
         url: "https://www.redditinc.com/policies/content-policy",
@@ -253,7 +255,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/alternatives/reddit-lead-generation-tools",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       {
         label: "Reddit Content Policy",
         url: "https://www.redditinc.com/policies/content-policy",
@@ -281,7 +283,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/alternatives/reddit-monitoring-tools-for-agencies",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       { label: "Reddit", url: "https://www.reddit.com/" },
     ],
   },
@@ -306,7 +308,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/compare/leadly-vs-syften",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       { label: "Syften", url: "https://syften.com/reddit" },
     ],
   },
@@ -339,7 +341,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
         label: "Reddit Moderator Code of Conduct",
         url: "https://www.redditinc.com/policies/moderator-code-of-conduct",
       },
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
     ],
   },
   {
@@ -362,7 +364,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/solutions/turn-reddit-discussions-into-your-saas-growth-engine",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       { label: "Reddit", url: "https://www.reddit.com/" },
     ],
   },
@@ -388,7 +390,7 @@ export const BLOG_BRIEFS: BlogBrief[] = [
       "/compare/leadly-vs-gummysearch",
     ],
     sources: [
-      { label: "Leadly", url: "https://leadly.live/" },
+      { label: "Leadly", url: `/` },
       { label: "GummySearch", url: "https://gummysearch.com/" },
     ],
   },

@@ -203,7 +203,8 @@ Leadly is designed for modern CI/CD pipelines, specifically tailored for **Cooli
 
 - **Coolify GitHub App**: Zero-config deployment.
 - **Production**: Triggered by push to `master`.
-- **Preview**: Triggered by Pull Requests (creates ephemeral URLs like `pr-123.leadly.live`).
+- **Production frontend**: `https://leadly.tryhanabi.com`.
+- **Production API**: `https://api.leadly.tryhanabi.com`.
 - **Proxy**: Uses Coolify's internal proxy (Traefik) for SSL and routing.
 - **Database migrations**: The backend container runs `prisma migrate deploy` on startup inside Coolify's private network before starting the API.
 
@@ -304,21 +305,26 @@ Generate one via: `openssl rand -hex 32`
 
 Complete reference for `.env` configuration.
 
-| Variable                       | Description                           |
-| :----------------------------- | :------------------------------------ |
-| `DATABASE_URL`                 | PostgreSQL Connection String (NeonDB) |
-| `REDIS_URL`                    | Redis Connection String               |
-| `SESSION_SECRET`               | Secret for signing session cookies    |
-| `FRONTEND_URL`                 | URL of the frontend (for CORS)        |
-| `NEBIUS_API_KEY`              | Nebius Token Factory API key          |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini fallback API key              |
-| `GOOGLE_CLIENT_ID`             | Google OAuth Client ID                |
-| `GOOGLE_CLIENT_SECRET`         | Google OAuth Client Secret            |
-| `GOOGLE_REDIRECT_URI`          | Google OAuth callback URL             |
-| `REDDIT_CLIENT_ID`             | Reddit App ID                         |
-| `REDDIT_CLIENT_SECRET`         | Reddit App Secret                     |
-| `REDDIT_USERNAME`              | Reddit Account Username               |
-| `DODO_API_KEY`                 | Dodo Payments API Key                 |
-| `DODO_WEBHOOK_SECRET`          | Dodo Webhook verification secret      |
-| `DISCORD_LOGS_WEBHOOK_URL`     | /Optional/ Webhook for system logs    |
-| `ADMIN_API_KEY`                | /Optional/ Key for admin endpoints    |
+| Variable                           | Description                           |
+| :--------------------------------- | :------------------------------------ |
+| `DATABASE_URL`                     | PostgreSQL Connection String (NeonDB) |
+| `REDIS_URL`                        | Redis Connection String               |
+| `SESSION_SECRET`                   | Secret for signing session cookies    |
+| `FRONTEND_URL`                     | URL of the frontend (for CORS)        |
+| `COOKIE_DOMAIN`                    | Optional shared session cookie domain |
+| `EMAIL_FROM`                       | Verified default Resend sender        |
+| `SECURITY_EMAIL_FROM`              | Verified security-email sender        |
+| `NEBIUS_API_KEY`                   | Nebius Token Factory API key          |
+| `GOOGLE_GENERATIVE_AI_API_KEY`     | Gemini fallback API key               |
+| `GOOGLE_CLIENT_ID`                 | Google OAuth Client ID                |
+| `GOOGLE_CLIENT_SECRET`             | Google OAuth Client Secret            |
+| `GOOGLE_REDIRECT_URI`              | Google OAuth callback URL             |
+| `GOOGLE_OAUTH_ENABLED`             | Enables backend Google OAuth routes   |
+| `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` | Shows Google sign-in in the frontend  |
+| `REDDIT_CLIENT_ID`                 | Reddit App ID                         |
+| `REDDIT_CLIENT_SECRET`             | Reddit App Secret                     |
+| `REDDIT_USERNAME`                  | Reddit Account Username               |
+| `DODO_API_KEY`                     | Dodo Payments API Key                 |
+| `DODO_WEBHOOK_SECRET`              | Dodo Webhook verification secret      |
+| `DISCORD_LOGS_WEBHOOK_URL`         | /Optional/ Webhook for system logs    |
+| `ADMIN_API_KEY`                    | /Optional/ Key for admin endpoints    |

@@ -5,6 +5,7 @@ import slugify from "slugify";
 import { z } from "zod";
 import db from "../lib/db";
 import { generateAIObject } from "../lib/ai";
+import { siteUrl } from "../lib/site-url";
 import { BLOG_STOCK_IMAGES } from "../seo/topics";
 
 type BulkBlogBrief = {
@@ -19,13 +20,12 @@ type BulkBlogBrief = {
   sourceUrls: Array<{ label: string; url: string }>;
 };
 
-const SITE_URL = "https://leadly.live";
 const AUTHOR_NAME = "Leadly Editorial";
 const AUTHOR_ROLE = "Reddit Demand Research";
 const COOLDOWN_MS = Number(process.env.BULK_BLOG_COOLDOWN_MS ?? "12000");
 
 const SHARED_SOURCES = {
-  leadly: { label: "Leadly", url: "https://leadly.live/" },
+  leadly: { label: "Leadly", url: `${siteUrl}/` },
   redditPolicy: {
     label: "Reddit Content Policy",
     url: "https://www.redditinc.com/policies/content-policy",
@@ -1155,7 +1155,7 @@ function pickImages(slug: string) {
 }
 
 function formatLinks(paths: string[]) {
-  return paths.map((path) => `${SITE_URL}${path}`).join("\n");
+  return paths.map((path) => `${siteUrl}${path}`).join("\n");
 }
 
 function formatSources(sources: BulkBlogBrief["sourceUrls"]) {
@@ -1225,7 +1225,7 @@ function normalizeArticle(
   const sourceLines = [
     ...brief.sourceUrls.map((source) => `- [${source.label}](${source.url})`),
     ...brief.internalLinks.map(
-      (path) => `- [Related Leadly resource](${SITE_URL}${path})`,
+      (path) => `- [Related Leadly resource](${siteUrl}${path})`,
     ),
   ];
 
@@ -1401,7 +1401,7 @@ async function main() {
         tags: accepted.tags,
         metaTitle: brief.title,
         metaDescription: accepted.metaDescription,
-        canonicalUrl: `${SITE_URL}/blog/${brief.slug}`,
+        canonicalUrl: `${siteUrl}/blog/${brief.slug}`,
         publishedAt: new Date(),
         status: "PUBLISHED",
         generationPrompt: `Bulk SEO/GEO brief: ${brief.primaryKeyword}; provider=${providerName}`,

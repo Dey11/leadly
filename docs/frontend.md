@@ -189,7 +189,13 @@ Main frontend config inputs:
 - `BACKEND_URL`
 - `NEXT_PUBLIC_BACKEND_URL`
 - `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED`
 - analytics-related public env vars
+
+`NEXT_PUBLIC_APP_URL` is the canonical origin used by metadata, structured data,
+robots, sitemap entries, and share links. Setting
+`NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=false` removes Google sign-in from login and
+registration while leaving password auth available.
 
 The site config resolves the canonical public app URL and keyword set used in metadata.
 

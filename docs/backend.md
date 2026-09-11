@@ -149,6 +149,10 @@ Key behavior:
 - middleware loads the session and attached user from the database
 - deleted users have their sessions cleaned up
 - expired sessions are rejected
+- production cookies are scoped to the `FRONTEND_URL` hostname unless
+  `COOKIE_DOMAIN` explicitly overrides it
+- Google OAuth can be disabled with `GOOGLE_OAUTH_ENABLED=false`; credentials
+  are required only when it is enabled
 - write, delete, billing, and AI-sensitive routes often require verified email
 
 There are two auth middleware variants:

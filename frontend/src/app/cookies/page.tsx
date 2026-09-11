@@ -183,9 +183,8 @@ export default function CookiesPage() {
             </li>
           </ul>
           <p className="text-muted-foreground mt-4 leading-relaxed">
-            To change your preferences later, clear your browser's localStorage
-            for leadly.live and refresh the page. The consent banner will appear
-            again.
+            To change your preferences later, clear this site's localStorage and
+            refresh the page. The consent banner will appear again.
           </p>
 
           <h3 className="text-foreground mt-6 text-lg font-medium">

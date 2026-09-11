@@ -32,6 +32,10 @@ function GoogleIcon() {
 }
 
 export function GoogleOAuthButton() {
+  if (process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === "false") {
+    return null;
+  }
+
   const backendUrl =
     process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3001";
 

@@ -3,13 +3,13 @@ import { z } from "zod";
 import db from "../lib/db";
 import { generateAIObject, generateAIText } from "../lib/ai";
 import logger from "../lib/logger";
+import { siteUrl } from "../lib/site-url";
 import { BLOG_BRIEFS, BLOG_STOCK_IMAGES, type BlogBrief } from "./topics";
 
 const BLOG_QUEUE_TARGET = 6;
 const BLOG_INTERVAL_DAYS = 4;
 const BLOG_AUTHOR_NAME = "Leadly Editorial";
 const BLOG_AUTHOR_ROLE = "Reddit Demand Research";
-const SITE_URL = "https://leadly.live";
 function isModelCapacityError(error: unknown) {
   const messages =
     error instanceof AggregateError
@@ -94,7 +94,7 @@ async function buildBlogContent(
     .join("\n");
 
   const links = brief.internalLinks
-    .map((path) => `${SITE_URL}${path}`)
+    .map((path) => `${siteUrl}${path}`)
     .join("\n");
 
   const { text } = await generateAIText({

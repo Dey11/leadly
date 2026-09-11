@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import slugify from "slugify";
 import db from "../lib/db";
 import logger from "../lib/logger";
+import { siteUrl } from "../lib/site-url";
 import {
   createAdminBlogPostSchema,
   updateAdminBlogPostSchema,
@@ -9,10 +10,8 @@ import {
   adminBlogSlugParamSchema,
 } from "../types/admin-blog";
 
-const SITE_URL = "https://leadly.live";
-
 function canonicalPostUrl(slug: string) {
-  return `${SITE_URL}/blog/${slug}`;
+  return `${siteUrl}/blog/${slug}`;
 }
 
 function normalizeSlug(input: string) {

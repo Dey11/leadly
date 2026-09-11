@@ -19,6 +19,7 @@ import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/email";
 import { validateEmail } from "../lib/email-validator";
 import { checkRateLimit, incrementRateLimit } from "../lib/rate-limit";
 import { recordAuthenticatedActivity } from "../services/automation";
+import { getCookieOptions } from "../lib/cookie-options";
 
 // const isDevelopment = env.NODE_ENV === "development";
 const isDevelopment = false; // turn this on when testing non registration
@@ -66,18 +67,6 @@ export async function createUserSession(userId: string) {
       expiresAt,
     },
   });
-}
-
-export function getCookieOptions(maxAge: number = 1000 * 60 * 60 * 24 * 7) {
-  const isProduction = process.env.NODE_ENV === "production";
-  return {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
-    domain: isProduction ? ".leadly.live" : undefined,
-    maxAge,
-    path: "/",
-  } as const;
 }
 
 export async function register(req: Request, res: Response) {

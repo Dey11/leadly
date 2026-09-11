@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Leadly",
   description:
     "Leadly is the AI-powered Reddit monitoring platform. Use ICP-based lead generation or keyword tracking to find qualified B2B leads and brand mentions automatically.",
-  url: process.env.NEXT_PUBLIC_APP_URL || "https://leadly.live",
+  url: process.env.NEXT_PUBLIC_APP_URL || "https://leadly.tryhanabi.com",
   ogImage: "/assets/og-image.png",
   author: "Leadly",
   keywords: [
@@ -46,11 +46,11 @@ export const siteConfig = {
     "F5Bot alternative",
     // Brand + category
     "Leadly",
-    "Leadly.live",
+    "Leadly Reddit monitoring",
     "leadly app",
   ],
   links: {
-    leadly: process.env.NEXT_PUBLIC_APP_URL || "https://leadly.live",
+    leadly: process.env.NEXT_PUBLIC_APP_URL || "https://leadly.tryhanabi.com",
   },
 };
 

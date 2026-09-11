@@ -30,6 +30,8 @@ At runtime, the system depends on:
 - Exposes versioned APIs under `/api/v1`
 - Uses Prisma with PostgreSQL
 - Owns auth, account state, billing, monitor CRUD, schedule management, lead retrieval, blog APIs, and admin operations
+- Derives the production session-cookie scope from `FRONTEND_URL`, with an
+  optional `COOKIE_DOMAIN` override for unusual host layouts
 
 ### Worker
 
@@ -127,6 +129,11 @@ There is also a backend-local compose file for Redis:
 - `backend/docker-compose.yml`
 
 This matches a production topology where frontend, API, worker, Redis, and PostgreSQL are separate concerns.
+
+The canonical production hosts are `leadly.tryhanabi.com` for the frontend and
+`api.leadly.tryhanabi.com` for the API. Canonical links, generated blog links,
+billing return URLs, CORS, and session-cookie scope all derive from deployment
+configuration rather than a domain hard-coded in application logic.
 
 ## Data Ownership
 
