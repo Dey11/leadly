@@ -196,11 +196,11 @@ impressions, clicks, coverage, and canonical selection weekly.
 
 ## Current status
 
-The domain-configurable implementation is deployed from commit `683b659`. The
-target Cooldash application is configured for the new frontend and API domains,
-Google OAuth is disabled, billing enforcement is enabled, and its production
-Dodo credentials are in live mode. The backend, frontend, and worker containers
-are running; the backend health check confirms PostgreSQL and Redis connectivity.
+The production cutover is complete. The final configuration is deployed from
+commit `5967156` at `leadly.tryhanabi.com` and `api.leadly.tryhanabi.com`. Both
+hosts resolve to the production server and present valid TLS certificates. The
+backend health check confirms PostgreSQL and Redis connectivity. Google OAuth is
+disabled, billing enforcement is enabled, and Dodo is in live mode.
 
 The production database copy completed transactionally and exact per-table counts
 matched before commit. The target contains 41 users, 20,554 leads, 16,891 scrape
@@ -209,9 +209,17 @@ URLs no longer reference `leadly.live`. The old application, staging Redis, and
 staging environment have been deleted. The retired PostgreSQL database remains
 private and healthy as the rollback copy.
 
-Cutover is waiting on Namecheap DNS. Add `A` records for `leadly` and `api.leadly`
-pointing to `144.24.2.197`, plus the Resend verification records supplied for
-`leadly.tryhanabi.com`. Once DNS resolves and Coolify has issued valid TLS
-certificates, finish public route, auth, sitemap, canonical, and email checks;
-then move the live Dodo brand URL and webhook endpoint to the new hosts and submit
-the new sitemap in Google Search Console.
+Public validation covered all 133 sitemap URLs with no failures. The sitemap has
+exactly 114 blog URLs, and the public HTML, robots file, and sitemap contain no
+retired-domain references. The Dodo webhook is enabled at the new API endpoint.
+Dodo does not permit an existing primary brand URL to be changed. Its documentation
+states that this does not affect payment functionality, so the approved primary
+brand remains unchanged instead of creating an unapproved replacement brand.
+Resend has found the new DNS records and is still processing domain verification.
+No test email will be sent until the domain is verified and an explicit recipient
+is chosen.
+
+The remaining owner-side task is to submit
+`https://leadly.tryhanabi.com/sitemap.xml` in the `tryhanabi.com` Google Search
+Console domain property. Without control of `leadly.live`, a redirect-based SEO
+transfer is not possible.
