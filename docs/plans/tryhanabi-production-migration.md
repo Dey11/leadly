@@ -44,8 +44,8 @@ the domain owner in Namecheap.
 - preserve password login and password reset for all users
 - create a verified Resend sending domain for `leadly.tryhanabi.com` and move email
   senders to configurable addresses after DNS verification
-- copy the retired production database into the target Neon database using a
-  consistent PostgreSQL dump and restore
+- copy the retired production database into the target Neon database from a
+  consistent, read-only snapshot
 - move the live Dodo credentials to the target deployment and update its webhook
   endpoint
 - configure the target Cooldash application for the new frontend and API domains
@@ -131,9 +131,9 @@ back into drafts, so the production versions remain authoritative.
 ### 4. Copy production data
 
 - stop or otherwise quiesce the old backend and worker for the final snapshot
-- expose the source database only for the bounded export window if required
-- take a PostgreSQL custom-format dump
-- restore it into the target Neon database
+- keep the source database private and perform the copy from inside the Coolify
+  network when the host firewall prevents a direct PostgreSQL export
+- run the target import in one transaction so a failed or partial copy rolls back
 - compare schema migrations and exact row counts for all application tables
 - close any temporary database exposure
 
@@ -196,10 +196,22 @@ impressions, clicks, coverage, and canonical selection weekly.
 
 ## Current status
 
-Repository and infrastructure audit complete. The local implementation passes
-backend formatting, type checking, tests, and build, plus the frontend type
-check and production build with the new origins and Google OAuth disabled.
+The domain-configurable implementation is deployed from commit `683b659`. The
+target Cooldash application is configured for the new frontend and API domains,
+Google OAuth is disabled, billing enforcement is enabled, and its production
+Dodo credentials are in live mode. The backend, frontend, and worker containers
+are running; the backend health check confirms PostgreSQL and Redis connectivity.
 
-The `leadly.tryhanabi.com` sending domain now exists in Resend and is waiting for
-its Namecheap DNS records. Cooldash production resources and the live Dodo brand
-and webhook have not yet been changed.
+The production database copy completed transactionally and exact per-table counts
+matched before commit. The target contains 41 users, 20,554 leads, 16,891 scrape
+jobs, 122 blog rows, and all 114 published posts. Stored blog content and canonical
+URLs no longer reference `leadly.live`. The old application, staging Redis, and
+staging environment have been deleted. The retired PostgreSQL database remains
+private and healthy as the rollback copy.
+
+Cutover is waiting on Namecheap DNS. Add `A` records for `leadly` and `api.leadly`
+pointing to `144.24.2.197`, plus the Resend verification records supplied for
+`leadly.tryhanabi.com`. Once DNS resolves and Coolify has issued valid TLS
+certificates, finish public route, auth, sitemap, canonical, and email checks;
+then move the live Dodo brand URL and webhook endpoint to the new hosts and submit
+the new sitemap in Google Search Console.
