@@ -53,7 +53,7 @@ describe("processLeads resilience", () => {
   test("uses Nebius first while preserving every fallback order", () => {
     expect(constants.AI_PROVIDERS[0]).toEqual({
       name: "nebius",
-      model: "deepseek-ai/DeepSeek-V4-Flash",
+      model: "deepseek-ai/DeepSeek-V4-Flash-0731",
       enabled: true,
     });
     expect(constants.AI_PROVIDERS.map((provider) => provider.name)).toEqual([
@@ -62,6 +62,11 @@ describe("processLeads resilience", () => {
       "wavespeed",
       "cerebras",
     ]);
+    expect(
+      constants.AI_PROVIDERS.filter((provider) => provider.enabled).map(
+        (provider) => provider.name,
+      ),
+    ).toEqual(["nebius", "gemini"]);
     expect(constants.AI_PROVIDER_ORDER_ICP).toEqual([
       "nebius",
       "gemini",

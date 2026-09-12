@@ -101,7 +101,8 @@ Leadly is built as a monorepo with two primary applications:
 - **Worker**: Dedicated worker process for heavy lifting (Reddit scraping + AI processing).
 - **AI Stack**:
   - **Nebius DeepSeek V4 Flash** is the first-choice model for qualification, suggestions, outreach, and content generation.
-  - **Google Gemini**, **Cerebras**, and **WaveSpeed** remain automatic fallbacks.
+  - **Google Gemini** is the active automatic fallback. Cerebras and WaveSpeed
+    remain configured but disabled until their production accounts are usable.
 
 ### 2. Frontend (`/frontend`)
 

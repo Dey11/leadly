@@ -117,7 +117,7 @@ export type AIProviderConfig = {
 export const AI_PROVIDERS: AIProviderConfig[] = [
   {
     name: "nebius",
-    model: "deepseek-ai/DeepSeek-V4-Flash",
+    model: "deepseek-ai/DeepSeek-V4-Flash-0731",
     enabled: true,
   },
   {
@@ -131,12 +131,14 @@ export const AI_PROVIDERS: AIProviderConfig[] = [
   {
     name: "wavespeed",
     model: "google/gemini-3-flash-preview",
-    enabled: true,
+    // The production credential is currently rejected by WaveSpeed.
+    enabled: false,
   },
   {
     name: "cerebras",
-    model: "zai-glm-4.7",
-    enabled: true,
+    model: "qwen-3.8-27b",
+    // The account currently has no generation credits.
+    enabled: false,
   },
 ] as const;
 

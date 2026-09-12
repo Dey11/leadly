@@ -9,7 +9,9 @@
 - Database: PostgreSQL
 - Queue: BullMQ
 - Cache and rate limiting: Redis via ioredis
-- AI: Nebius DeepSeek V4 Flash first, with Google Gemini, Cerebras, and WaveSpeed fallbacks through the Vercel AI SDK
+- AI: Nebius DeepSeek V4 Flash first, with Google Gemini as the active fallback
+  through the Vercel AI SDK. Cerebras and WaveSpeed remain configured but
+  disabled until their production accounts are usable.
 - Billing: Dodo Payments
 - Email: Resend
 - OAuth: Google OAuth

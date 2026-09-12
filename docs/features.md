@@ -92,8 +92,9 @@ monitors, or schedules. The same banner lets an active returning user resume.
 
 ## AI-Assisted Features
 
-All AI-assisted features use Nebius DeepSeek V4 Flash first. Google Gemini,
-Cerebras, and WaveSpeed remain available as automatic fallbacks.
+All AI-assisted features use Nebius DeepSeek V4 Flash first. Google Gemini is
+the active automatic fallback. Cerebras and WaveSpeed remain configured but are
+disabled until their production accounts are usable.
 
 - ICP suggestion
 - subreddit suggestion for monitors

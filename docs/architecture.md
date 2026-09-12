@@ -13,7 +13,9 @@ At runtime, the system depends on:
 - PostgreSQL for durable application data
 - Redis for rate limiting, queue transport, and operational coordination
 - BullMQ for queued lead-generation scrape jobs
-- External APIs for Reddit, Nebius Token Factory, Google Gemini and other AI fallbacks, Dodo Payments, Resend, and Google OAuth
+- External APIs for Reddit, Nebius Token Factory, Google Gemini, Dodo Payments,
+  Resend, and Google OAuth. Cerebras and WaveSpeed adapters remain available but
+  are currently disabled.
 
 ## Runtime Topology
 
