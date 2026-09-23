@@ -9,7 +9,7 @@ This repository contains the complete source code for the Leadly platform, compr
 
 ---
 
-## 📚 Table of Contents
+##  Table of Contents
 
 - [Project Overview & Core Value](#-project-overview--core-value)
 - [Key Features](#-key-features)
@@ -25,7 +25,7 @@ This repository contains the complete source code for the Leadly platform, compr
 
 ---
 
-## 🚀 Project Overview & Core Value
+##  Project Overview & Core Value
 
 Leadly addresses a critical problem in modern B2B sales: **finding customers where they hang out without wasting hours on manual research.**
 
@@ -46,7 +46,7 @@ Reddit is a goldmine for user feedback, pain points, and product recommendations
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
 ### 1. Smart Monitors
 
@@ -87,7 +87,7 @@ Reddit is a goldmine for user feedback, pain points, and product recommendations
 
 ---
 
-## 🏗 Technical Architecture
+## Technical Architecture
 
 Leadly is built as a monorepo with two primary applications:
 
@@ -113,7 +113,7 @@ Leadly is built as a monorepo with two primary applications:
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```bash
 /
@@ -142,7 +142,7 @@ Leadly is built as a monorepo with two primary applications:
 
 ---
 
-## 💾 Data Model & Database
+##  Data Model & Database
 
 The core entities driving Leadly are defined in `prisma/schema.prisma`.
 
@@ -181,7 +181,7 @@ The heart of Leadly is the scraping pipeline.
 
 ---
 
-## 💳 Billing & Subscriptions
+##  Billing & Subscriptions
 
 We use **Dodo Payments** as the merchant of record.
 
@@ -196,7 +196,7 @@ We use **Dodo Payments** as the merchant of record.
 
 ---
 
-## 🚀 Deployment & Workflows
+##  Deployment & Workflows
 
 Leadly is designed for modern CI/CD pipelines, specifically tailored for **Coolify**.
 
@@ -219,7 +219,7 @@ Located in `.github/workflows/ci.yml`.
 
 ---
 
-## 🛠 Admin & Operations
+##  Admin & Operations
 
 ### Logs & Monitoring
 
@@ -263,7 +263,7 @@ Generate one via: `openssl rand -hex 32`
 
 ---
 
-## 👨‍💻 Development Setup
+##  Development Setup
 
 ### Prerequisites
 
@@ -302,7 +302,7 @@ Generate one via: `openssl rand -hex 32`
 
 ---
 
-## 🔐 Environment Variables
+##  Environment Variables
 
 Complete reference for `.env` configuration.
 
