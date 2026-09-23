@@ -158,7 +158,7 @@ The core entities driving Leadly are defined in `prisma/schema.prisma`.
 
 ---
 
-## ⚙️ The Monitoring Engine
+##  The Monitoring Engine
 
 The heart of Leadly is the scraping pipeline.
 
