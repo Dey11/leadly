@@ -34,7 +34,8 @@ Explicit user instructions take precedence. Keep changes scoped, reversible, and
 - Add focused behavioral tests for account automation policy and shared AI provider ordering. Add scheduler integration tests when orchestration changes introduce behavior not already owned by the policy layer.
 - Prisma schema changes require a checked-in migration under `backend/prisma/migrations/`. Production applies migrations through the backend container entrypoint with `prisma migrate deploy`.
 - Keep authentication and automation-state mutations in the backend. Forward the `session_token` cookie through existing frontend request helpers.
-- The production application is the Coolify Docker Compose app for `Dey11/leadly` on `master`; backend, worker, and frontend use the root `docker-compose.yml`.
+- Production runs in the Cooldash Coolify Docker Compose app `leadly-tryhanabi-com`, deployed from `Dey11/leadly` on `master`. The frontend is `leadly.tryhanabi.com`, and the API is `api.leadly.tryhanabi.com`; backend, worker, and frontend use the root `docker-compose.yml`.
+- The production `DATABASE_URL` points to the `neondb` PostgreSQL database on Neon, not a Cooldash-managed PostgreSQL resource. Confirm the live target from the app's runtime configuration before database work.
 - Update `README.md` and the centralized `docs/` documentation when provider order, schemas, commands, architecture, or visible behavior changes.
 - Do not stop or restart unrelated processes, containers, browsers, or deployments.
 - Inspect the full diff before committing. Never commit environment files, credentials, generated caches, build output, or unrelated user work.

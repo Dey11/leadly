@@ -269,9 +269,10 @@ before the backend or restored database is fully ready.
 
 ### Admin publishing API
 
-Production's database is not publicly reachable (Coolify), so posts authored
-externally (e.g. with an AI assistant) are published by calling secured admin
-endpoints on the live API instead of writing to the database directly.
+Production blog posts live in the Neon PostgreSQL database configured for the
+Cooldash application. Publish posts authored externally (e.g. with an AI
+assistant) through secured admin endpoints on the live API. This keeps content
+validation and authorization in the backend.
 
 Implementation:
 

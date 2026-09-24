@@ -302,7 +302,9 @@ Production compose deploys:
 - worker service
 - frontend service
 
-Redis is expected as a separate dependency and PostgreSQL is externalized via `DATABASE_URL`.
+Redis is a separate Cooldash resource. Production `DATABASE_URL` points to
+Neon's `neondb` PostgreSQL database through a pooled endpoint in AWS
+`ap-southeast-1`, rather than a Cooldash-managed PostgreSQL resource.
 
 ### Production migrations on Coolify
 
@@ -310,8 +312,8 @@ Schema changes should be created in development and deployed in production:
 
 1. Create migrations against a local or development database with `bun run prisma:migrate`.
 2. Commit the generated files under `backend/prisma/migrations/`.
-3. Deploy to Coolify.
-4. The backend container runs `bunx prisma migrate deploy` inside Coolify's private network before the API starts.
+3. Deploy the `master` branch through the `leadly-tryhanabi-com` application in Cooldash.
+4. The backend container runs `bunx prisma migrate deploy` against the configured Neon database before the API starts.
 
 Do not run `prisma migrate dev` or `prisma db push` against the production database. The worker waits for the backend healthcheck, so migration application happens before background processing starts.
 

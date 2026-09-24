@@ -130,7 +130,14 @@ There is also a backend-local compose file for Redis:
 
 - `backend/docker-compose.yml`
 
-This matches a production topology where frontend, API, worker, Redis, and PostgreSQL are separate concerns.
+As verified on 2026-09-24, Cooldash's Coolify application
+`leadly-tryhanabi-com` runs the production frontend, API, and worker from
+`Dey11/leadly` on `master`. Cooldash's Traefik proxy routes the public hosts
+to the Compose services. Both hosts resolve to an
+Oracle-owned server IP. Redis is a separate Cooldash resource; the production
+PostgreSQL database is Neon `neondb`, configured through `DATABASE_URL` and
+reached through a pooled endpoint in AWS `ap-southeast-1`. It is not one of
+Cooldash's managed PostgreSQL resources.
 
 The canonical production hosts are `leadly.tryhanabi.com` for the frontend and
 `api.leadly.tryhanabi.com` for the API. Canonical links, generated blog links,

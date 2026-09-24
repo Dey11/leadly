@@ -95,7 +95,7 @@ Leadly is built as a monorepo with two primary applications:
 
 - **Framework**: Express 5 (Node.js 20+).
 - **Language**: TypeScript.
-- **Database**: PostgreSQL (via NeonDB) managed by **Prisma ORM 7**.
+- **Database**: Neon PostgreSQL, managed by **Prisma ORM 7**.
 - **Queue System**: **BullMQ** on **Redis** for asynchronous scraping jobs.
 - **Worker**: Dedicated worker process for heavy lifting (Reddit scraping + AI processing).
 - **Worker**: Dedicated worker process for heavy lifting (Reddit scraping + AI processing).
@@ -198,16 +198,17 @@ We use **Dodo Payments** as the merchant of record.
 
 ## 🚀 Deployment & Workflows
 
-Leadly is designed for modern CI/CD pipelines, specifically tailored for **Coolify**.
+Leadly's production site runs in Cooldash's Coolify instance on an Oracle-owned server IP. The application uses the root Docker Compose file.
 
 ### Deployments
 
-- **Coolify GitHub App**: Zero-config deployment.
-- **Production**: Triggered by push to `master`.
+- **Cooldash application**: `leadly-tryhanabi-com`, connected to `Dey11/leadly` through the Coolify GitHub App.
+- **Production branch**: `master`.
 - **Production frontend**: `https://leadly.tryhanabi.com`.
 - **Production API**: `https://api.leadly.tryhanabi.com`.
-- **Proxy**: Uses Coolify's internal proxy (Traefik) for SSL and routing.
-- **Database migrations**: The backend container runs `prisma migrate deploy` on startup inside Coolify's private network before starting the API.
+- **Proxy**: Cooldash's Traefik proxy handles TLS and routing for both hosts.
+- **Production database**: Neon PostgreSQL database `neondb`, reached through the app's `DATABASE_URL` pooled endpoint in AWS `ap-southeast-1`. It is separate from Cooldash's managed PostgreSQL resources.
+- **Database migrations**: The backend container runs `prisma migrate deploy` on startup against the configured Neon database before starting the API.
 
 ### CI Pipeline (GitHub Actions)
 
@@ -308,7 +309,7 @@ Complete reference for `.env` configuration.
 
 | Variable                           | Description                           |
 | :--------------------------------- | :------------------------------------ |
-| `DATABASE_URL`                     | PostgreSQL Connection String (NeonDB) |
+| `DATABASE_URL`                     | PostgreSQL URL (Neon in production)   |
 | `REDIS_URL`                        | Redis Connection String               |
 | `SESSION_SECRET`                   | Secret for signing session cookies    |
 | `FRONTEND_URL`                     | URL of the frontend (for CORS)        |
