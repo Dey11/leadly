@@ -304,6 +304,17 @@ Production compose deploys:
 
 Redis is expected as a separate dependency and PostgreSQL is externalized via `DATABASE_URL`.
 
+In production, both API and worker use the private Cooldash PostgreSQL 18
+database `leadly_production` on resource `jy14rdx3prcn6m3yfiufahcm`, with the
+`leadly_app` role. The shared Cooldash application `DATABASE_URL` controls both
+services. PostgreSQL has no public port enabled.
+
+Cooldash backs up `leadly_production` daily, retaining up to seven backups for
+seven days on the production server. Neon `neondb` and the retired Cooldash
+`postgres` database remain unchanged rollback copies. They do not receive new
+production writes. A later rollback must preserve writes made to Cooldash since
+the cutover; changing the URL alone would lose those changes.
+
 ### Production migrations on Coolify
 
 Schema changes should be created in development and deployed in production:

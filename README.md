@@ -95,7 +95,7 @@ Leadly is built as a monorepo with two primary applications:
 
 - **Framework**: Express 5 (Node.js 20+).
 - **Language**: TypeScript.
-- **Database**: PostgreSQL (via NeonDB) managed by **Prisma ORM 7**.
+- **Database**: PostgreSQL hosted on Cooldash in production, managed by **Prisma ORM 7**.
 - **Queue System**: **BullMQ** on **Redis** for asynchronous scraping jobs.
 - **Worker**: Dedicated worker process for heavy lifting (Reddit scraping + AI processing).
 - **Worker**: Dedicated worker process for heavy lifting (Reddit scraping + AI processing).
@@ -206,6 +206,8 @@ Leadly is designed for modern CI/CD pipelines, specifically tailored for **Cooli
 - **Production**: Triggered by push to `master`.
 - **Production frontend**: `https://leadly.tryhanabi.com`.
 - **Production API**: `https://api.leadly.tryhanabi.com`.
+- **Production database**: Private Cooldash PostgreSQL 18 database `leadly_production`, shared by the API and worker through `DATABASE_URL`. Neon and the retired Cooldash database are retained rollback copies.
+- **Database backups**: Cooldash takes a daily backup of `leadly_production` and retains up to seven local backups for seven days. These backups are stored on the production server.
 - **Proxy**: Uses Coolify's internal proxy (Traefik) for SSL and routing.
 - **Database migrations**: The backend container runs `prisma migrate deploy` on startup inside Coolify's private network before starting the API.
 
@@ -308,7 +310,7 @@ Complete reference for `.env` configuration.
 
 | Variable                           | Description                           |
 | :--------------------------------- | :------------------------------------ |
-| `DATABASE_URL`                     | PostgreSQL Connection String (NeonDB) |
+| `DATABASE_URL`                     | PostgreSQL connection string         |
 | `REDIS_URL`                        | Redis Connection String               |
 | `SESSION_SECRET`                   | Secret for signing session cookies    |
 | `FRONTEND_URL`                     | URL of the frontend (for CORS)        |

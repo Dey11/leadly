@@ -132,6 +132,13 @@ There is also a backend-local compose file for Redis:
 
 This matches a production topology where frontend, API, worker, Redis, and PostgreSQL are separate concerns.
 
+Production runs in Cooldash application `leadly-tryhanabi-com`. Since 2026-10-01,
+the API and worker share `leadly_production` on the existing private Cooldash
+PostgreSQL 18 resource `jy14rdx3prcn6m3yfiufahcm`. The `leadly_app` role owns the
+application database and has no superuser, role-management, or database-creation
+privileges. Redis remains a separate Cooldash resource. Neither service uses
+Neon for live data. See the [database cutover record](plans/cooldash-postgres-cutover.md).
+
 The canonical production hosts are `leadly.tryhanabi.com` for the frontend and
 `api.leadly.tryhanabi.com` for the API. Canonical links, generated blog links,
 billing return URLs, CORS, and session-cookie scope all derive from deployment

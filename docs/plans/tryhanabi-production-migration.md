@@ -196,6 +196,11 @@ impressions, clicks, coverage, and canonical selection weekly.
 
 ## Current status
 
+This records the completed domain migration and its original Neon target. On
+2026-10-01, the database was copied from Neon to Cooldash PostgreSQL. Current
+database hosting and validation are tracked in
+[the database cutover record](cooldash-postgres-cutover.md).
+
 The production cutover is complete. The final configuration is deployed from
 commit `5967156` at `leadly.tryhanabi.com` and `api.leadly.tryhanabi.com`. Both
 hosts resolve to the production server and present valid TLS certificates. The

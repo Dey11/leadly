@@ -272,6 +272,8 @@ before the backend or restored database is fully ready.
 Production's database is not publicly reachable (Coolify), so posts authored
 externally (e.g. with an AI assistant) are published by calling secured admin
 endpoints on the live API instead of writing to the database directly.
+The current production database is Cooldash PostgreSQL `leadly_production`.
+The retained Neon database is a rollback copy and must not receive new posts.
 
 Implementation:
 

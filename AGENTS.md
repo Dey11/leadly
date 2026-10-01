@@ -35,6 +35,8 @@ Explicit user instructions take precedence. Keep changes scoped, reversible, and
 - Prisma schema changes require a checked-in migration under `backend/prisma/migrations/`. Production applies migrations through the backend container entrypoint with `prisma migrate deploy`.
 - Keep authentication and automation-state mutations in the backend. Forward the `session_token` cookie through existing frontend request helpers.
 - The production application is the Coolify Docker Compose app for `Dey11/leadly` on `master`; backend, worker, and frontend use the root `docker-compose.yml`.
+- Production runs in Cooldash application `leadly-tryhanabi-com` (`uxheo2hgxldgxksmec44togm`). The API and worker share the private Cooldash PostgreSQL database `leadly_production` on resource `jy14rdx3prcn6m3yfiufahcm`, using the `leadly_app` role. Confirm the live runtime target before database work.
+- Neon `neondb` and the retired Cooldash `postgres` database are retained rollback copies. They must not be treated as current production data or deleted without explicit authorization. Once Cooldash accepts new writes, switching back requires copying those writes too.
 - Update `README.md` and the centralized `docs/` documentation when provider order, schemas, commands, architecture, or visible behavior changes.
 - Do not stop or restart unrelated processes, containers, browsers, or deployments.
 - Inspect the full diff before committing. Never commit environment files, credentials, generated caches, build output, or unrelated user work.
