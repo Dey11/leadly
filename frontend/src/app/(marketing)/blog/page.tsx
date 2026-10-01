@@ -1,6 +1,7 @@
 import { LandingNav } from "@/components/landing/LandingNav";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { backendUrl } from "@/lib/env";
+import { siteConfig } from "@/config/site";
 import { format } from "date-fns";
 import { ArrowRight, Calendar } from "lucide-react";
 import { Metadata } from "next";
@@ -31,6 +32,7 @@ export const metadata: Metadata = {
   title: "Leadly Blog - Reddit Lead Generation for SaaS and Agencies",
   description:
     "Guides, comparisons, and tactical playbooks for SaaS founders and agencies using Reddit for lead generation.",
+  alternates: { canonical: `${siteConfig.url}/blog` },
 };
 
 async function getBlogPosts(): Promise<BlogPostsResult> {

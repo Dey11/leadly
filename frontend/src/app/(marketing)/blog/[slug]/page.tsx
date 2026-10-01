@@ -150,7 +150,7 @@ export default async function BlogPostPage({
       <main className="mx-auto max-w-7xl px-6 pt-32 pb-20 md:pt-40">
         <div className="lg:grid lg:grid-cols-12 lg:gap-12">
           {/* Main Content Column */}
-          <div className="lg:col-span-8">
+          <div className="min-w-0 lg:col-span-8">
             <Link
               href="/blog"
               className="text-muted-foreground hover:text-foreground group mb-8 inline-flex items-center text-sm transition-colors"
@@ -206,6 +206,16 @@ export default async function BlogPostPage({
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
+                  table: ({ node, children, ...props }) => (
+                    <div
+                      className="max-w-full overflow-x-auto"
+                      role="region"
+                      aria-label="Article table"
+                      tabIndex={0}
+                    >
+                      <table {...props}>{children}</table>
+                    </div>
+                  ),
                   h2: ({ node, children, ...props }) => (
                     <h2 id={slugify(String(children))} {...props}>
                       {children}

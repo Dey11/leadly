@@ -113,15 +113,19 @@ browser sign-in succeeded. The test session was logged out and removed.
 | Public site                         | All 133 sitemap URLs returned HTTP 200. All 114 published blog titles matched the corresponding page heading and appeared in the sitemap.                                                                                |
 | Service health                      | PostgreSQL and Redis health checks passed; the backend container was healthy and the worker was running.                                                                                                                 |
 
-Remaining findings:
+Findings from the initial verification:
 
-- Recovery email delivery is blocked until the Resend sender domain is verified
+The follow-up repairs and scraper tests are tracked in
+[production readiness](production-readiness.md). Resend delivery and existing blog
+images have since been repaired; application-code fixes await publication.
+
+- Recovery email delivery was blocked until the Resend sender domain was verified
   or an authorized verified sender is configured.
-- Six blog covers reference the same Unsplash image URL, which returns 404.
+- Six blog covers referenced the same Unsplash image URL, which returned 404.
 - The sampled article `how-to-measure-roi-of-reddit-lead-generation` has a table
-  that extends beyond a 390-pixel viewport.
-- `/blog`, `/privacy`, and `/terms` inherit the homepage canonical URL.
-- Public navigation requests an undefined authentication URL because it uses
+  that extended beyond a 390-pixel viewport.
+- `/blog`, `/privacy`, and `/terms` inherited the homepage canonical URL.
+- Public navigation requested an undefined authentication URL because it used
   an unconfigured `NEXT_PUBLIC_API_BASE_URL` instead of the shared API base.
 
 These checks covered authentication, existing-data access, exports, navigation,

@@ -3,10 +3,12 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SEO_CONFIG } from "@/constants/seo";
 import { SUPPORT_EMAIL } from "@/constants/config";
+import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
   title: SEO_CONFIG.legal.terms.title,
   description: SEO_CONFIG.legal.terms.description,
+  alternates: { canonical: `${siteConfig.url}/terms` },
 };
 
 export default function TermsPage() {

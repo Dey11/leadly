@@ -49,61 +49,6 @@ export const rateLimitConfigs: Record<string, RateLimitConfig> = {
   },
 };
 
-export async function checkRateLimit(
-  req: Request,
-  action: keyof typeof rateLimitConfigs,
-) {
-  if (env.NODE_ENV === "development") {
-    const config = rateLimitConfigs[action];
-    return {
-      limit: config.maxRequests,
-      remaining: config.maxRequests,
-      reset: Date.now(),
-      exceeded: false,
-      error: "",
-      retryAfter: 0,
-    };
-  }
-  const config = rateLimitConfigs[action];
-  const redis = getRedis();
-  const ip = req.ip || req.socket.remoteAddress || "unknown";
-  const email = req.body?.email?.toLowerCase() || "";
-  const key = `${config.keyPrefix}:${ip}:${email}`;
-
-  const currentStr = await redis.get(key);
-  const current = currentStr ? parseInt(currentStr, 10) : 0;
-  const ttl = await redis.pttl(key);
-
-  return {
-    limit: config.maxRequests,
-    remaining: Math.max(0, config.maxRequests - current),
-    reset: Math.ceil(Date.now() + (ttl > 0 ? ttl : 0)),
-    exceeded: current >= config.maxRequests,
-    error: config.message || "Too many requests. Please try again later.",
-    retryAfter: Math.ceil((ttl > 0 ? ttl : 0) / 1000),
-  };
-}
-
-export async function incrementRateLimit(
-  req: Request,
-  action: keyof typeof rateLimitConfigs,
-) {
-  if (env.NODE_ENV === "development") {
-    return 0;
-  }
-  const config = rateLimitConfigs[action];
-  const redis = getRedis();
-  const ip = req.ip || req.socket.remoteAddress || "unknown";
-  const email = req.body?.email?.toLowerCase() || "";
-  const key = `${config.keyPrefix}:${ip}:${email}`;
-
-  const current = await redis.incr(key);
-  if (current === 1) {
-    await redis.pexpire(key, config.windowMs);
-  }
-  return current;
-}
-
 export function rateLimit(action: keyof typeof rateLimitConfigs) {
   const config = rateLimitConfigs[action];
 

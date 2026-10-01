@@ -210,6 +210,7 @@ Leadly is designed for modern CI/CD pipelines, specifically tailored for **Cooli
 - **Database backups**: Cooldash takes a daily backup of `leadly_production` and retains up to seven local backups for seven days. These backups are stored on the production server.
 - **Proxy**: Uses Coolify's internal proxy (Traefik) for SSL and routing.
 - **Database migrations**: The backend container runs `prisma migrate deploy` on startup inside Coolify's private network before starting the API.
+- **Recovery email**: Resend sends security email from the verified `leadly.tryhanabi.com` domain. See [password recovery operations](docs/password-recovery.md) for DNS verification, delivery checks, and request limits.
 
 ### CI Pipeline (GitHub Actions)
 

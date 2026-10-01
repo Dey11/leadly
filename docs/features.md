@@ -64,6 +64,11 @@ User-visible surfaces:
 - onboarding state tracking
 - stored company, occupation, referrer, and sample DM profile fields
 
+Authentication request limits are enforced once by route middleware. Password
+recovery allows three requests per IP and email per hour; verification resend
+allows two per five minutes. See [password recovery operations](password-recovery.md)
+for sender verification and delivery troubleshooting.
+
 ## Billing and Usage Features
 
 - subscription purchase

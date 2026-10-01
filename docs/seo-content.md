@@ -32,6 +32,11 @@ Current setup includes:
 - Twitter card defaults
 - updated keyword set centered on Reddit lead generation
 
+The blog index and legal pages define their own canonical URLs. Blog articles
+contain wide Markdown tables in keyboard-accessible scroll regions, so tables do
+not widen the page on mobile. Generated posts select covers from the checked stock
+image list in `backend/src/seo/topics.ts`.
+
 ### Structured data
 
 Defined through:

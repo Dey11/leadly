@@ -17,7 +17,6 @@ import { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
 import { initializeOrResetUsagePeriod } from "../lib/usage";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/email";
 import { validateEmail } from "../lib/email-validator";
-import { checkRateLimit, incrementRateLimit } from "../lib/rate-limit";
 import { recordAuthenticatedActivity } from "../services/automation";
 import { getCookieOptions } from "../lib/cookie-options";
 
@@ -77,13 +76,6 @@ export async function register(req: Request, res: Response) {
     }
 
     const email = payload.data.email.toLowerCase();
-    const rateLimitCheck = await checkRateLimit(req, "register");
-    if (rateLimitCheck.exceeded) {
-      return res.status(429).json({
-        error: rateLimitCheck.error,
-        retryAfter: rateLimitCheck.retryAfter,
-      });
-    }
 
     const findExistingUser = await db.user.findUnique({
       where: {
@@ -144,7 +136,6 @@ export async function register(req: Request, res: Response) {
       if (!isDevelopment) {
         try {
           await sendVerificationEmail(email, otp);
-          await incrementRateLimit(req, "register");
         } catch (emailError) {
           logger.error("Failed to send verification email:", emailError);
         }
@@ -220,7 +211,6 @@ export async function register(req: Request, res: Response) {
     if (!isDevelopment) {
       try {
         await sendVerificationEmail(email, otp);
-        await incrementRateLimit(req, "register");
       } catch (emailError) {
         logger.error("Failed to send verification email:", emailError);
       }
@@ -399,14 +389,6 @@ export async function resendVerificationEmail(req: Request, res: Response) {
       return res.status(400).json({ error: "Email already verified" });
     }
 
-    const rateLimitCheck = await checkRateLimit(req, "resendOtp");
-    if (rateLimitCheck.exceeded) {
-      return res.status(429).json({
-        error: rateLimitCheck.error,
-        retryAfter: rateLimitCheck.retryAfter,
-      });
-    }
-
     const otp = crypto.randomInt(100000, 999999).toString();
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -420,7 +402,6 @@ export async function resendVerificationEmail(req: Request, res: Response) {
 
     try {
       await sendVerificationEmail(user.email, otp);
-      await incrementRateLimit(req, "resendOtp");
     } catch (emailError) {
       logger.error("Failed to send verification email:", emailError);
       return res.status(500).json({ error: "Failed to send email" });
@@ -452,14 +433,6 @@ export async function forgotPassword(req: Request, res: Response) {
         .json({ message: "If an account exists, a reset link has been sent" });
     }
 
-    const rateLimitCheck = await checkRateLimit(req, "forgotPassword");
-    if (rateLimitCheck.exceeded) {
-      return res.status(429).json({
-        error: rateLimitCheck.error,
-        retryAfter: rateLimitCheck.retryAfter,
-      });
-    }
-
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenHash = crypto
       .createHash("sha256")
@@ -477,7 +450,6 @@ export async function forgotPassword(req: Request, res: Response) {
 
     try {
       await sendPasswordResetEmail(user.email, resetToken);
-      await incrementRateLimit(req, "forgotPassword");
     } catch (emailError) {
       logger.error("Failed to send password reset email:", emailError);
     }

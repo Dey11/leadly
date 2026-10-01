@@ -50,6 +50,69 @@ const posts = ["one", "two", "three"].map((postId) => ({
 }));
 
 describe("processLeads resilience", () => {
+  test("keeps buyers hiring a freelance developer", async () => {
+    const classifier: LeadClassifier = async () => ({
+      providerName: "test",
+      array: [
+        {
+          title: "Looking for a freelance developer to build our SaaS MVP",
+          reasoning: "A founder has a budget for custom software development.",
+          leadType: "WARM",
+          id: "one",
+          url: posts[0].urlToPost,
+          author: "founder",
+          subreddit: "forhire",
+          relevanceScore: 0.95,
+        },
+      ],
+    });
+    const leads = await processor.processLeads([posts[0]], icp, classifier);
+    expect(leads).toHaveLength(1);
+    expect(leads[0].leadType).toBe("WARM");
+  });
+
+  test("does not treat qualification reasoning as the author's offer", async () => {
+    const classifier: LeadClassifier = async () => ({
+      providerName: "test",
+      array: [
+        {
+          title: "Hiring a developer for a paid MVP project",
+          reasoning: "This is a buying request, not a for hire vendor offer.",
+          leadType: "WARM",
+          id: "one",
+          url: posts[0].urlToPost,
+          author: "founder",
+          subreddit: "forhire",
+          relevanceScore: 0.95,
+        },
+      ],
+    });
+    await expect(
+      processor.processLeads([posts[0]], icp, classifier),
+    ).resolves.toHaveLength(1);
+  });
+
+  test("still rejects explicit vendor offers", async () => {
+    const classifier: LeadClassifier = async () => ({
+      providerName: "test",
+      array: [
+        {
+          title: "[For hire] Freelance developer available for work",
+          reasoning: "An experienced developer offers custom software.",
+          leadType: "WARM",
+          id: "one",
+          url: posts[0].urlToPost,
+          author: "developer",
+          subreddit: "forhire",
+          relevanceScore: 0.95,
+        },
+      ],
+    });
+    await expect(
+      processor.processLeads([posts[0]], icp, classifier),
+    ).resolves.toEqual([]);
+  });
+
   test("uses Nebius first while preserving every fallback order", () => {
     expect(constants.AI_PROVIDERS[0]).toEqual({
       name: "nebius",

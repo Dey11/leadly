@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { apiBaseUrl } from "@/lib/env";
 
 const navLinks = [
   { href: "#how-it-works", label: "How it works" },
@@ -21,12 +22,9 @@ export function LandingNav() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`,
-          {
-            credentials: "include",
-          },
-        );
+        const res = await fetch(`${apiBaseUrl}/account`, {
+          credentials: "include",
+        });
         setIsAuthenticated(res.ok);
       } catch {
         setIsAuthenticated(false);

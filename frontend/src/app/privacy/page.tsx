@@ -3,10 +3,12 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SEO_CONFIG } from "@/constants/seo";
 import { SUPPORT_EMAIL } from "@/constants/config";
+import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
   title: SEO_CONFIG.legal.privacy.title,
   description: SEO_CONFIG.legal.privacy.description,
+  alternates: { canonical: `${siteConfig.url}/privacy` },
 };
 
 export default function PrivacyPage() {

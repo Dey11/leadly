@@ -16,7 +16,6 @@ const VENDOR_PATTERNS = [
   /\bavailable\s+for\s+work\b/i,
   /\bavailable\s+to\s+work\b/i,
   /\blooking\s+for\s+clients\b/i,
-  /\bfreelance\s+(developer|engineer|designer)\b/i,
   /\bcontractor\s+available\b/i,
   /\bi\s+can\s+help\b/i,
 ];
@@ -158,8 +157,7 @@ export async function processLeads(
       consecutiveFailures = 0;
 
       for (const lead of result.value.array) {
-        const summaryText = `${lead.title} ${lead.reasoning}`.toLowerCase();
-        if (isVendorOffer(summaryText)) {
+        if (isVendorOffer(lead.title)) {
           continue;
         }
 
