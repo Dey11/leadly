@@ -81,3 +81,51 @@ Neon connection is retained in the protected VPS credential file
 `~/.config/hosting/leadly-neon-rollback-2026-10-01.env` (mode `0600`), outside the
 repository. Temporary migration archives, credentials, tunnel, and diagnostic
 task are removed after verification. Production PostgreSQL remains private.
+
+## Production account and site verification
+
+Further production checks completed on 2026-10-01 after the user authorized
+resetting the supplied account password and testing the deployed product.
+
+The original supplied password did not match the account's saved bcrypt hash.
+That hash was identical in Neon and Cooldash, confirming the migration had
+preserved it. A control bcrypt verification passed.
+
+The normal forgot-password form completed, but Resend rejected delivery with
+HTTP 403 because the sender domain `leadly.tryhanabi.com` is not verified. The
+API still returned its generic success response. The requested password also
+failed the public reset endpoint's special-character requirement. A scoped
+administrator reset through the running backend therefore set the exact
+user-requested password, cleared the reset token and expiry, and revoked the
+account's sessions. No application-wide password policy was changed. Subsequent
+browser sign-in succeeded. The test session was logged out and removed.
+
+| Check                               | Result                                                                                                                                                                                                                   |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| API and worker database connections | Both queried `leadly_production` as `leadly_app` on the private Cooldash PostgreSQL server.                                                                                                                              |
+| Account data                        | Database and authenticated API agreed on two ICPs, 20 monitors, and 2,557 leads. The subscription was active Premium.                                                                                                    |
+| Keyword data                        | This account had no keyword sets, monitors, leads, or schedule. Empty states rendered correctly; the schedule API's expected 404 was handled.                                                                            |
+| Authenticated dashboard routes      | Overview, leads, ICPs, monitors, both schedule modes, settings, billing, account, profile, keyword sets, keyword monitors, and keyword leads rendered.                                                                   |
+| Lead operations                     | API pagination returned distinct pages; the viewed-status filter, an already-viewed lead detail, both CSV export endpoints, browser pagination, and the export dialog passed.                                            |
+| Session handling                    | Full dashboard navigation preserved authentication. Logout returned the browser to login; the account API then returned 401 and the dashboard redirected to login. No test sessions remained.                            |
+| Google sign-in configuration        | Both production OAuth flags were false, the Google button was hidden, and the initiation endpoint returned the expected 404 with "Google sign-in is disabled". A historical Google account link remains in the database. |
+| Responsive layouts                  | Both overview modes, leads, schedule, and billing fit a 390-pixel viewport without page overflow. Mobile navigation and mode switching worked.                                                                           |
+| Public site                         | All 133 sitemap URLs returned HTTP 200. All 114 published blog titles matched the corresponding page heading and appeared in the sitemap.                                                                                |
+| Service health                      | PostgreSQL and Redis health checks passed; the backend container was healthy and the worker was running.                                                                                                                 |
+
+Remaining findings:
+
+- Recovery email delivery is blocked until the Resend sender domain is verified
+  or an authorized verified sender is configured.
+- Six blog covers reference the same Unsplash image URL, which returns 404.
+- The sampled article `how-to-measure-roi-of-reddit-lead-generation` has a table
+  that extends beyond a 390-pixel viewport.
+- `/blog`, `/privacy`, and `/terms` inherit the homepage canonical URL.
+- Public navigation requests an undefined authentication URL because it uses
+  an unconfigured `NEXT_PUBLIC_API_BASE_URL` instead of the shared API base.
+
+These checks covered authentication, existing-data access, exports, navigation,
+and page rendering. They did not create or delete monitors, change schedules or
+lead statuses, start paid AI or scraping jobs, charge a subscription, or complete
+Google's external authentication flow. No recovery-email or frontend fix was
+deployed as part of this verification.
