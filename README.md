@@ -72,6 +72,7 @@ Reddit is a goldmine for user feedback, pain points, and product recommendations
   - **Free**: 30 scrapes/mo, 1 daily slot.
   - **Pro**: 180 scrapes/mo, 6 daily slots.
   - **Premium**: 720 scrapes/mo, hourly 24/7 coverage.
+- Paid monthly plans reset their allowance with billing renewal. Extended or internally granted paid access receives a new allowance each UTC calendar month, capped by the access expiry. Inactivity and administrative pauses remain separate controls.
 
 ### 4. Enterprise-Grade Billing
 

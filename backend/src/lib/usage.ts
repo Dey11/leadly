@@ -1,7 +1,10 @@
 import db from "../lib/db";
 import { TIER_LIMITS } from "./constants";
-import { SubscriptionTier, type Usage } from "@prisma/client";
-import { resolveUsagePeriodRollover } from "./usage-period";
+import { SubscriptionTier, type Prisma, type Usage } from "@prisma/client";
+import {
+  resolveInitialUsagePeriod,
+  resolveUsagePeriodRollover,
+} from "./usage-period";
 
 type Enforcement = "off" | "log" | "on";
 
@@ -11,18 +14,7 @@ function startOfUtcDay(d: Date = new Date()): Date {
   );
 }
 
-function monthlyWindowForFree(now: Date = new Date()): {
-  start: Date;
-  end: Date;
-} {
-  const y = now.getUTCFullYear();
-  const m = now.getUTCMonth();
-  const start = new Date(Date.UTC(y, m, 1, 0, 0, 0, 0));
-  const end = new Date(Date.UTC(y, m + 1, 0, 23, 59, 59, 999));
-  return { start, end };
-}
-
-async function rollExpiredUsagePeriod(
+async function reconcileUsagePeriod(
   usage: Usage,
   userId: string,
   tier: SubscriptionTier,
@@ -31,6 +23,7 @@ async function rollExpiredUsagePeriod(
 ) {
   const rollover = resolveUsagePeriodRollover({
     tier,
+    usagePeriodStart: usage.periodStart,
     usagePeriodEnd: usage.periodEnd,
     currentPeriodEnd,
     now,
@@ -40,60 +33,52 @@ async function rollExpiredUsagePeriod(
     return usage;
   }
 
-  return db.usage.update({
-    where: { userId },
+  // Only one request may reset this stored window. Concurrent previews must
+  // not erase credits consumed after another request already reset it.
+  await db.usage.updateMany({
+    where: {
+      userId,
+      periodStart: usage.periodStart,
+      periodEnd: usage.periodEnd,
+    },
     data: {
-      ...rollover,
-      scrapesUsed: 0,
-      dailyDate: startOfUtcDay(now),
-      dailyCount: 0,
-      keywordScrapesUsed: 0,
-      keywordDailyCount: 0,
+      periodStart: rollover.periodStart,
+      periodEnd: rollover.periodEnd,
+      ...(rollover.resetUsage
+        ? {
+            scrapesUsed: 0,
+            dailyDate: startOfUtcDay(now),
+            dailyCount: 0,
+            keywordScrapesUsed: 0,
+            keywordDailyCount: 0,
+          }
+        : {}),
     },
   });
+
+  return db.usage.findUniqueOrThrow({ where: { userId } });
 }
 
-/**
- * Initialize or reset monthly usage window for a user.
- * If periodStart/periodEnd are not provided:
- *  - for FREE: use current UTC month window
- *  - for paid tiers: fallback to 30-day window from "now"
- *
- * @param dbClient - Either a Prisma transaction client or the global db client
- */
 export type ScrapeType = "LEAD_GEN" | "KEYWORD";
 
 /**
  * Initialize or reset monthly usage window for a user.
  */
 export async function initializeOrResetUsagePeriod(
-  dbClient: any, // Prisma.TransactionClient | typeof db
+  dbClient: Pick<Prisma.TransactionClient, "usage">,
   userId: string,
   tier: SubscriptionTier,
   periodStart?: Date,
   periodEnd?: Date,
 ) {
-  let start = periodStart;
-  let end = periodEnd;
-  if (!start || !end) {
-    if (tier === "FREE") {
-      const win = monthlyWindowForFree();
-      start = win.start;
-      end = win.end;
-    } else {
-      const now = new Date();
-      end = end ?? new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      start = start ?? new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
-    }
-  }
+  const period = resolveInitialUsagePeriod({ tier, periodStart, periodEnd });
 
   const today = startOfUtcDay();
   await dbClient.usage.upsert({
     where: { userId },
     create: {
       userId,
-      periodStart: start!,
-      periodEnd: end!,
+      ...period,
       scrapesUsed: 0,
       dailyDate: today,
       dailyCount: 0,
@@ -101,8 +86,7 @@ export async function initializeOrResetUsagePeriod(
       keywordDailyCount: 0,
     },
     update: {
-      periodStart: start!,
-      periodEnd: end!,
+      ...period,
       scrapesUsed: 0,
       dailyDate: today,
       dailyCount: 0,
@@ -131,27 +115,12 @@ async function getOrCreateUsage(
       keywordDailyCount: 0,
     };
 
-    if (tier === "FREE") {
-      const win = monthlyWindowForFree();
-      usage = await db.usage.create({
-        data: {
-          ...commonData,
-          periodStart: win.start,
-          periodEnd: win.end,
-        },
-      });
-    } else {
-      const end =
-        currentPeriodEnd ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
-      usage = await db.usage.create({
-        data: {
-          ...commonData,
-          periodStart: start,
-          periodEnd: end,
-        },
-      });
-    }
+    usage = await db.usage.create({
+      data: {
+        ...commonData,
+        ...resolveInitialUsagePeriod({ tier, periodEnd: currentPeriodEnd }),
+      },
+    });
   }
   return usage;
 }
@@ -183,7 +152,7 @@ export async function previewUsage(
   let usage = await getOrCreateUsage(userId, tier, currentPeriodEnd);
 
   const now = new Date();
-  usage = await rollExpiredUsagePeriod(
+  usage = await reconcileUsagePeriod(
     usage,
     userId,
     tier,
@@ -237,7 +206,7 @@ export async function tryConsumeScrapeCredit(
   let usage = await getOrCreateUsage(userId, tier, currentPeriodEnd);
   const now = new Date();
 
-  usage = await rollExpiredUsagePeriod(
+  usage = await reconcileUsagePeriod(
     usage,
     userId,
     tier,

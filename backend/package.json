@@ -15,6 +15,7 @@
     "prisma:push": "prisma db push",
     "typecheck": "tsc --noEmit",
     "test": "bun test src",
+    "test:usage:integration": "bunx tsc --noEmit -p tsconfig.integration.json && bun test tests/usage.integration.test.ts",
     "lint": "bunx prettier --check .",
     "lint:fix": "bunx prettier --write .",
     "seed": "bun src/scripts/seed.ts",

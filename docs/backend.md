@@ -211,10 +211,28 @@ Responsibilities:
 - enqueue jobs to BullMQ
 - skip inactive free-tier accounts and cancel their pending jobs
 
-If a paid subscription renewal advances `currentPeriodEnd` but its usage-reset
-webhook is interrupted, the next scheduler/account usage check repairs the
-expired usage window before enforcing quotas. A stale subscription period does
-not receive additional paid quota.
+Paid monthly billing windows keep their renewal boundaries. Longer paid access,
+including internally granted Premium access, uses UTC calendar-month usage
+windows capped by the subscription expiry. The shared usage helper applies the
+same boundaries during billing initialization, missing-row creation, and account
+or scheduler checks. It repairs legacy multi-month windows on first access:
+advancing to a newer month resets both ICP and keyword quotas, while merely
+shortening the current window preserves consumed credits. A conditional database
+update prevents concurrent previews from resetting the same window twice.
+
+Expired paid access receives no fresh allowance. Free accounts continue using
+UTC calendar months. Usage reconciliation does not alter subscription expiry,
+monitors, schedules, inactivity state, or administrative pauses.
+
+The persistence regression suite runs separately from mocked unit tests against
+an isolated local PostgreSQL database named `leadly_quota_test`:
+
+```bash
+DATABASE_URL=postgresql://postgres@127.0.0.1:<test-port>/leadly_quota_test bunx prisma migrate deploy
+DATABASE_URL=postgresql://postgres@127.0.0.1:<test-port>/leadly_quota_test bun run test:usage:integration
+```
+
+The suite rejects other hosts or database names and removes its own fixtures.
 
 ### Keyword scheduler
 
