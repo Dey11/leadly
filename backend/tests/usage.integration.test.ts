@@ -165,6 +165,32 @@ describe("monthly quota persistence", () => {
     ).toEqual(expired);
   });
 
+  test("expired paid access cannot spend leftover or newly initialized quota", async () => {
+    const expired = new Date(now.getTime() - 86400000);
+    const userId = await fixture(oldStart, expired);
+    await db.usage.update({
+      where: { userId },
+      data: { scrapesUsed: 0, dailyCount: 0 },
+    });
+    const leftover = await usage.tryConsumeScrapeCredit(
+      userId,
+      "PREMIUM",
+      expired,
+      "on",
+    );
+    expect(leftover.allowed).toBe(false);
+    expect(leftover.reason).toBe("subscription_period_expired");
+    await db.usage.delete({ where: { userId } });
+    const initialized = await usage.tryConsumeScrapeCredit(
+      userId,
+      "PREMIUM",
+      expired,
+      "on",
+    );
+    expect(initialized.allowed).toBe(false);
+    expect(initialized.summary.monthlyUsed).toBe(0);
+  });
+
   test("billing initialization bounds extended access and resets both counters", async () => {
     const userId = await fixture();
     await usage.initializeOrResetUsagePeriod(

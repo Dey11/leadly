@@ -239,12 +239,20 @@ export async function tryConsumeScrapeCredit(
   const wouldExceedDaily = currentDaily + 1 > dailyLimit;
   const wouldExceedMonthly = currentMonthly + 1 > monthlyLimit;
 
-  if (enforcement === "on" && (wouldExceedDaily || wouldExceedMonthly)) {
+  const paidAccessExpired =
+    tier !== "FREE" && (!currentPeriodEnd || currentPeriodEnd <= now);
+
+  if (
+    enforcement === "on" &&
+    (paidAccessExpired || wouldExceedDaily || wouldExceedMonthly)
+  ) {
     return {
       allowed: false,
-      reason: wouldExceedMonthly
-        ? "monthly_limit_exceeded"
-        : "daily_limit_exceeded",
+      reason: paidAccessExpired
+        ? "subscription_period_expired"
+        : wouldExceedMonthly
+          ? "monthly_limit_exceeded"
+          : "daily_limit_exceeded",
       summary: {
         dailyUsed: currentDaily,
         dailyLimit,

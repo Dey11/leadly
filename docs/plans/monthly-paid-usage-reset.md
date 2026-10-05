@@ -27,7 +27,7 @@ Target: Leadly Cooldash application `leadly-tryhanabi-com`
 - Pure policy regressions: the production August-to-January case, monthly
   billing compatibility, end-of-month and leap-year boundaries, repeated
   checks, expired access, Free usage, and final access expiry.
-- Isolated PostgreSQL persistence checks: both quota types, credit consumption,
+- Isolated PostgreSQL persistence checks: both quota types, paid-expiry enforcement, credit consumption,
   repeated/concurrent previews, billing initialization, and missing usage rows.
 - Required backend and frontend checks and builds.
 - Confirm the deployed revision, runtime database target, public health,
@@ -44,6 +44,6 @@ existing 720-run Premium cap; changing that cap is outside this fix.
 
 ## Status
 
-Local verification passed: 53 backend unit tests, seven isolated PostgreSQL
+Local verification passed: 53 backend unit tests, eight isolated PostgreSQL
 persistence tests, backend/frontend formatting and type checks, and both
 production builds. Production deployment and live verification are pending.
