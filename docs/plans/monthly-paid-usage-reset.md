@@ -44,6 +44,34 @@ existing 720-run Premium cap; changing that cap is outside this fix.
 
 ## Status
 
-Local verification passed: 53 backend unit tests, eight isolated PostgreSQL
-persistence tests, backend/frontend formatting and type checks, and both
-production builds. Production deployment and live verification are pending.
+Completed on 2026-10-05. Code commit `29fe6b8` deployed successfully on Cooldash
+in deployment `wxywbz8fxn8q6l6bawhuhkwq` at 08:02:18 UTC.
+
+Validation passed: 53 backend unit tests, eight isolated PostgreSQL persistence
+tests, backend/frontend formatting and type checks, and both production builds.
+The persistence suite also confirms expired paid accounts cannot spend leftover
+or newly initialized credits.
+
+Live password login, dashboard overview, billing, monitors, schedule, keyword
+lead page, and logout passed without browser page errors. The authenticated
+usage API repaired the old window to October 1–November 1, 2026, reset the
+allowance to zero used, and retained Premium access through January 21, 2027.
+Both API and worker confirmed Cooldash `leadly_production` as `leadly_app`.
+API health, homepage, login, sitemap, and blog index returned HTTP 200.
+
+A single account-scoped `r/forhire` smoke job used the shared production quota
+helper, consumed one credit, and ran through the existing BullMQ worker.
+Job `cmuuyrs83000077o2mf8sb0uy` completed at 08:07:08 UTC with all 50 Nebius
+classifications successful and no classification warnings or retries. It
+reported one warm match; no new lead row was inserted because URLs are
+uniquely deduplicated. Current usage is one of 720 monthly and one of 24 daily
+credits; keyword usage is zero.
+
+The before/after fingerprint of all 20 monitor definitions, saved scheduled
+hours, subscription expiry/status, and account pause fields matched. Inactivity
+and administrative pause regressions passed without changing production pause
+preferences. Temporary diagnostic login sessions, the isolated local database,
+and smoke-test modules were removed after verification.
+
+The headless browser check used Node after Bun's Playwright HTTP transport
+failed; that was a local test-runtime error, not an application login failure.
