@@ -1,8 +1,26 @@
 import axios from "axios";
+import { z } from "zod";
 import logger from "../lib/logger";
 import { env } from "../env";
 import { cleanText, delay, fetchWithRetry } from "../lib/utils";
 import { RedditComment, RedditFetchTarget, RedditPost } from "../types/reddit";
+
+const redditListingSchema = z.object({
+  data: z.object({
+    children: z.array(
+      z.object({
+        data: z.object({
+          id: z.string(),
+          subreddit: z.string(),
+          title: z.string(),
+          selftext: z.string(),
+          author: z.string(),
+          permalink: z.string(),
+        }),
+      }),
+    ),
+  }),
+});
 
 export class Reddit {
   private clientId: string;
@@ -84,31 +102,55 @@ export class Reddit {
   async fetchPosts(
     target: RedditFetchTarget,
     limit: number = 10,
-    after: string | null = null,
+    cursor: string | null = null,
   ) {
     const token = await this.getToken();
     const targetPath =
       target.type === "CUSTOM_FEED"
         ? `/user/${target.owner}/m/${target.name}/new`
         : `/r/${target.subreddit}/new`;
-    const url = `${this.baseUrl}${targetPath}?limit=${limit}${
-      after ? `&before=t3_${after}` : ""
-    }`;
+    const listingUrl = `${this.baseUrl}${targetPath}?limit=${limit}`;
     const results: RedditPost[] = [];
 
-    const response = await fetchWithRetry(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "User-Agent": `leadly by u/${env.REDDIT_USERNAME}`,
-      },
-      timeout: this.timeout,
-    });
+    const fetchListing = async (url: string) => {
+      const response = await fetchWithRetry(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "User-Agent": `leadly by u/${env.REDDIT_USERNAME}`,
+        },
+        timeout: this.timeout,
+      });
 
-    if (response?.status !== 200 || !response) {
-      throw new Error(`Failed to fetch: ${response?.status}`);
+      if (response?.status !== 200) {
+        throw new Error(`Failed to fetch: ${response?.status}`);
+      }
+
+      return redditListingSchema
+        .parse(response.data)
+        .data.children.map((child) => child.data);
+    };
+
+    let posts = await fetchListing(
+      cursor
+        ? `${listingUrl}&before=t3_${encodeURIComponent(cursor)}`
+        : listingUrl,
+    );
+
+    if (cursor && posts.length === 0) {
+      // Reddit can return an empty listing forever when the bookmark is deleted.
+      // Recheck the latest page, stopping at a live bookmark to avoid replaying it.
+      const latestPosts = await fetchListing(listingUrl);
+      const cursorIndex = latestPosts.findIndex((post) => post.id === cursor);
+      posts =
+        cursorIndex >= 0 ? latestPosts.slice(0, cursorIndex) : latestPosts;
+
+      if (cursorIndex < 0 && latestPosts.length > 0) {
+        logger.warn(
+          `[Reddit] Recovered missing cursor for ${targetPath} from ${latestPosts.length} recent posts`,
+        );
+      }
     }
 
-    const posts = response.data.data.children.map((child: any) => child.data);
     const extractComments = function (children: any[]): RedditComment[] {
       if (!children) return [];
       return children

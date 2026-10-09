@@ -197,6 +197,31 @@ Development mode bypasses rate limiting.
 
 ## Scheduling and Processing
 
+### Reddit bookmarks and recovery
+
+Both monitoring modes use `backend/src/services/reddit.ts` for subreddit and
+custom-feed listings. Scans request posts newer than the saved bookmark with
+Reddit's `before` parameter. Successful scans save the newest fetched post as
+the next bookmark; an empty scan preserves the existing bookmark.
+
+If a bookmarked request returns no posts, the client makes one additional
+request for the latest page without the bookmark. When that page contains the
+bookmark, only posts before it are processed. When the bookmark is missing,
+the recent page is processed and the next successful scan advances the bookmark.
+This recovers from deleted posts while leaving genuinely quiet feeds empty.
+Request failures and malformed listings fail the scan and follow normal retry
+handling instead of being recorded as empty successes.
+
+Recovery remains bounded by the existing per-scan limit of 50 posts. It cannot
+backfill every post missed during a long outage. Existing URL deduplication and
+notifications based on newly inserted lead rows prevent repeated Discord alerts
+for previously saved matches.
+
+Run `bun test src/services/reddit.test.ts` for listing recovery and
+`bun test tests/keyword-cursor.test.ts` for two consecutive keyword scans.
+The processor test runs separately because the scheduler unit suite replaces
+the processor with a module mock. Neither test accesses a database or Reddit.
+
 ### Lead-generation scheduler
 
 Implemented in `backend/src/services/scheduler.ts`.

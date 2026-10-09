@@ -51,6 +51,7 @@ Reddit is a goldmine for user feedback, pain points, and product recommendations
 ### 1. Smart Monitors
 
 - **Subreddit Targeting**: Validates subreddit existence via Reddit API before adding.
+- **Deleted Bookmark Recovery**: ICP and keyword scans retry the latest feed page when Reddit returns an empty result for a saved bookmark. Existing saved leads are deduplicated before Discord alerts are sent.
 - **Keyword Sets**: Create bundles of keywords (e.g., "Buying Intent" set: `buy`, `price`, `cost`, `alternative`).
 - **Fuzzy Matching**: Optional logic to match related terms.
 

@@ -107,9 +107,8 @@ async function executeKeywordCoreScrapeLogic(
     };
   });
 
-  // Update cursor for pagination
-  const newCursor =
-    posts.length > 0 ? posts[posts.length - 1].postId : monitor.cursor;
+  // /new is newest first; the next scan asks for posts before this bookmark.
+  const newCursor = posts[0]?.postId ?? monitor.cursor;
 
   const commitResult = await db.$transaction(
     async (tx: Prisma.TransactionClient) => {
