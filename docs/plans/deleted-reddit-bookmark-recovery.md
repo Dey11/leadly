@@ -31,10 +31,36 @@ newly inserted leads. Empty bookmarked scans add one listing request.
 
 ## Status
 
-Local implementation complete. All 64 backend unit tests and the separate keyword
-processor regression pass, along with backend formatting, type checking,
-integration-test type checking, and the production build. No production bookmark
-reset, deployment, or manual scan has been performed for this fix.
+Completed on 2026-10-09 after the user authorized pushing, deploying to Cooldash,
+and running a jobs/gigs recovery scan. All 64 backend unit tests and the separate
+keyword processor regression passed, along with backend formatting, type checking,
+integration-test type checking, and the production build.
 
 Production target: Cooldash Leadly application `leadly-tryhanabi-com`
 (`uxheo2hgxldgxksmec44togm`), database `leadly_production` as `leadly_app`.
+
+Code commit `e9fced6` was pushed to `Dey11/leadly:master`. The existing `dey-app`
+GitHub integration deployed that exact revision in deployment
+`g60adgzcs4pgv3bezqohaqmj`, which finished at 20:39:52 UTC. Both API and worker
+contain the recovery code and confirmed the expected production database and role.
+The backend container was healthy, public API database/Redis checks passed, and
+the homepage and login page returned HTTP 200.
+
+Verification job `cmv1fjg5g00000tnzihygeenv` used the normal quota helper and
+BullMQ worker. It started with the unchanged deleted bookmark `1wyymoa`, recovered
+50 recent posts, and completed at 20:42:18 UTC without retries. All 50 Nebius
+classifications succeeded without provider or comment-fetch warnings. Four new
+lead rows were saved: one warm and three neutral. The successful transaction
+advanced the bookmark to `1x1wds1`; no manual cursor reset was needed.
+
+The worker completed its ordinary notification dispatch without logged Discord
+delivery errors. A separate connection test using the account's existing enabled
+Discord channel returned success. Discord messages are not persisted or readable
+through the saved webhook, so receipt in the Discord client was not independently
+inspected.
+
+The verification consumed one normal scrape credit, bringing usage to 111 of 720
+monthly and 22 of 24 daily credits. Saved monitor definitions, schedules,
+subscription access, account pause fields, and notification preferences retained
+the same configuration fingerprint. Temporary verification helpers were removed;
+the completed job remains in normal account history.
