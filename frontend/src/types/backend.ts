@@ -133,6 +133,7 @@ export interface UsageSummaryResponse {
   message: string;
   payload: {
     tier: SubscriptionTier;
+    subscribedTier: SubscriptionTier;
     status: SubscriptionStatus;
     subscriptionId: string | null;
     dailyUsed: number;
@@ -221,10 +222,10 @@ export interface PlanChangePreview {
   currentTier: SubscriptionTier;
   newTier: SubscriptionTier;
   isUpgrade?: boolean;
+  scheduled?: boolean;
   immediateCharge?: {
     amount: number;
     currency: string;
-    summary: string;
   } | null;
   credit?: {
     amount: number;
@@ -233,4 +234,27 @@ export interface PlanChangePreview {
   summary?: string | null;
   fallback?: boolean;
   message?: string;
+}
+
+export type BillingSubscribeResponse =
+  | { url: string }
+  | {
+      success: true;
+      planChangePending: true;
+      scheduled: boolean;
+      subscriptionId: string;
+      newTier: SubscriptionTier;
+    };
+
+export type BillingResultState =
+  | "success"
+  | "pending"
+  | "on_hold"
+  | "failed"
+  | "cancelled"
+  | "expired";
+
+export interface BillingStatusResponse {
+  state: BillingResultState;
+  tier?: SubscriptionTier;
 }

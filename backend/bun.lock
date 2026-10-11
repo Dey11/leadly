@@ -16,7 +16,7 @@
         "bullmq": "^5.67.1",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.6",
-        "dodopayments": "^2.17.1",
+        "dodopayments": "2.54.2",
         "dotenv": "^17.2.3",
         "express": "^5.2.1",
         "google-auth-library": "^10.5.0",
@@ -268,7 +268,7 @@
 
     "detect-libc": ["detect-libc@2.1.2", "", {}, "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="],
 
-    "dodopayments": ["dodopayments@2.17.1", "", { "dependencies": { "standardwebhooks": "^1.0.0" }, "bin": { "dodopayments": "bin/cli" } }, "sha512-nXvujgHknIiDcoUhM0f5k8J3b5SXFcb1vUI/uLfMTNbLZfMEIFYBGg+z+zBcyDSZhUckJUzepIOx68LPqSt1VQ=="],
+    "dodopayments": ["dodopayments@2.54.2", "", { "dependencies": { "standardwebhooks": "^1.0.0" }, "bin": { "dodopayments": "bin/cli" } }, "sha512-xL0Q3lxgGWT9TBq59sWFsUA4B6GiBd7aHUoLv5n72W5JeGJb3wzV6Y3GSomh35cqJIp+q15CkoRFW+1a3t9/aw=="],
 
     "dotenv": ["dotenv@17.2.3", "", {}, "sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w=="],
 

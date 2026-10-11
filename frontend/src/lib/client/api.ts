@@ -2,6 +2,10 @@ import { apiBaseUrl } from "../env";
 import { toast } from "sonner";
 import type {
   LeadDetailResponse,
+  BillingSubscribeResponse,
+  BillingStatusResponse,
+  PlanChangePreview,
+  UsageSummaryResponse,
   LeadListResponse,
   LeadStatus,
   LeadType,
@@ -255,24 +259,18 @@ export const clientApi = {
 
   // Account/Usage
   getUsageSummary: async () => {
-    return request<{
-      message: string;
-      payload: {
-        tier: string;
-        dailyUsed: number;
-        dailyLimit: number;
-        monthlyUsed: number;
-        monthlyLimit: number;
-      };
-    }>(`${apiBaseUrl}/account/usage`);
+    return request<UsageSummaryResponse>(`${apiBaseUrl}/account/usage`);
   },
 
   // Billing
   subscribe: async (plan: "pro" | "premium") => {
-    return request<{ url: string }>(`${apiBaseUrl}/billing/subscribe`, {
-      method: "POST",
-      body: { plan },
-    });
+    return request<BillingSubscribeResponse>(
+      `${apiBaseUrl}/billing/subscribe`,
+      {
+        method: "POST",
+        body: { plan },
+      },
+    );
   },
   openManageSubscription: async () => {
     return request<{ url: string }>(`${apiBaseUrl}/billing/portal/manage`, {
@@ -285,28 +283,21 @@ export const clientApi = {
     });
   },
   previewPlanChange: async (plan: "pro" | "premium") => {
-    return request<{
-      canPreview: boolean;
-      isNewSubscription: boolean;
-      currentTier: string;
-      newTier: string;
-      isUpgrade?: boolean;
-      immediateCharge?: {
-        amount: number;
-        currency: string;
-        summary: string;
-      } | null;
-      credit?: { amount: number; currency: string } | null;
-      summary?: string | null;
-      fallback?: boolean;
-      message?: string;
-      error?: string;
-      code?: string;
-      retryAfterSeconds?: number;
-    }>(`${apiBaseUrl}/billing/preview-plan-change`, {
-      method: "POST",
-      body: { plan },
-    });
+    return request<PlanChangePreview>(
+      `${apiBaseUrl}/billing/preview-plan-change`,
+      {
+        method: "POST",
+        body: { plan },
+      },
+    );
+  },
+
+  billingStatus: async (subscriptionId: string, plan?: "pro" | "premium") => {
+    const query = new URLSearchParams({ subscription_id: subscriptionId });
+    if (plan) query.set("plan", plan);
+    return request<BillingStatusResponse>(
+      `${apiBaseUrl}/billing/status?${query}`,
+    );
   },
 
   listLeads: async (

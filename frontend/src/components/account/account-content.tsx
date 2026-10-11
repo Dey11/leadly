@@ -125,6 +125,10 @@ export async function AccountContent() {
 
           <BillingPanel
             tier={limits?.tier ?? "FREE"}
+            status={usage?.payload.status}
+            subscriptionId={usage?.payload.subscriptionId}
+            renewalDate={usage?.payload.renewalDate}
+            cancelledAtPeriodEnd={usage?.payload.cancelledAtPeriodEnd}
             usage={{
               dailyUsed: usage?.payload.dailyUsed ?? 0,
               dailyLimit: usage?.payload.dailyLimit ?? 1,

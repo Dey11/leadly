@@ -59,5 +59,5 @@ export function formatZodError(error: z.ZodError): string {
 }
 
 export const billingSubscribeSchema = z.object({
-  plan: z.enum(["free", "pro", "premium"]).default("free"),
+  plan: z.enum(["pro", "premium"]),
 });

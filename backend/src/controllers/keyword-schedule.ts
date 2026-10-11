@@ -1,3 +1,4 @@
+import { effectiveSubscriptionTier } from "../lib/subscription-access";
 import { Request, Response } from "express";
 import logger from "../lib/logger";
 import db from "../lib/db";
@@ -49,7 +50,7 @@ export async function createKeywordSchedule(req: Request, res: Response) {
       return res.status(400).json({ error: "User has no active subscription" });
     }
 
-    const tier = user.subscription.tier;
+    const tier = effectiveSubscriptionTier(user.subscription);
     const tierLimits = TIER_LIMITS[tier];
     const hours = payload.data.scheduledHours;
 
@@ -95,7 +96,7 @@ export async function updateKeywordSchedule(req: Request, res: Response) {
       return res.status(400).json({ error: "User has no active subscription" });
     }
 
-    const tier = user.subscription.tier;
+    const tier = effectiveSubscriptionTier(user.subscription);
     const tierLimits = TIER_LIMITS[tier];
 
     if (payload.data.scheduledHours) {

@@ -115,10 +115,21 @@ Mounted at `/api/v1/billing`
 - `POST /preview-plan-change`
 - `POST /portal/manage`
 - `POST /portal/cancel`
+- `GET /status?subscription_id=<id>&plan=pro|premium` (plan optional)
+
+`subscribe` accepts only `pro` or `premium`. New subscriptions return a checkout URL. Plan changes return `planChangePending`, `subscriptionId`, `newTier`, and `scheduled`; accepting a provider request does not change the local tier. Upgrades use `on_payment_failure: prevent_change`. Downgrades use `effective_at: next_billing_date`. Preview failures block confirmation and can be retried.
+
+Status lookup requires an authenticated session and verifies that the requested subscription belongs to that account. A matching active, unexpired paid subscription confirms access; a requested target tier must also match. Unmatched references return `pending` without disclosing another account's state.
 
 Webhook:
 
 - `POST /api/v1/webhooks/dodo`
+
+Signatures are verified before database work. Each delivery obtains a transaction advisory lock for its webhook ID; subscription events also lock the user. Subscription updates, usage adjustments, and durable event completion commit before `200`. Failed transactions return `500` so Dodo retries. Completed webhook IDs are ignored across process restarts. The `lastBillingEventAt` field prevents older events from restoring revoked access; previous-subscription terminal events cannot revoke replacement access. Notifications run after commit and do not determine payment success.
+
+Feature controllers, schedulers, quota consumption, notifications, and automation eligibility use `lib/subscription-access.ts`. It derives effective access from stored tier, status, and expiry while retaining the subscribed tier for billing recovery. Overlapping subscription events preserve consumed usage; a new subscription or billing cycle resets allowance. Monitor definitions and schedules are preserved.
+
+The billing migration adds only event ordering metadata and a webhook lookup index. Historical failed deliveries require replay from Dodo after the repair is deployed. Test persistence and concurrent delivery against a dedicated local `leadly_billing_test` database with `bun run test:billing:integration`; never use a production database for that suite.
 
 ### Content
 

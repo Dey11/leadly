@@ -1,3 +1,4 @@
+import { effectiveSubscriptionTier } from "../lib/subscription-access";
 import db from "../lib/db";
 import logger from "../lib/logger";
 import {
@@ -222,7 +223,7 @@ export async function runKeywordScheduler() {
     }
 
     // Enforce daily scrape limits
-    const tier = user.subscription.tier;
+    const tier = effectiveSubscriptionTier(user.subscription);
     const { allowed, reason, summary } = await tryConsumeScrapeCredit(
       user.id,
       tier,

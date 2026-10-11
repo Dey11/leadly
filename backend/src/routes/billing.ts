@@ -1,14 +1,17 @@
 import { Router } from "express";
-import { authMiddlewareVerifiedOnly } from "../middleware/auth";
+import { authMiddleware, authMiddlewareVerifiedOnly } from "../middleware/auth";
 import { userRateLimit } from "../lib/rate-limit";
 import {
   cancelSubscription,
   manageSubscription,
   previewPlanChange,
   subscribe,
+  getBillingStatus,
 } from "../controllers/billing";
 
 const router = Router();
+
+router.get("/status", authMiddleware, userRateLimit("read"), getBillingStatus);
 
 router.post(
   "/subscribe",

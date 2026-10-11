@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { clientApi } from "@/lib/client/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ type Tier = "FREE" | "PRO" | "PREMIUM";
 
 interface BillingPanelProps {
   tier: Tier;
+  subscriptionId?: string | null;
   status?: SubscriptionStatus;
   renewalDate?: string | null;
   cancelledAtPeriodEnd?: boolean;
@@ -42,6 +44,7 @@ const STATUS_LABELS: Record<
 export function BillingPanel(props: BillingPanelProps) {
   const {
     tier,
+    subscriptionId,
     status = "ACTIVE",
     renewalDate,
     cancelledAtPeriodEnd = false,
@@ -50,43 +53,50 @@ export function BillingPanel(props: BillingPanelProps) {
   const [loading, setLoading] = useState<"pro" | "premium" | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [targetPlan, setTargetPlan] = useState<"pro" | "premium">("pro");
+  const router = useRouter();
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  async function startSubscription(plan: "pro" | "premium") {
+    setLoading(plan);
+    setError(null);
+    setNotice(null);
+    try {
+      const result = await clientApi.subscribe(plan);
+      if ("url" in result) {
+        window.location.assign(result.url);
+      } else if (result.scheduled) {
+        setNotice(
+          "Downgrade scheduled for your next renewal. Your current features remain available until then.",
+        );
+        router.refresh();
+      } else {
+        const query = new URLSearchParams({
+          subscription_id: result.subscriptionId,
+          plan,
+        });
+        window.location.assign(`/billing/result?${query}`);
+      }
+    } finally {
+      setLoading(null);
+    }
+  }
+
   async function handleSubscribe(plan: "pro" | "premium") {
-    // For FREE tier, go directly to checkout (no dialog needed)
-    if (tier === "FREE") {
+    if (!subscriptionId || status !== "ACTIVE" || tier === "FREE") {
       try {
-        setLoading(plan);
-        setError(null);
-        const res = await clientApi.subscribe(plan);
-        if (res && (res as any).url) {
-          window.location.href = (res as { url: string }).url;
-        }
-      } catch (e: any) {
-        console.error("Subscribe failed", e);
-        setError(e?.message || "Failed to start checkout. Please try again.");
-        setLoading(null);
+        await startSubscription(plan);
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Failed to start checkout. Please retry.",
+        );
       }
       return;
     }
-
-    // For paid tiers, show confirmation dialog
     setTargetPlan(plan);
     setDialogOpen(true);
-  }
-
-  async function handleConfirmPlanChange() {
-    setLoading(targetPlan);
-    setError(null);
-    const res = await clientApi.subscribe(targetPlan);
-    if (res && (res as any).planChanged) {
-      window.location.reload();
-      return;
-    }
-    if (res && (res as any).url) {
-      window.location.href = (res as { url: string }).url;
-    }
-    setLoading(null);
   }
 
   const dailyPct =
@@ -162,14 +172,23 @@ export function BillingPanel(props: BillingPanelProps) {
             )}
 
           {/* Cancellation notice */}
-          {status === "CANCELLED" && formattedRenewalDate && (
-            <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
-              <AlertCircle className="h-3.5 w-3.5" />
-              <span>
-                Access until:{" "}
-                <span className="font-medium">{formattedRenewalDate}</span>
-              </span>
-            </div>
+          {status === "CANCELLED" &&
+            tier !== "FREE" &&
+            cancelledAtPeriodEnd &&
+            formattedRenewalDate && (
+              <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+                <AlertCircle className="h-3.5 w-3.5" />
+                <span>
+                  Access until:{" "}
+                  <span className="font-medium">{formattedRenewalDate}</span>
+                </span>
+              </div>
+            )}
+
+          {notice && (
+            <p role="status" className="text-foreground text-sm">
+              {notice}
+            </p>
           )}
 
           {/* Error display */}
@@ -213,28 +232,36 @@ export function BillingPanel(props: BillingPanelProps) {
           </section>
 
           <section className="flex flex-col gap-2 pt-2">
-            {tier === "FREE" && (
-              <>
-                <Button
-                  variant="default"
-                  disabled={loading !== null}
-                  onClick={() => handleSubscribe("pro")}
-                >
-                  {loading === "pro"
-                    ? "Redirecting…"
-                    : "Upgrade to Pro ($4.5/mo)"}
-                </Button>
-                <Button
-                  variant="secondary"
-                  disabled={loading !== null}
-                  onClick={() => handleSubscribe("premium")}
-                >
-                  {loading === "premium"
-                    ? "Redirecting…"
-                    : "Upgrade to Premium ($12/mo)"}
-                </Button>
-              </>
+            {(status === "ON_HOLD" || status === "PENDING") && (
+              <p>
+                Resolve your payment using Manage subscription before changing
+                plans.
+              </p>
             )}
+            {tier === "FREE" &&
+              status !== "ON_HOLD" &&
+              status !== "PENDING" && (
+                <>
+                  <Button
+                    variant="default"
+                    disabled={loading !== null}
+                    onClick={() => handleSubscribe("pro")}
+                  >
+                    {loading === "pro"
+                      ? "Redirecting…"
+                      : "Upgrade to Pro ($4.5/mo)"}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    disabled={loading !== null}
+                    onClick={() => handleSubscribe("premium")}
+                  >
+                    {loading === "premium"
+                      ? "Redirecting…"
+                      : "Upgrade to Premium ($12/mo)"}
+                  </Button>
+                </>
+              )}
             {tier === "PRO" && (
               <Button
                 variant="default"
@@ -267,7 +294,7 @@ export function BillingPanel(props: BillingPanelProps) {
         onOpenChange={setDialogOpen}
         targetPlan={targetPlan}
         currentTier={tier}
-        onConfirm={handleConfirmPlanChange}
+        onConfirm={() => startSubscription(targetPlan)}
       />
     </>
   );

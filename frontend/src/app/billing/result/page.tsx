@@ -13,45 +13,15 @@ import {
   CalendarX,
 } from "lucide-react";
 import { Suspense } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { clientApi } from "@/lib/client/api";
+import type { BillingResultState } from "@/types/backend";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SUPPORT_EMAIL } from "@/constants/config";
 import { BugReportButton } from "@/components/shared/bug-report-dialog";
-
-// Status classification - matches Dodo subscription statuses
-const SUCCESS_STATUSES = new Set([
-  "succeeded",
-  "active",
-  "subscription.active",
-]);
-const PENDING_STATUSES = new Set(["pending", "processing"]);
-const ON_HOLD_STATUSES = new Set(["on_hold", "on-hold", "onhold"]);
-const FAILURE_STATUSES = new Set(["failed", "payment.failed", "incomplete"]);
-const CANCELLED_STATUSES = new Set(["cancelled", "canceled", "abandoned"]);
-const EXPIRED_STATUSES = new Set(["expired"]);
-
-type PaymentState =
-  | "success"
-  | "pending"
-  | "on_hold"
-  | "failed"
-  | "cancelled"
-  | "expired";
-
-function getPaymentState(status: string): PaymentState {
-  if (!status) return "success"; // Default to success for backward compat
-  const normalized = status.toLowerCase().trim();
-  if (SUCCESS_STATUSES.has(normalized)) return "success";
-  if (PENDING_STATUSES.has(normalized)) return "pending";
-  if (ON_HOLD_STATUSES.has(normalized)) return "on_hold";
-  if (FAILURE_STATUSES.has(normalized)) return "failed";
-  if (CANCELLED_STATUSES.has(normalized)) return "cancelled";
-  if (EXPIRED_STATUSES.has(normalized)) return "expired";
-  // If unknown status, treat as success (existing behavior for subscription.active etc)
-  return "success";
-}
 
 // State-specific configurations
 const STATE_CONFIG = {
@@ -62,9 +32,8 @@ const STATE_CONFIG = {
     bgClass: "bg-emerald-500/5",
     badgeClass: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
     statusLabel: "Active",
-    heading: "Payment confirmed",
-    description:
-      "Your checkout completed successfully and the subscription is now active.",
+    heading: "Subscription active",
+    description: "Your account has confirmed access to this subscription.",
   },
   pending: {
     icon: Clock,
@@ -75,7 +44,7 @@ const STATE_CONFIG = {
     statusLabel: "Processing",
     heading: "Payment processing",
     description:
-      "Your payment is being processed. This usually takes a few moments. Please wait or check back shortly.",
+      "We have not confirmed this subscription yet. Sign in to the account used at checkout, then check again or review billing.",
   },
   on_hold: {
     icon: CreditCard,
@@ -106,9 +75,9 @@ const STATE_CONFIG = {
     bgClass: "bg-amber-500/5",
     badgeClass: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
     statusLabel: "Cancelled",
-    heading: "Checkout cancelled",
+    heading: "Subscription cancelled",
     description:
-      "You cancelled the checkout process. No charges were made to your account.",
+      "This subscription is cancelled. Review billing or the payment portal for charge details.",
   },
   expired: {
     icon: CalendarX,
@@ -125,9 +94,25 @@ const STATE_CONFIG = {
 
 function BillingResultContent() {
   const searchParams = useSearchParams();
-  const statusRaw = searchParams.get("status") ?? "";
   const subscriptionId = searchParams.get("subscription_id");
-  const paymentState = getPaymentState(statusRaw);
+  const planRaw = searchParams.get("plan");
+  const plan = planRaw === "pro" || planRaw === "premium" ? planRaw : undefined;
+  const statusQuery = useQuery({
+    queryKey: ["billing", "status", subscriptionId, plan],
+    queryFn: () => clientApi.billingStatus(subscriptionId!, plan),
+    enabled: !!subscriptionId,
+    staleTime: 0,
+    retry: false,
+    refetchInterval: (query) =>
+      query.state.data?.state === "pending" &&
+      query.state.dataUpdateCount < 12 &&
+      query.state.status !== "error"
+        ? 5000
+        : false,
+  });
+  const paymentState: BillingResultState = statusQuery.isError
+    ? "pending"
+    : (statusQuery.data?.state ?? "pending");
   const config = STATE_CONFIG[paymentState];
   const IconComponent = config.icon;
 
@@ -165,6 +150,18 @@ function BillingResultContent() {
               {config.description}
             </p>
 
+            {statusQuery.isError && (
+              <p role="alert" className="text-destructive text-sm">
+                Unable to verify your subscription. Please sign in and retry.
+              </p>
+            )}
+            {!subscriptionId && (
+              <p className="text-muted-foreground text-sm">
+                No subscription reference was provided. Review your account
+                billing to check access.
+              </p>
+            )}
+
             {/* Subscription ID for success */}
             {paymentState === "success" && subscriptionId && (
               <p className="text-muted-foreground text-xs">
@@ -186,7 +183,8 @@ function BillingResultContent() {
               {paymentState === "pending" && (
                 <>
                   <Button
-                    onClick={() => window.location.reload()}
+                    onClick={() => void statusQuery.refetch()}
+                    disabled={!subscriptionId || statusQuery.isFetching}
                     variant="outline"
                   >
                     <RefreshCw className="size-4" aria-hidden />
@@ -281,8 +279,8 @@ function BillingResultContent() {
                 </>
               ) : paymentState === "pending" ? (
                 <>
-                  Your payment is still processing. This can take a few moments.
-                  If it takes longer than expected, contact us at{" "}
+                  Your subscription has not been confirmed yet. If it takes
+                  longer than expected, contact us at{" "}
                   <a
                     href={`mailto:${SUPPORT_EMAIL}`}
                     className="text-primary underline-offset-2 hover:underline"

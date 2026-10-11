@@ -189,12 +189,17 @@ We use **Dodo Payments** as the merchant of record.
 
 - **Tiers** (defined in `constants.ts`):
   - `FREE`: Entry level.
-  - `PRO`: Power user ($9/mo).
-  - `PREMIUM`: Agency level ($24/mo).
+  - `PRO`: Power user (currently advertised at $4.50/mo).
+  - `PREMIUM`: Agency level (currently advertised at $12/mo).
+  - Dodo product configuration owns the actual price and taxes. Plan-change previews show provider-calculated charges before confirmation.
+- **Tier changes**: Upgrades wait for confirmed subscription events and use Dodo's `prevent_change` failure policy. Downgrades are scheduled for the next renewal, preserving current features until then. On-hold subscriptions recover through the billing portal instead of creating duplicate subscriptions.
+- **Access**: Paid features require active paid access with an unexpired period. Scheduled cancellations retain access until expiry. Internally granted paid access follows the same expiry rule.
 - **Webhooks**:
   - Endpoint: `/api/v1/webhooks/dodo`
-  - Events: `subscription.created`, `subscription.cancelled`, `failed`.
-  - **Idempotency**: Redis keys (`dodo:webhooks:<id>`) prevent duplicate processing.
+  - Events: activation, updates, plan changes, renewals, pauses, cancellation, failure, and expiry.
+  - **Idempotency**: Verified deliveries and subscription updates commit together in PostgreSQL before acknowledgment. Transaction advisory locks and durable `WebhookEvent` completion prevent duplicate resets; failures return `500` for provider retry.
+  - Event timestamps and subscription IDs prevent stale events from changing replacement subscriptions.
+- **Checkout results**: `/billing/result` checks the authenticated account through `GET /api/v1/billing/status`. Missing references, unavailable verification, and redirect parameters never establish success.
 
 ---
 

@@ -207,6 +207,7 @@ model Subscription {
   tier                 SubscriptionTier   @default(FREE)
   currentPeriodEnd     DateTime
   cancelledAtPeriodEnd Boolean            @default(false) // True if scheduled for cancellation at next billing date
+  lastBillingEventAt   DateTime? // Provider event time; prevents stale deliveries from restoring access
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -227,6 +228,7 @@ model WebhookEvent {
   createdAt  DateTime           @default(now())
   updatedAt  DateTime           @updatedAt
 
+  @@index([webhookId])
   @@map("webhook_events")
 }
 

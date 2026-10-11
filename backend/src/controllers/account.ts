@@ -1,9 +1,9 @@
+import { effectiveSubscriptionTier } from "../lib/subscription-access";
 import { Request, Response } from "express";
 import logger from "../lib/logger";
 import db from "../lib/db";
 import { patchAccountSchema, patchProfileSchema } from "../types/account";
 import { previewUsage } from "../lib/usage";
-import { SubscriptionTier } from "@prisma/client";
 import {
   enableAutomationForUser,
   getAutomationStateForUser,
@@ -194,7 +194,7 @@ export async function getUsageSummary(req: Request, res: Response) {
       address: user.subscription.billingAddress ?? undefined,
     };
 
-    const tier = user.subscription.tier as SubscriptionTier;
+    const tier = effectiveSubscriptionTier(user.subscription);
     const currentPeriodEnd = user.subscription.currentPeriodEnd;
     const status = user.subscription.status;
     const subscriptionId = user.subscription.subscriptionId;
@@ -207,6 +207,7 @@ export async function getUsageSummary(req: Request, res: Response) {
       message: "Usage summary",
       payload: {
         tier,
+        subscribedTier: user.subscription.tier,
         status,
         subscriptionId,
         dailyUsed: usage.dailyUsed,

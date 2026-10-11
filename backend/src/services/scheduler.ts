@@ -1,3 +1,4 @@
+import { effectiveSubscriptionTier } from "../lib/subscription-access";
 import { scrapeJobsQueue } from "../lib/queue";
 import logger from "../lib/logger";
 import db from "../lib/db";
@@ -194,7 +195,7 @@ export async function runScheduler() {
       continue;
     }
 
-    const tier = user.subscription.tier;
+    const tier = effectiveSubscriptionTier(user.subscription);
     const limits = TIER_LIMITS[tier];
 
     // Preview current usage for logs

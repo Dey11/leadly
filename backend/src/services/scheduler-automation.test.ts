@@ -1,17 +1,27 @@
 import { beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
+import { SubscriptionStatus, type Subscription } from "@prisma/client";
+import type { AutomationState } from "./automation-policy";
 
-const getAutomationStateForUser = mock(async () => ({
+const getAutomationStateForUser = mock(async (): Promise<AutomationState> => ({
   enabled: false,
   pausedForInactivity: false,
   pauseReason: "ADMINISTRATIVE" as const,
   inactivityThresholdDays: 3,
 }));
-const tryConsumeScrapeCredit = mock(async () => {
-  throw new Error("Paused automation must not consume credits");
-});
-const previewUsage = mock(async () => {
-  throw new Error("Paused automation must not preview usage");
-});
+const tryConsumeScrapeCredit = mock(
+  async (): Promise<
+    Awaited<ReturnType<typeof import("../lib/usage").tryConsumeScrapeCredit>>
+  > => {
+    throw new Error("Paused automation must not consume credits");
+  },
+);
+const previewUsage = mock(
+  async (): Promise<
+    Awaited<ReturnType<typeof import("../lib/usage").previewUsage>>
+  > => {
+    throw new Error("Paused automation must not preview usage");
+  },
+);
 const enqueueScrapeJob = mock(async () => undefined);
 const processStuckJob = mock(async () => undefined);
 const processKeywordScrapeJob = mock(async () => undefined);
@@ -19,13 +29,19 @@ const processKeywordStuckJob = mock(async () => undefined);
 const createScrapeJob = mock(async () => undefined);
 const createKeywordScrapeJob = mock(async () => undefined);
 
+const subscription: Pick<
+  Subscription,
+  "tier" | "status" | "cancelledAtPeriodEnd" | "currentPeriodEnd"
+> = {
+  tier: "PREMIUM",
+  status: SubscriptionStatus.ACTIVE,
+  cancelledAtPeriodEnd: false,
+  currentPeriodEnd: new Date(Date.now() + 30 * 86400000),
+};
 const scheduledUser = {
   id: "premium-user",
   isDeleted: false,
-  subscription: {
-    tier: "PREMIUM",
-    currentPeriodEnd: new Date("2026-09-01T00:00:00.000Z"),
-  },
+  subscription,
   monitors: [{ id: "monitor-1" }],
   keywordMonitors: [{ id: "keyword-monitor-1" }],
 };
@@ -87,6 +103,7 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
+  scheduledUser.subscription.status = SubscriptionStatus.ACTIVE;
   for (const fn of [
     getAutomationStateForUser,
     tryConsumeScrapeCredit,
@@ -103,6 +120,57 @@ beforeEach(() => {
 });
 
 describe("scheduler automation gate", () => {
+  for (const status of [
+    SubscriptionStatus.ON_HOLD,
+    SubscriptionStatus.EXPIRED,
+  ]) {
+    test(`both scheduler modes use Free limits for ${status} paid accounts`, async () => {
+      scheduledUser.subscription.status = status;
+      const enabled: AutomationState = {
+        enabled: true,
+        pausedForInactivity: false,
+        pauseReason: null,
+        inactivityThresholdDays: 3,
+      };
+      const summary = {
+        dailyUsed: 0,
+        dailyLimit: 1,
+        monthlyUsed: 0,
+        monthlyLimit: 30,
+      };
+      getAutomationStateForUser.mockResolvedValueOnce(enabled);
+      previewUsage.mockResolvedValueOnce({
+        ...summary,
+        periodStart: new Date(),
+        periodEnd: new Date(),
+      });
+      tryConsumeScrapeCredit.mockResolvedValueOnce({ allowed: false, summary });
+      await runScheduler();
+      expect(previewUsage).toHaveBeenCalledWith(
+        "premium-user",
+        "FREE",
+        scheduledUser.subscription.currentPeriodEnd,
+      );
+      expect(tryConsumeScrapeCredit).toHaveBeenLastCalledWith(
+        "premium-user",
+        "FREE",
+        scheduledUser.subscription.currentPeriodEnd,
+        "on",
+      );
+      getAutomationStateForUser.mockResolvedValueOnce(enabled);
+      tryConsumeScrapeCredit.mockResolvedValueOnce({ allowed: false, summary });
+      await runKeywordScheduler();
+      expect(tryConsumeScrapeCredit).toHaveBeenLastCalledWith(
+        "premium-user",
+        "FREE",
+        scheduledUser.subscription.currentPeriodEnd,
+        "on",
+        "KEYWORD",
+      );
+      expect(createScrapeJob).not.toHaveBeenCalled();
+      expect(createKeywordScrapeJob).not.toHaveBeenCalled();
+    });
+  }
   test("paused ICP accounts consume no credit and create or enqueue no jobs", async () => {
     await runScheduler();
 

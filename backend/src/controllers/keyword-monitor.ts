@@ -1,3 +1,4 @@
+import { effectiveSubscriptionTier } from "../lib/subscription-access";
 import { Request, Response } from "express";
 import logger from "../lib/logger";
 import db from "../lib/db";
@@ -32,7 +33,7 @@ export async function createKeywordMonitor(req: Request, res: Response) {
       return res.status(400).json({ error: "User has no active subscription" });
     }
 
-    const tier = user.subscription.tier;
+    const tier = effectiveSubscriptionTier(user.subscription);
     const tierLimits = TIER_LIMITS[tier];
 
     // Check keyword monitor limit
@@ -220,7 +221,7 @@ export async function updateKeywordMonitor(req: Request, res: Response) {
 
         if (
           !user?.subscription ||
-          !TIER_LIMITS[user.subscription.tier].customFeeds
+          !TIER_LIMITS[effectiveSubscriptionTier(user.subscription)].customFeeds
         ) {
           return res.status(403).json({ error: CUSTOM_FEED_UPGRADE_MESSAGE });
         }

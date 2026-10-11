@@ -1,3 +1,7 @@
+import {
+  effectiveSubscriptionTier,
+  paidSubscriptionWhere,
+} from "../lib/subscription-access";
 import db from "../lib/db";
 import logger from "../lib/logger";
 import type { Prisma } from "@prisma/client";
@@ -162,11 +166,11 @@ export function automationEligibleUserWhere(
     OR: [
       {
         subscription: {
-          is: { tier: { in: ["PRO", "PREMIUM"] } },
+          is: paidSubscriptionWhere(now),
         },
       },
       {
-        subscription: { is: { tier: "FREE" } },
+        subscription: { is: { NOT: paidSubscriptionWhere(now) } },
         freeAutomationPausedAt: null,
         lastActiveAt: { gt: inactivityCutoff },
       },
@@ -176,6 +180,7 @@ export function automationEligibleUserWhere(
 
 async function loadAutomationAccount(
   userId: string,
+  now = new Date(),
 ): Promise<StoredAutomationAccount | null> {
   const user = await db.user.findUnique({
     where: { id: userId },
@@ -185,7 +190,12 @@ async function loadAutomationAccount(
       freeAutomationPausedAt: true,
       administrativeAutomationPausedAt: true,
       subscription: {
-        select: { tier: true },
+        select: {
+          tier: true,
+          status: true,
+          currentPeriodEnd: true,
+          cancelledAtPeriodEnd: true,
+        },
       },
     },
   });
@@ -194,7 +204,9 @@ async function loadAutomationAccount(
 
   return {
     id: user.id,
-    tier: user.subscription?.tier ?? null,
+    tier: user.subscription
+      ? effectiveSubscriptionTier(user.subscription, now)
+      : null,
     lastActiveAt: user.lastActiveAt,
     freeAutomationPausedAt: user.freeAutomationPausedAt,
     administrativeAutomationPausedAt: user.administrativeAutomationPausedAt,
@@ -213,7 +225,7 @@ async function pauseInactiveFreeAccount(
         id: account.id,
         lastActiveAt: { lte: inactivityCutoff },
         freeAutomationPausedAt: null,
-        subscription: { is: { tier: "FREE" } },
+        subscription: { is: { NOT: paidSubscriptionWhere(now) } },
       },
       data: { freeAutomationPausedAt: now },
     });
@@ -281,7 +293,7 @@ async function enforceAutomationPolicy(
   if (decision.transition === "pause") {
     const paused = await pauseInactiveFreeAccount(account, now);
     if (!paused) {
-      const refreshedAccount = await loadAutomationAccount(account.id);
+      const refreshedAccount = await loadAutomationAccount(account.id, now);
       if (!refreshedAccount) return toAutomationState(decision);
       return toAutomationState(resolveAutomationPolicy(refreshedAccount, now));
     }
@@ -298,7 +310,7 @@ export async function getAutomationStateForUser(
   userId: string,
   now = new Date(),
 ): Promise<AutomationState | null> {
-  const account = await loadAutomationAccount(userId);
+  const account = await loadAutomationAccount(userId, now);
   if (!account) return null;
   return enforceAutomationPolicy(account, now);
 }
@@ -325,11 +337,11 @@ export async function recordAuthenticatedActivity(
       OR: [
         {
           subscription: {
-            is: { tier: { in: ["PRO", "PREMIUM"] } },
+            is: paidSubscriptionWhere(now),
           },
         },
         {
-          subscription: { is: { tier: "FREE" } },
+          subscription: { is: { NOT: paidSubscriptionWhere(now) } },
           freeAutomationPausedAt: null,
           lastActiveAt: { gt: inactivityCutoff },
         },
@@ -360,7 +372,7 @@ export async function enableAutomationForUser(
   userId: string,
   now = new Date(),
 ): Promise<AutomationState | null> {
-  const account = await loadAutomationAccount(userId);
+  const account = await loadAutomationAccount(userId, now);
   if (!account) return null;
 
   await db.user.update({

@@ -62,7 +62,7 @@ export async function BillingContent() {
         </div>
       </section>
 
-      {!isFreeTier && (
+      {usagePayload?.subscriptionId && (
         <section className="grid gap-6">
           <BillingActions status={usagePayload?.status} />
         </section>
@@ -71,6 +71,7 @@ export async function BillingContent() {
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <BillingPanel
           tier={activeTier}
+          subscriptionId={usagePayload?.subscriptionId}
           status={usagePayload?.status}
           renewalDate={usagePayload?.renewalDate}
           cancelledAtPeriodEnd={usagePayload?.cancelledAtPeriodEnd}

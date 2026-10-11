@@ -1,3 +1,4 @@
+import { effectiveSubscriptionTier } from "../lib/subscription-access";
 import { Request, Response } from "express";
 import logger from "../lib/logger";
 import db from "../lib/db";
@@ -26,7 +27,7 @@ export async function getNotificationSettings(req: Request, res: Response) {
       return res.status(400).json({ error: "User has no active subscription" });
     }
 
-    const tier = user.subscription.tier;
+    const tier = effectiveSubscriptionTier(user.subscription);
     const allowed = TIER_LIMITS[tier].notifications;
 
     const channel = await db.notificationChannel.findFirst({
@@ -81,7 +82,9 @@ export async function upsertNotificationChannel(req: Request, res: Response) {
       return res.status(400).json({ error: "User has no active subscription" });
     }
 
-    if (!TIER_LIMITS[user.subscription.tier].notifications) {
+    if (
+      !TIER_LIMITS[effectiveSubscriptionTier(user.subscription)].notifications
+    ) {
       return res.status(403).json({ error: NOTIFICATIONS_UPGRADE_MESSAGE });
     }
 
@@ -144,7 +147,9 @@ export async function sendNotificationTestMessage(req: Request, res: Response) {
       return res.status(400).json({ error: "User has no active subscription" });
     }
 
-    if (!TIER_LIMITS[user.subscription.tier].notifications) {
+    if (
+      !TIER_LIMITS[effectiveSubscriptionTier(user.subscription)].notifications
+    ) {
       return res.status(403).json({ error: NOTIFICATIONS_UPGRADE_MESSAGE });
     }
 

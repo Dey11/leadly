@@ -63,6 +63,14 @@ async function fixture(periodStart = oldStart, periodEnd = accessEnd) {
     },
   });
   userIds.push(user.id);
+  await db.subscription.create({
+    data: {
+      userId: user.id,
+      tier: "PREMIUM",
+      status: "ACTIVE",
+      currentPeriodEnd: periodEnd,
+    },
+  });
   await db.usage.create({
     data: {
       userId: user.id,

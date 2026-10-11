@@ -1,3 +1,4 @@
+import { effectiveSubscriptionTier } from "../lib/subscription-access";
 import { Request, Response } from "express";
 import logger from "../lib/logger";
 import db from "../lib/db";
@@ -237,7 +238,10 @@ export async function exportKeywordLeads(req: Request, res: Response) {
       include: { subscription: true },
     });
 
-    if (!user?.subscription || user.subscription.tier !== "PREMIUM") {
+    if (
+      !user?.subscription ||
+      effectiveSubscriptionTier(user.subscription) !== "PREMIUM"
+    ) {
       return res.status(403).json({
         error: "Export is only available for PREMIUM subscribers.",
       });

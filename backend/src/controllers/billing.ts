@@ -1,103 +1,57 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
+import type { Subscription, User } from "@prisma/client";
+import type { SubscriptionChangePlanParams } from "dodopayments/resources/subscriptions";
+import { z } from "zod";
 import { billingSubscribeSchema } from "../types/schema";
 import db from "../lib/db";
 import { env } from "../env";
-import { Subscription, SubscriptionTier } from "@prisma/client";
 import dodoClient from "../lib/dodo";
-import { Customer } from "dodopayments/resources/customers";
-import { User } from "@prisma/client";
 import logger from "../lib/logger";
+import { effectiveSubscriptionTier } from "../lib/subscription-access";
 
-type ChangePlanError = {
-  code: string;
-  error: string;
-  status: number;
-};
+function providerErrorCode(error: unknown) {
+  if (typeof error !== "object" || error === null || !("error" in error))
+    return undefined;
+  const detail = error.error;
+  return typeof detail === "object" &&
+    detail !== null &&
+    "code" in detail &&
+    typeof detail.code === "string"
+    ? detail.code
+    : undefined;
+}
 
-async function attemptChangePlan(
-  existingSubscriptionId: string,
-  productId: string,
-): Promise<ChangePlanError | undefined> {
-  try {
-    logger.info(
-      `[BILLING] Attempting plan change for subscription: ${existingSubscriptionId} to product: ${productId}`,
-    );
-    await dodoClient.subscriptions.changePlan(existingSubscriptionId, {
-      product_id: productId,
-      quantity: 1,
-      proration_billing_mode: "prorated_immediately",
-    });
-    logger.info(
-      `[BILLING] ✅ Plan change successful for subscription: ${existingSubscriptionId}`,
-    );
-  } catch (changePlanError: any) {
-    const errorCode = changePlanError?.error?.code;
-
-    if (errorCode === "PREVIOUS_PAYMENT_PENDING") {
-      return {
-        code: "PAYMENT_PENDING",
-        error:
-          "Please wait for your previous payment to complete before changing plans.",
-        status: 409,
-      };
-    }
-
-    if (errorCode === "PLAN_CHANGE_NOT_ALLOWED_FOR_SCHEDULED_CANCELLATION") {
-      await dodoClient.subscriptions.update(existingSubscriptionId, {
-        cancel_at_next_billing_date: false,
-      });
-      try {
-        await dodoClient.subscriptions.changePlan(existingSubscriptionId, {
-          product_id: productId,
-          quantity: 1,
-          proration_billing_mode: "prorated_immediately",
-        });
-      } catch (retryError: any) {
-        if (retryError?.error?.code === "PREVIOUS_PAYMENT_PENDING") {
-          return {
-            code: "PAYMENT_PENDING",
-            error:
-              "Please wait for your previous payment to complete before changing plans.",
-            status: 409,
-          };
-        }
-        throw retryError;
-      }
-    } else {
-      throw changePlanError;
-    }
-  }
+function planChangeRequest(
+  plan: "pro" | "premium",
+  currentTier: string,
+): SubscriptionChangePlanParams {
+  return {
+    product_id:
+      plan === "pro" ? env.DODO_PRO_PRODUCT_ID : env.DODO_PREMIUM_PRODUCT_ID,
+    quantity: 1,
+    proration_billing_mode: "prorated_immediately",
+    on_payment_failure: "prevent_change",
+    effective_at:
+      currentTier === "PREMIUM" && plan === "pro"
+        ? "next_billing_date"
+        : "immediately",
+  };
 }
 
 async function ensureCustomerId(
   user: User & { subscription: Subscription | null },
 ) {
-  if (!user?.subscription) {
-    throw new Error("Subscription not found");
-  }
-  if (user.subscription.subscriptionCustomerId) {
-    // TODO: check if this customer id is set at any time in the db (webhooks)
+  if (!user.subscription) throw new Error("Subscription not found");
+  if (user.subscription.subscriptionCustomerId)
     return user.subscription.subscriptionCustomerId;
-  }
-
   const page = await dodoClient.customers.list({
     email: user.email,
     page_number: 1,
     page_size: 1,
   });
-  const customer = page?.items?.[0] as Customer | undefined;
-  if (!customer) {
-    const created = await dodoClient.customers.create({
-      email: user.email,
-      name: user.name,
-    });
-    const createdId = created.customer_id;
-    await db.subscription.update({
-      where: { id: user.subscription.id },
-      data: { subscriptionCustomerId: createdId },
-    });
-    return createdId;
-  }
+  const customer =
+    page.items[0] ??
+    (await dodoClient.customers.create({ email: user.email, name: user.name }));
   await db.subscription.update({
     where: { id: user.subscription.id },
     data: { subscriptionCustomerId: customer.customer_id },
@@ -110,262 +64,244 @@ async function createCustomerPortalUrl(userId: string) {
     where: { id: userId },
     include: { subscription: true },
   });
-  if (!user) {
-    throw new Error("User not found");
-  }
+  if (!user || user.isDeleted) throw new Error("User not found");
   const customerId = await ensureCustomerId(user);
-  const session = await dodoClient.customers.customerPortal.create(customerId); // TODO: in the long run, we can save this for 24h
-  if (!session.link) {
-    throw new Error("Failed to read portal link");
-  }
+  const session = await dodoClient.customers.customerPortal.create(customerId);
+  if (!session.link) throw new Error("Failed to read portal link");
   return session.link;
 }
 
 export async function subscribe(req: Request, res: Response) {
+  const parsed = billingSubscribeSchema.safeParse(req.body);
+  if (!parsed.success)
+    return res.status(400).json({ error: "Invalid request body" });
   try {
-    const parse = billingSubscribeSchema.safeParse(req.body);
-    if (!parse.success) {
-      return res.status(400).json({ error: "Invalid request body" });
-    }
-
-    const { plan } = parse.data;
-
-    const userId = req.userId!;
+    const { plan } = parsed.data;
     const user = await db.user.findUnique({
-      where: { id: userId },
+      where: { id: req.userId! },
       include: { subscription: true },
     });
-
-    if (!user || user.isDeleted) {
+    if (!user || user.isDeleted)
       return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const productId =
-      plan === "pro" ? env.DODO_PRO_PRODUCT_ID : env.DODO_PREMIUM_PRODUCT_ID;
-
-    logger.info(`[BILLING] Subscribe request received`, {
-      userId,
-      requestedPlan: plan,
-      productId,
-    });
-
-    const existingSubscriptionId = user.subscription?.subscriptionId;
-    const isActive = user.subscription?.status === "ACTIVE";
-    const currentTier = user.subscription?.tier;
-    const requestedTier = plan.toUpperCase() as SubscriptionTier;
-    const isSameTier = currentTier === requestedTier;
-
-    logger.info(`[BILLING] Subscription state check`, {
-      existingSubscriptionId: existingSubscriptionId ?? "NONE",
-      subscriptionStatus: user.subscription?.status ?? "NO_SUBSCRIPTION",
-      isActive,
-      currentTier: currentTier ?? "NONE",
-      requestedTier,
-      isSameTier,
-    });
-
-    const isChangingPlan = existingSubscriptionId && isActive && !isSameTier;
-
-    logger.info(`[BILLING] isChangingPlan evaluation`, {
-      hasSubscriptionId: !!existingSubscriptionId,
-      isActive,
-      isDifferentTier: !isSameTier,
-      isChangingPlan: !!isChangingPlan,
-    });
-
-    if (isChangingPlan) {
-      logger.info(`[BILLING] ➡️ Entering plan change flow`);
-      const error = await attemptChangePlan(existingSubscriptionId, productId);
-      if (error) {
-        logger.error(`[BILLING] ❌ Plan change failed`, { error });
-        return res.status(error.status).json({ error: error.error });
-      }
-
-      const newTier = plan === "pro" ? "PRO" : "PREMIUM";
-      await db.subscription.update({
-        where: { userId },
-        data: { tier: newTier as SubscriptionTier },
+    const subscription = user.subscription;
+    if (
+      subscription?.subscriptionId &&
+      subscription.cancelledAtPeriodEnd &&
+      effectiveSubscriptionTier(subscription) !== "FREE"
+    ) {
+      return res.status(409).json({
+        error:
+          "Resume your subscription in Manage subscription before changing plans.",
       });
-
-      logger.info(`[BILLING] ✅ Plan changed successfully to ${newTier}`);
+    }
+    if (
+      subscription?.subscriptionId &&
+      (subscription.status === "ON_HOLD" || subscription.status === "PENDING")
+    ) {
+      return res.status(409).json({
+        code: "PAYMENT_ACTION_REQUIRED",
+        error:
+          "Resolve the existing payment in Manage subscription before starting another subscription.",
+      });
+    }
+    const active =
+      subscription?.status === "ACTIVE" && subscription.subscriptionId;
+    if (active && subscription) {
+      if (subscription.tier === plan.toUpperCase())
+        return res.status(400).json({
+          error: "You already have an active subscription with this plan.",
+        });
+      const request = planChangeRequest(plan, subscription.tier);
+      await dodoClient.subscriptions.changePlan(active, request);
+      // An accepted request is not confirmation of successful payment.
       return res.status(200).json({
         success: true,
-        message: "Plan changed successfully",
-        planChanged: true,
+        planChangePending: true,
+        scheduled: request.effective_at === "next_billing_date",
+        subscriptionId: active,
+        newTier: plan.toUpperCase(),
       });
     }
-
-    if (existingSubscriptionId && isActive) {
-      logger.warn(
-        `[BILLING] ⚠️ User already has active subscription with same plan`,
-        {
-          existingSubscriptionId,
-          currentTier,
-          requestedTier,
-        },
-      );
-      return res.status(400).json({
-        error: "You already have an active subscription with this plan.",
-      });
-    }
-
-    logger.info(
-      `[BILLING] ➡️ Creating new checkout session (no active subscription or resubscribing)`,
-    );
-
-    const baseReturn = env.FRONTEND_URL;
-    const returnUrl = `${baseReturn.replace(/\/+$/, "")}/billing/result`;
-
-    const existingCustomerId = user.subscription?.subscriptionCustomerId;
-
+    const customerId = subscription?.subscriptionCustomerId;
     const session = await dodoClient.checkoutSessions.create({
       product_cart: [
         {
-          product_id: productId,
+          product_id:
+            plan === "pro"
+              ? env.DODO_PRO_PRODUCT_ID
+              : env.DODO_PREMIUM_PRODUCT_ID,
           quantity: 1,
         },
       ],
-      ...(existingCustomerId && { customer_id: existingCustomerId }),
-      customer: { email: user.email, name: user.name },
-      return_url: returnUrl,
+      customer: customerId
+        ? { customer_id: customerId }
+        : { email: user.email, name: user.name },
+      return_url: `${env.FRONTEND_URL.replace(/\/+$/, "")}/billing/result?plan=${plan}`,
       show_saved_payment_methods: true,
       metadata: {
-        user_id: userId,
+        user_id: user.id,
         plan_code: plan,
         source: "backend_subscribe_endpoint",
       },
     });
-
-    if (!session?.checkout_url) {
-      return res
-        .status(500)
-        .json({ error: "Failed to create checkout session URL" });
-    }
-
+    if (!session.checkout_url) throw new Error("Checkout URL unavailable");
     return res.status(200).json({ url: session.checkout_url });
   } catch (error) {
-    logger.error("[BILLING] Subscribe failed:", error);
-    res.status(500).json({ error: "Internal server error" });
+    if (providerErrorCode(error) === "PREVIOUS_PAYMENT_PENDING")
+      return res.status(409).json({
+        code: "PAYMENT_PENDING",
+        error:
+          "Please wait for your previous payment to complete before changing plans.",
+      });
+    logger.error("Billing subscribe failed", {
+      code: providerErrorCode(error),
+    });
+    return res
+      .status(500)
+      .json({ error: "Unable to start billing. Please try again." });
   }
 }
 
 export async function cancelSubscription(req: Request, res: Response) {
   try {
-    const userId = req.userId!;
-    const url = await createCustomerPortalUrl(userId);
-    return res.status(200).json({ url: `${url}?focus=cancel` });
-  } catch (err) {
-    logger.error("Failed to create cancel link:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    const url = new URL(await createCustomerPortalUrl(req.userId!));
+    url.searchParams.set("focus", "cancel");
+    return res.status(200).json({ url: url.toString() });
+  } catch {
+    logger.error("Failed to create cancel link");
+    return res
+      .status(500)
+      .json({ error: "Unable to open the subscription portal" });
   }
 }
 
 export async function manageSubscription(req: Request, res: Response) {
   try {
-    const userId = req.userId!;
-    const url = await createCustomerPortalUrl(userId);
-    return res.status(200).json({ url });
-  } catch (err) {
-    logger.error("Failed to create manage link:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    return res
+      .status(200)
+      .json({ url: await createCustomerPortalUrl(req.userId!) });
+  } catch {
+    logger.error("Failed to create manage link");
+    return res
+      .status(500)
+      .json({ error: "Unable to open the subscription portal" });
   }
 }
 
 export async function previewPlanChange(req: Request, res: Response) {
+  const parsed = billingSubscribeSchema.safeParse(req.body);
+  if (!parsed.success)
+    return res.status(400).json({ error: "Invalid request body" });
   try {
-    const parse = billingSubscribeSchema.safeParse(req.body);
-    if (!parse.success) {
-      return res.status(400).json({ error: "Invalid request body" });
-    }
-
-    const { plan } = parse.data;
-    const userId = req.userId!;
-
+    const { plan } = parsed.data;
     const user = await db.user.findUnique({
-      where: { id: userId },
+      where: { id: req.userId! },
       include: { subscription: true },
     });
-
-    if (!user || user.isDeleted) {
+    if (!user || user.isDeleted)
       return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const existingSubscriptionId = user.subscription?.subscriptionId;
-    const isActive = user.subscription?.status === "ACTIVE";
-    const currentTier = user.subscription?.tier ?? "FREE";
-
-    const productId =
-      plan === "pro" ? env.DODO_PRO_PRODUCT_ID : env.DODO_PREMIUM_PRODUCT_ID;
-    const newTier = plan.toUpperCase() as SubscriptionTier;
-
-    if (!existingSubscriptionId || !isActive) {
+    const subscription = user.subscription;
+    const currentTier = subscription?.tier ?? "FREE";
+    const newTier = plan.toUpperCase();
+    if (!subscription?.subscriptionId || subscription.status !== "ACTIVE")
       return res.status(200).json({
         canPreview: false,
         isNewSubscription: true,
         currentTier,
         newTier,
-        message: "New subscription - checkout required",
       });
-    }
-
-    if (currentTier === newTier) {
-      return res.status(400).json({
-        error: "You are already on this plan",
+    if (currentTier === newTier)
+      return res.status(400).json({ error: "You are already on this plan" });
+    if (subscription.cancelledAtPeriodEnd)
+      return res.status(409).json({
+        error:
+          "Resume your subscription in Manage subscription before changing plans.",
       });
-    }
-
-    try {
-      const preview = await dodoClient.subscriptions.previewChangePlan(
-        existingSubscriptionId,
-        {
-          product_id: productId,
-          quantity: 1,
-          proration_billing_mode: "prorated_immediately",
-        },
-      );
-
-      const isUpgrade =
-        (currentTier === "FREE" &&
-          (newTier === "PRO" || newTier === "PREMIUM")) ||
-        (currentTier === "PRO" && newTier === "PREMIUM");
-
-      return res.status(200).json({
-        canPreview: true,
-        isNewSubscription: false,
-        currentTier,
-        newTier,
-        isUpgrade,
-        immediateCharge: (preview as any).immediate_charge ?? null,
-        credit: (preview as any).credit ?? null,
-        summary: (preview as any).immediate_charge?.summary ?? null,
-      });
-    } catch (previewError: any) {
-      logger.error("[BILLING] Preview failed:", previewError);
-
-      if (previewError?.error?.code === "PREVIOUS_PAYMENT_PENDING") {
-        return res.status(409).json({
-          error:
-            "Please wait for your previous payment to complete before changing plans.",
-          code: "PAYMENT_PENDING",
-          retryAfterSeconds: 120,
-        });
-      }
-
-      return res.status(200).json({
-        canPreview: true,
-        isNewSubscription: false,
-        currentTier,
-        newTier,
-        isUpgrade:
-          (currentTier === "FREE" &&
-            (newTier === "PRO" || newTier === "PREMIUM")) ||
-          (currentTier === "PRO" && newTier === "PREMIUM"),
-        fallback: true,
-        message: "Preview unavailable, plan change will be prorated",
-      });
-    }
+    const request = planChangeRequest(plan, currentTier);
+    const preview = await dodoClient.subscriptions.previewChangePlan(
+      subscription.subscriptionId,
+      request,
+    );
+    const {
+      total_amount: amount,
+      currency,
+      customer_credits: credits,
+      customer_credits_currency: creditCurrency,
+    } = preview.immediate_charge.summary;
+    const scheduled = request.effective_at === "next_billing_date";
+    const formatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+    });
+    const fractionDigits =
+      formatter.resolvedOptions().maximumFractionDigits ?? 2;
+    const formatted = formatter.format(amount / 10 ** fractionDigits);
+    return res.status(200).json({
+      canPreview: true,
+      isNewSubscription: false,
+      currentTier,
+      newTier,
+      isUpgrade: !scheduled,
+      scheduled,
+      immediateCharge: { amount, currency },
+      credit:
+        credits > 0 ? { amount: credits, currency: creditCurrency } : null,
+      summary: scheduled
+        ? `Your plan changes at your next renewal on ${subscription.currentPeriodEnd.toISOString().slice(0, 10)}. Your current features remain available until then.`
+        : `Dodo estimates an immediate charge of ${formatted}, including applicable taxes.`,
+    });
   } catch (error) {
-    logger.error("Preview plan change failed:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    if (providerErrorCode(error) === "PREVIOUS_PAYMENT_PENDING")
+      return res.status(409).json({
+        error:
+          "Please wait for your previous payment to complete before changing plans.",
+        code: "PAYMENT_PENDING",
+      });
+    logger.error("Billing preview failed", { code: providerErrorCode(error) });
+    return res.status(503).json({
+      error: "Pricing preview is unavailable. Please retry before confirming.",
+    });
+  }
+}
+
+const billingStatusSchema = z.object({
+  subscription_id: z.string().trim().min(1).max(200),
+  plan: z.enum(["pro", "premium"]).optional(),
+});
+
+export async function getBillingStatus(req: Request, res: Response) {
+  const parsed = billingStatusSchema.safeParse(req.query);
+  if (!parsed.success)
+    return res.status(400).json({ error: "A subscription ID is required" });
+  try {
+    const subscription = await db.subscription.findUnique({
+      where: { userId: req.userId! },
+    });
+    // Do not reveal whether a different user's provider subscription exists.
+    if (
+      !subscription ||
+      subscription.subscriptionId !== parsed.data.subscription_id
+    )
+      return res.json({ state: "pending" });
+    const tier = effectiveSubscriptionTier(subscription);
+    const requestedTier = parsed.data.plan?.toUpperCase();
+    let state:
+      "success" | "pending" | "on_hold" | "failed" | "cancelled" | "expired" =
+      "pending";
+    if (tier !== "FREE" && (!requestedTier || tier === requestedTier))
+      state = "success";
+    else if (subscription.status === "ON_HOLD") state = "on_hold";
+    else if (subscription.status === "FAILED") state = "failed";
+    else if (
+      subscription.status === "EXPIRED" ||
+      subscription.currentPeriodEnd <= new Date()
+    )
+      state = "expired";
+    else if (subscription.status === "CANCELLED") state = "cancelled";
+    return res.json({ state, tier });
+  } catch {
+    return res
+      .status(500)
+      .json({ error: "Unable to verify subscription status" });
   }
 }

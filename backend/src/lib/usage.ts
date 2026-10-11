@@ -1,4 +1,5 @@
 import db from "../lib/db";
+import { effectiveSubscriptionTier } from "./subscription-access";
 import { TIER_LIMITS } from "./constants";
 import { SubscriptionTier, type Prisma, type Usage } from "@prisma/client";
 import {
@@ -203,6 +204,14 @@ export async function tryConsumeScrapeCredit(
     monthlyLimit: number;
   };
 }> {
+  const subscription =
+    enforcement === "on" && tier !== "FREE"
+      ? await db.subscription.findUnique({ where: { userId } })
+      : null;
+  const paidAccessInactive =
+    enforcement === "on" &&
+    tier !== "FREE" &&
+    effectiveSubscriptionTier(subscription) !== tier;
   let usage = await getOrCreateUsage(userId, tier, currentPeriodEnd);
   const now = new Date();
 
@@ -244,15 +253,20 @@ export async function tryConsumeScrapeCredit(
 
   if (
     enforcement === "on" &&
-    (paidAccessExpired || wouldExceedDaily || wouldExceedMonthly)
+    (paidAccessExpired ||
+      paidAccessInactive ||
+      wouldExceedDaily ||
+      wouldExceedMonthly)
   ) {
     return {
       allowed: false,
       reason: paidAccessExpired
         ? "subscription_period_expired"
-        : wouldExceedMonthly
-          ? "monthly_limit_exceeded"
-          : "daily_limit_exceeded",
+        : paidAccessInactive
+          ? "subscription_inactive"
+          : wouldExceedMonthly
+            ? "monthly_limit_exceeded"
+            : "daily_limit_exceeded",
       summary: {
         dailyUsed: currentDaily,
         dailyLimit,

@@ -1,3 +1,4 @@
+import { effectiveSubscriptionTier } from "../lib/subscription-access";
 import db from "../lib/db";
 import logger from "../lib/logger";
 import { env } from "../env";
@@ -126,7 +127,10 @@ export async function notifyNewLeads(
     });
 
     if (!user?.subscription) return;
-    if (!TIER_LIMITS[user.subscription.tier].notifications) return;
+    if (
+      !TIER_LIMITS[effectiveSubscriptionTier(user.subscription)].notifications
+    )
+      return;
     if (user.notificationChannels.length === 0) return;
 
     for (const channel of user.notificationChannels) {

@@ -33,7 +33,7 @@ export function BillingActions({ status }: BillingActionsProps) {
       if (!action?.url) {
         throw new Error("Unable to generate portal link");
       }
-      window.open(action.url, "_blank", "noopener,noreferrer");
+      window.location.assign(action.url);
     } catch (err) {
       setError(
         err instanceof Error
