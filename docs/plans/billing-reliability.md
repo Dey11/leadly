@@ -1,6 +1,6 @@
 # Billing reliability repair
 
-Status: implemented and locally verified. No deployment or live charges.
+Status: deployed to Cooldash Leadly production on 2026-10-13. No payment charges were made during verification.
 
 ## Goal and scope
 
@@ -21,4 +21,14 @@ Validation passed: 81 backend tests, 6 billing integration tests, and 8 quota in
 
 Browser checks mounted the changed components with mocked billing calls. Pricing loads when the upgrade dialog opens; pricing failures block confirmation and can be retried; failed upgrades leave both parent and dialog controls usable. Missing subscription references and a `status=succeeded` URL remain pending until the backend confirms access. These checks made no payment requests.
 
-The checked-in migration adds event ordering metadata and an event lookup index. Apply through the existing container migration entrypoint when deployment is separately authorized. External Dodo test-mode charges and live delivery remain unverified without an authorized payment environment. Existing historical FAILED events still require provider replay; successful future delivery alone cannot repair past lost notifications.
+The checked-in migration adds event ordering metadata and an event lookup index. External Dodo test-mode charges and live delivery remain unverified without an authorized payment environment. Existing historical FAILED events still require provider replay; successful future delivery alone cannot repair past lost notifications.
+
+## Production release
+
+The user authorized pushing and deploying to Cooldash application `leadly-tryhanabi-com` (`uxheo2hgxldgxksmec44togm`), including the migration. Commit `00240ea` was pushed to `Dey11/leadly:master`; the existing GitHub integration started deployment `iqykkob06chmjysojn5xgpmz`, which finished at 15:34:57 UTC on 2026-10-13.
+
+Before deployment, the application configuration confirmed private PostgreSQL resource `jy14rdx3prcn6m3yfiufahcm`, database `leadly_production`, role `leadly_app`, and enabled startup migrations. Backend runtime logs confirmed `20261011094500_billing_event_ordering` was applied successfully. Deployment logs reported the backend healthy and the frontend and worker started. Public API database/Redis health returned success; login and billing-result pages returned HTTP 200. Billing status rejected unauthenticated requests, and the webhook rejected an invalid signature with HTTP 401.
+
+CI exposed scheduler module mocks replacing real automation exports under a different file-loading order. Isolating the scheduler suite in a subprocess resolves that ordering failure without changing runtime behavior. A combined import-order reproduction and the complete backend suite passed after the correction; the wrapper runs all four original scheduler behavior tests in its child process.
+
+Verification did not initiate purchases, change account tiers or schedules, or replay historical billing events.
