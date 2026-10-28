@@ -42,7 +42,8 @@ async function lockMonitorIdentity(
   },
 ) {
   const key = identityLockKey(identity);
-  await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`;
+  // The lock returns PostgreSQL void, which Prisma cannot deserialize as a row.
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`;
 }
 
 export async function createMonitorWithIdentityGuard(

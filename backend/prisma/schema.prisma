@@ -179,7 +179,7 @@ model NotificationChannel {
   enabled     Boolean                 @default(true)
 
   // Which ICP lead types trigger a notification (chips in UI)
-  notifyLeadTypes      LeadType[] @default([WARM, COLD, NEUTRAL])
+  notifyLeadTypes      LeadType[] @default([WARM, NEUTRAL])
   notifyKeywordMatches Boolean    @default(true)
 
   createdAt DateTime @default(now())

@@ -1,3 +1,4 @@
+import { notificationLeadTypes } from "../lib/notification-policy";
 import { effectiveSubscriptionTier } from "../lib/subscription-access";
 import db from "../lib/db";
 import logger from "../lib/logger";
@@ -75,8 +76,9 @@ async function dispatchToChannel(
   let breakdown: string;
 
   if (input.kind === "icp") {
+    const allowedTypes = notificationLeadTypes(channel.notifyLeadTypes);
     const filtered = input.leads.filter((lead) =>
-      channel.notifyLeadTypes.includes(lead.leadType),
+      allowedTypes.includes(lead.leadType),
     );
     if (filtered.length === 0) return;
 

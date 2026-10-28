@@ -1,3 +1,7 @@
+import {
+  NOTIFIABLE_LEAD_TYPES,
+  notificationLeadTypes,
+} from "../lib/notification-policy";
 import { effectiveSubscriptionTier } from "../lib/subscription-access";
 import { Request, Response } from "express";
 import logger from "../lib/logger";
@@ -8,12 +12,11 @@ import {
   testNotificationSchema,
 } from "../types/notification";
 import { sendTestNotification } from "../services/notification.service";
-import type { LeadType } from "@prisma/client";
 
 const NOTIFICATIONS_UPGRADE_MESSAGE =
   "Real-time Discord alerts are available on the Pro and Premium plans. Upgrade to enable notifications.";
 
-const DEFAULT_NOTIFY_LEAD_TYPES: LeadType[] = ["WARM", "COLD", "NEUTRAL"];
+const DEFAULT_NOTIFY_LEAD_TYPES = [...NOTIFIABLE_LEAD_TYPES];
 
 export async function getNotificationSettings(req: Request, res: Response) {
   try {
@@ -45,7 +48,7 @@ export async function getNotificationSettings(req: Request, res: Response) {
               type: channel.type,
               destination: channel.destination,
               enabled: channel.enabled,
-              notifyLeadTypes: channel.notifyLeadTypes,
+              notifyLeadTypes: notificationLeadTypes(channel.notifyLeadTypes),
               notifyKeywordMatches: channel.notifyKeywordMatches,
             }
           : {
@@ -119,7 +122,7 @@ export async function upsertNotificationChannel(req: Request, res: Response) {
         type: channel.type,
         destination: channel.destination,
         enabled: channel.enabled,
-        notifyLeadTypes: channel.notifyLeadTypes,
+        notifyLeadTypes: notificationLeadTypes(channel.notifyLeadTypes),
         notifyKeywordMatches: channel.notifyKeywordMatches,
       },
     });

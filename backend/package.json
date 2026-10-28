@@ -24,7 +24,8 @@
     "diagnose:monitor-duplicates": "bun src/scripts/check-monitor-duplicates.ts",
     "blog:backlog": "bun src/scripts/generate-blog-backlog.ts 8",
     "blog:bulk-seo": "bun src/scripts/bulk-generate-seo-blogs.ts",
-    "build": "bun build ./src/index.ts ./src/workers/reddit.worker.ts --outdir ./dist --minify --target bun --external 'node_modules'"
+    "build": "bun build ./src/index.ts ./src/workers/reddit.worker.ts --outdir ./dist --minify --target bun --external 'node_modules'",
+    "test:monitors:integration": "bunx tsc --noEmit -p tsconfig.integration.json && bun test tests/monitor-identity.integration.test.ts"
   },
   "keywords": [],
   "author": "",

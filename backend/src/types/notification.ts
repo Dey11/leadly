@@ -1,5 +1,7 @@
 import { z } from "zod/v4";
-import { LeadType, NotificationChannelType } from "@prisma/client";
+import { NotificationChannelType } from "@prisma/client";
+
+import { NOTIFIABLE_LEAD_TYPES } from "../lib/notification-policy";
 
 // Matches https://discord.com/api/webhooks/<id>/<token> (also accepts the
 // legacy discordapp.com host).
@@ -17,9 +19,9 @@ export const upsertNotificationChannelSchema = z
     destination: discordWebhookUrlSchema,
     enabled: z.boolean().default(true),
     notifyLeadTypes: z
-      .array(z.enum(LeadType))
+      .array(z.enum(NOTIFIABLE_LEAD_TYPES))
       .min(1, "Select at least one lead type")
-      .default(["WARM", "COLD", "NEUTRAL"]),
+      .default([...NOTIFIABLE_LEAD_TYPES]),
     notifyKeywordMatches: z.boolean().default(true),
   })
   .strict();

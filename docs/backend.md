@@ -390,3 +390,11 @@ Do not run `prisma migrate dev` or `prisma db push` against the production datab
 - usage controls are enforced centrally, not only in the UI
 - database IDs are treated as opaque route values so migrated records remain
   manageable alongside newly generated CUID records
+
+## Monitor creation and notification fixes (28 October 2026)
+
+Monitor identity locks use `$executeRaw` because PostgreSQL's advisory-lock function returns `void`, which Prisma's row decoder cannot deserialize. The lock stays inside the same transaction as the duplicate check and write. Run `DATABASE_URL=postgresql://...@127.0.0.1:5548/leadly_monitor_test bun run test:monitors:integration` against a disposable local database after `prisma migrate deploy`. This suite covers creation, concurrent duplicates, updates, and notification defaults.
+
+Discord ICP notifications enforce warm/neutral eligibility at dispatch as well as API validation and settings display. Older channel preferences may still contain cold; those entries are ignored without rewriting user preferences. The migration changes only the database default for new channels. Keyword notifications and paid-tier access checks are unchanged.
+
+The backend release image includes `assets/logo.png` for Resend inline attachments. Email templates omit image references if the asset is unavailable, leaving readable text branding. Unit tests intercept the mail transport; they do not send email or Discord messages.

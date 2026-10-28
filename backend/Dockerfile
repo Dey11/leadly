@@ -39,6 +39,7 @@ FROM base AS release
 COPY --from=prerelease /usr/src/app/node_modules node_modules
 COPY --from=prerelease /usr/src/app/package.json .
 COPY --from=prerelease /usr/src/app/dist dist
+COPY --from=prerelease /usr/src/app/assets assets
 COPY --from=prerelease /usr/src/app/prisma prisma
 COPY --from=prerelease /usr/src/app/prisma.config.ts .
 COPY --from=prerelease /usr/src/app/docker-entrypoint.sh .

@@ -51,6 +51,7 @@ Reddit is a goldmine for user feedback, pain points, and product recommendations
 ### 1. Smart Monitors
 
 - **Subreddit Targeting**: Validates subreddit existence via Reddit API before adding.
+- **Discord lead alerts**: ICP alerts include warm and neutral leads only, respecting the selected types. Cold leads are excluded even for older saved channels; keyword-match alerts retain their own toggle.
 - **Deleted Bookmark Recovery**: ICP and keyword scans retry the latest feed page when Reddit returns an empty result for a saved bookmark. Existing saved leads are deduplicated before Discord alerts are sent.
 - **Keyword Sets**: Create bundles of keywords (e.g., "Buying Intent" set: `buy`, `price`, `cost`, `alternative`).
 - **Fuzzy Matching**: Optional logic to match related terms.

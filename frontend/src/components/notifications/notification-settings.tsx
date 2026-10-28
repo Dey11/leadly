@@ -31,7 +31,7 @@ const DISCORD_WEBHOOK_PATTERN =
   /^https:\/\/(discord|discordapp)\.com\/api\/webhooks\/\d+\/[\w-]+\/?$/;
 
 const LEAD_TYPE_META: Record<
-  LeadType,
+  Exclude<LeadType, "COLD">,
   { label: string; activeClass: string; inactiveClass: string }
 > = {
   WARM: {
@@ -46,15 +46,9 @@ const LEAD_TYPE_META: Record<
     inactiveClass:
       "bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20",
   },
-  COLD: {
-    label: "Cold",
-    activeClass: "bg-foreground text-background border-foreground",
-    inactiveClass:
-      "bg-muted text-muted-foreground border-border hover:bg-muted/70",
-  },
 };
 
-const LEAD_TYPE_ORDER: LeadType[] = ["WARM", "NEUTRAL", "COLD"];
+const LEAD_TYPE_ORDER = ["WARM", "NEUTRAL"] as const;
 
 export function NotificationSettings() {
   const queryClient = useQueryClient();
@@ -71,7 +65,6 @@ export function NotificationSettings() {
   const [enabled, setEnabled] = useState(true);
   const [notifyLeadTypes, setNotifyLeadTypes] = useState<LeadType[]>([
     "WARM",
-    "COLD",
     "NEUTRAL",
   ]);
   const [notifyKeywordMatches, setNotifyKeywordMatches] = useState(true);
@@ -82,7 +75,9 @@ export function NotificationSettings() {
       const { channel } = settingsQuery.data;
       setDestination(channel.destination);
       setEnabled(channel.enabled);
-      setNotifyLeadTypes(channel.notifyLeadTypes);
+      setNotifyLeadTypes(
+        channel.notifyLeadTypes.filter((type) => type !== "COLD"),
+      );
       setNotifyKeywordMatches(channel.notifyKeywordMatches);
       setInitialized(true);
     }
@@ -266,7 +261,8 @@ export function NotificationSettings() {
             What triggers an alert
           </CardTitle>
           <CardDescription>
-            Choose which lead types and matches send a Discord alert.
+            Choose warm or neutral leads and keyword matches for Discord alerts.
+            Cold leads are never sent.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
